@@ -38,6 +38,11 @@ public class containerCloudSimTags {
      */
     public static final int VM_NEW_CREATE = ContainerSimBASE + 11;
 
+        /**
+     * Denotes a container deallocation from VM.
+     */
+    public static final int CONTAINER_DESTROY = ContainerSimBASE + 12;
+
 
     private containerCloudSimTags() {
         // TODO Auto-generated constructor stub

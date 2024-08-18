@@ -23,15 +23,16 @@ public class ContainerInitialPlacementTest {
          * The experiments can be repeated for (repeat - runtime +1) times.
          * Please set these values as the arguments of the main function or set them bellow:
          */
-        int runTime = Integer.parseInt(args[0]);
-        int repeat = Integer.parseInt(args[1]);
+        int runTime = 0; //Integer.parseInt(args[0]);
+        int repeat = 1; //Integer.parseInt(args[1]);
         for (int i = runTime; i < repeat; ++i) {
             boolean enableOutput = true;
             boolean outputToFile = true;
             /**
              * Getting the path of the planet lab workload that is included in the cloudSim Package
              */
-            String inputFolder = ContainerOverbooking.class.getClassLoader().getResource("workload/planetlab").getPath();
+            //String inputFolder = ContainerOverbooking.class.getClassLoader().getResource("workload/planetlab").getPath();
+            String inputFolder = "/home/carlos/Documents/ECCI/repo/cloudsim/modules/cloudsim-examples/src/main/resources/workload/planetlab";
             /**
              * The output folder for the logs. The log files would be located in this folder.
              */

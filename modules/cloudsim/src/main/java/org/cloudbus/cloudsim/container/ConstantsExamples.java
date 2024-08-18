@@ -1,4 +1,4 @@
-package org.cloudbus.cloudsim.examples.container;
+package org.cloudbus.cloudsim.container;
 
 import org.cloudbus.cloudsim.power.models.PowerModel;
 import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G4Xeon3040;
@@ -72,9 +72,9 @@ public class ConstantsExamples {
      */
 
 
-     public static final int NUMBER_HOSTS = 1;
-     public static final int NUMBER_VMS = 1;
-     public static final int NUMBER_CLOUDLETS = 50;
+    public static final int NUMBER_HOSTS = 1;
+    public static final int NUMBER_VMS = 1;
+    public static final int NUMBER_CLOUDLETS = 50;
 
 //-----------------------The Addresses
 

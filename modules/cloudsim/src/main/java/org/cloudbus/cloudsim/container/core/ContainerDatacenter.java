@@ -275,6 +275,9 @@ public class ContainerDatacenter extends SimEntity {
                 // other unknown tags are processed by this method
                 break;
 
+            case containerCloudSimTags.CONTAINER_DESTROY:
+                processContainerDestroy(ev, false);
+                break;
             default:
                 processOtherEvent(ev);
                 break;
@@ -497,15 +500,19 @@ public class ContainerDatacenter extends SimEntity {
         boolean result = getVmAllocationPolicy().allocateHostForVm(containerVm);
 
         if (ack) {
-            int[] data = new int[3];
-            data[0] = getId();
-            data[1] = containerVm.getId();
-
+            // int[] data = new int[4];
+            // data[0] = getId();
+            // data[1] = containerVm.getId();
+            // data[2] = containerVm;
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("datacenterID", getId());
             if (result) {
-                data[2] = CloudSimTags.TRUE;
+                data.put("result", CloudSimTags.TRUE);
             } else {
-                data[2] = CloudSimTags.FALSE;
+                data.put("result", CloudSimTags.FALSE);
             }
+            data.put("vm", containerVm);
+
             send(containerVm.getUserId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
         }
 
@@ -595,6 +602,31 @@ public class ContainerDatacenter extends SimEntity {
                 containerVm.getId(),
                 host.getId());
         containerVm.setInMigration(false);
+    }
+
+        /**
+     * Process the event for a User/Broker who wants to migrate a VM. This PowerDatacenter will
+     * then send the status back to the User/Broker.
+     *
+     * @param ev a Sim_event object
+     * @pre ev != null
+     * @post $none
+     */
+    protected void processContainerDestroy(SimEvent ev, boolean ack) {
+
+        List<Container> containerList = (List<Container>) ev.getData();
+
+        for(Container container : containerList) {
+            int vm = container.getVm().getId();
+            getContainerAllocationPolicy().deallocateVmForContainer(container);
+
+            Log.formatLine(
+                    "%.2f: Delete of container #%d to Vm #%d is completed",
+                    CloudSim.clock(),
+                    container.getId(),
+                    vm);
+            container.setInMigration(false);
+        }
     }
 
     /**
@@ -802,10 +834,13 @@ public class ContainerDatacenter extends SimEntity {
      * @post $none
      */
     protected void processCloudletSubmit(SimEvent ev, boolean ack) {
+        ContainerCloudlet cl4 = (ContainerCloudlet) ev.getData();
+        Log.printLine("wwwprocessCloudletSubmit1 " + CloudSim.clock()+" " + cl4.containerId + " " + cl4.getCloudletId());
         updateCloudletProcessing();
 
         try {
             ContainerCloudlet cl = (ContainerCloudlet) ev.getData();
+            Log.printLine("wwwprocessCloudletSubmit2" + CloudSim.clock()+" " + cl.containerId + " " + cl.getCloudletId());
 
             // checks whether this Cloudlet has finished or not
             if (cl.isFinished()) {

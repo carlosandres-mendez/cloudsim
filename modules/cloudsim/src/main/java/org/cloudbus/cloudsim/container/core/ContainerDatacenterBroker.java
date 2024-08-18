@@ -1,7 +1,14 @@
 package org.cloudbus.cloudsim.container.core;
 
+import org.cloudbus.cloudsim.container.ConstantsExamples;
+import org.cloudbus.cloudsim.container.containerProvisioners.ContainerBwProvisionerSimple;
+import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
+import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisionerSimple;
+import org.cloudbus.cloudsim.container.containerProvisioners.CotainerPeProvisionerSimple;
 import org.cloudbus.cloudsim.container.lists.ContainerList;
 import org.cloudbus.cloudsim.container.lists.ContainerVmList;
+import org.cloudbus.cloudsim.container.schedulers.ContainerSchedulerTimeSharedOverSubscription;
+import org.cloudbus.cloudsim.container.utils.IDs;
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.UtilizationModelPlanetLabInMemory;
@@ -266,14 +273,27 @@ public class ContainerDatacenterBroker extends SimEntity {
         } else {
             //Container container = ContainerList.getById(getContainerList(), containerId);
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Failed Creation of Container #", containerId);
+
+            ArrayList<ContainerVm> vms = createVmList(this.getId(),1);
+            Log.printLine(String.format("%s: %s: Trying to Create VM #%d in %s", CloudSim.clock(), getName(), vms.get(0).getId(), "datacenter"));
+            sendNow(getDatacenterIdsList().get(0), CloudSimTags.VM_CREATE_ACK, vms.get(0));
+
+            for(Container container:getContainerList()){
+                if(container.getId() == containerId){
+                    List<Container> list = new ArrayList<>();
+                    list.add(container);
+                    sendNow(getDatacenterIdsList().get(0), containerCloudSimTags.CONTAINER_SUBMIT, list);
+                    break;
+                }
+            }
         }
 
         incrementContainersAcks();
-        if (getContainersAcks() == getContainerList().size()) {
+        //if (getContainersAcks() == getContainerList().size()) {
             //Log.print(getContainersCreatedList().size() + "vs asli"+getContainerList().size());
-            submitCloudlets();
-            getContainerList().clear();
-        }
+            submitCloudlets(containerId);
+            //getContainerList().clear();
+        //}
 
     }
 
@@ -338,30 +358,45 @@ public class ContainerDatacenterBroker extends SimEntity {
      * @post $none
      */
     protected void processVmCreate(SimEvent ev) {
-        int[] data = (int[]) ev.getData();
-        int datacenterId = data[0];
-        int vmId = data[1];
-        int result = data[2];
+        // int[] data = (int[]) ev.getData();
+        // int datacenterId = data[0];
+        // int vmId = data[1];
+        // int result = data[2];
 
-        if (result == CloudSimTags.TRUE) {
-            getVmsToDatacentersMap().put(vmId, datacenterId);
-            getVmsCreatedList().add(ContainerVmList.getById(getVmList(), vmId));
-            Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": VM #", vmId,
-                    " has been created in Datacenter #", datacenterId, ", Host #",
-                    ContainerVmList.getById(getVmsCreatedList(), vmId).getHost().getId());
-            setNumberOfCreatedVMs(getNumberOfCreatedVMs()+1);
-        } else {
-            Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Creation of VM #", vmId,
-                    " failed in Datacenter #", datacenterId);
-        }
+        Map<String, Object> map = (Map<String, Object>) ev.getData();
+        int datacenterId = (int) map.get("datacenterID");
+        int result = (int) map.get("result");
+        ContainerVm containerVm = (ContainerVm) map.get("vm");
+        int vmId = containerVm.getId();
 
-        incrementVmsAcks();
-//        if (getVmsCreatedList().size() == getVmList().size() - getVmsDestroyed()) {
-//        If we have tried creating all of the vms in the data center, we submit the containers.
-        if(getVmList().size() == vmsAcks){
+        if(ContainerVmList.getById(getVmList(), vmId)==null)
+            processNewVmCreate(ev);
+        else{
 
-            submitContainers();
-        }
+            if (result == CloudSimTags.TRUE) {
+                getVmsToDatacentersMap().put(vmId, datacenterId);
+                getVmsCreatedList().add(ContainerVmList.getById(getVmList(), vmId));
+                List<ContainerVm> list = getVmsCreatedList();
+                ContainerVm vm = ContainerVmList.getById(list, vmId);
+                ContainerHost host = vm.getHost();
+
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": VM #", vmId,
+                        " has been created in Datacenter #", datacenterId, ", Host #",
+                        host.getId());
+                setNumberOfCreatedVMs(getNumberOfCreatedVMs()+1);
+            } else {
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Creation of VM #", vmId,
+                        " failed in Datacenter #", datacenterId);
+            }
+
+            incrementVmsAcks();
+    //        if (getVmsCreatedList().size() == getVmList().size() - getVmsDestroyed()) {
+    //        If we have tried creating all of the vms in the data center, we submit the containers.
+            if(getVmList().size() == vmsAcks){
+
+                submitContainers();
+            }
+    }
 //        // all the requested VMs have been created
 //        if (getVmsCreatedList().size() == getVmList().size() - getVmsDestroyed()) {
 //            submitCloudlets();
@@ -402,6 +437,16 @@ public class ContainerDatacenterBroker extends SimEntity {
                 " returned");
         Log.printConcatLine(CloudSim.clock(), ": ", getName(), "The number of finished Cloudlets is:", getCloudletReceivedList().size());
         cloudletsSubmitted--;
+
+        for(Container container:getContainerList()){
+            if(container.getId() == cloudlet.getCloudletId()){
+                List<Container> list = new ArrayList<>();
+                list.add(container);
+                sendNow(getDatacenterIdsList().get(0), containerCloudSimTags.CONTAINER_DESTROY, list);
+                break;
+            }
+        }
+
         if (getCloudletList().size() == 0 && cloudletsSubmitted == 0) { // all cloudlets executed
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": All Cloudlets executed. Finishing...");
             clearDatacenters();
@@ -411,7 +456,8 @@ public class ContainerDatacenterBroker extends SimEntity {
                 // all the cloudlets sent finished. It means that some bount
                 // cloudlet is waiting its VM be created
                 clearDatacenters();
-                createVmsInDatacenter(0);
+                //createVmsInDatacenter(0);
+                createVmsInDatacenter(getDatacenterIdsList().get(0));
             }
 
         }
@@ -465,12 +511,14 @@ public class ContainerDatacenterBroker extends SimEntity {
      * @pre $none
      * @post $none
      */
-    protected void submitCloudlets() {
+    protected void submitCloudlets(int containerId) {
         int containerIndex = 0;
         List<ContainerCloudlet> successfullySubmitted = new ArrayList<>();
         for (ContainerCloudlet cloudlet : getCloudletList()) {
             //Log.printLine("Containers Created" + getContainersCreated());
+            
             if (containerIndex < getContainersCreated()) {
+                if(containerId == cloudlet.containerId){
                     //Log.printLine("Container Index" + containerIndex);
 //                    int containerId = getContainersCreatedList().get(containerIndex).getId();
 //                    bindCloudletToContainer(cloudlet.getCloudletId(), containerId);
@@ -483,7 +531,11 @@ public class ContainerDatacenterBroker extends SimEntity {
 //
 //                    }
                     containerIndex++;
-                    sendNow(getDatacenterIdsList().get(0), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+                    //if(containerIndex<21)
+                    //    sendNow(getDatacenterIdsList().get(0), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+                    //else
+                    Log.printLine("schedulex"+ CloudSim.clock() + " > " + (3500) + " " + cloudlet.getCloudletId());
+                    send(getDatacenterIdsList().get(0), (3500), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
                     cloudletsSubmitted++;
                     getCloudletSubmittedList().add(cloudlet);
                     successfullySubmitted.add(cloudlet);
@@ -548,6 +600,7 @@ public class ContainerDatacenterBroker extends SimEntity {
 //            successfullySubmitted.add(cloudlet);
             }
         }
+        }
 
         // remove submitted cloudlets from waiting list
         getCloudletList().removeAll(successfullySubmitted);
@@ -602,11 +655,15 @@ public class ContainerDatacenterBroker extends SimEntity {
 
         }
 
+        int ii = 0;
         for(Container container:getContainerList()){
-            successfullySubmitted.add(container);
-
+           // successfullySubmitted.add(container);
+            List<Container> list = new ArrayList<>();
+            list.add(container);
+            send(getDatacenterIdsList().get(0), (600*container.getId() + 2900), containerCloudSimTags.CONTAINER_SUBMIT, list);
+            ii++;
         }
-        sendNow(getDatacenterIdsList().get(0), containerCloudSimTags.CONTAINER_SUBMIT, successfullySubmitted);
+        //sendNow(getDatacenterIdsList().get(0), containerCloudSimTags.CONTAINER_SUBMIT, successfullySubmitted);
 
 //        List<Container> successfullySubmitted = new ArrayList<>();
 //        for (Container container : getContainerList()) {
@@ -622,6 +679,34 @@ public class ContainerDatacenterBroker extends SimEntity {
 //        }
 
         // remove submitted cloudlets from waiting list
+    }
+
+        /**
+     * Create the Virtual machines and add them to the list
+     *
+     * @param brokerId
+     * @param containerVmsNumber
+     */
+    private ArrayList<ContainerVm> createVmList(int brokerId, int containerVmsNumber) {
+        ArrayList<ContainerVm> containerVms = new ArrayList<ContainerVm>();
+
+        for (int i = 0; i < containerVmsNumber; ++i) {
+            ArrayList<ContainerPe> peList = new ArrayList<ContainerPe>();
+            int vmType = i / (int) Math.ceil((double) containerVmsNumber / 4.0D);
+            for (int j = 0; j < ConstantsExamples.VM_PES[vmType]; ++j) {
+                peList.add(new ContainerPe(j,
+                        new CotainerPeProvisionerSimple((double) ConstantsExamples.VM_MIPS[vmType])));
+            }
+            ContainerVm vm = new PowerContainerVm(IDs.pollId(ContainerVm.class), brokerId,
+            (double) ConstantsExamples.VM_MIPS[vmType], (float) ConstantsExamples.VM_RAM[vmType],
+            ConstantsExamples.VM_BW, ConstantsExamples.VM_SIZE, "Xen",
+            new ContainerSchedulerTimeSharedOverSubscription(peList),
+            new ContainerRamProvisionerSimple(ConstantsExamples.VM_RAM[vmType]),
+            new ContainerBwProvisionerSimple(ConstantsExamples.VM_BW),
+            peList, ConstantsExamples.SCHEDULING_INTERVAL);
+            containerVms.add(vm);
+        }
+        return containerVms;
     }
 
 

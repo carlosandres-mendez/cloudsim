@@ -277,10 +277,10 @@ public class ContainerVm {
 
                 List<Double> containerCurrentRequestedMips = contianer.getCurrentRequestedMips();
                 requestedMipsTemp += containerCurrentRequestedMips.get(0) * containerCurrentRequestedMips.size();
-//                Log.formatLine(
-//                        " [Container #%d] utilization is %.2f",
-//                        contianer.getId() ,
-//                        contianer.getCurrentRequestedMips().get(0) * contianer.getCurrentRequestedMips().size() );
+               Log.formatLine(
+                       " [Container #%d] utilization is %.2f",
+                       contianer.getId() ,
+                       contianer.getCurrentRequestedMips().get(0) * contianer.getCurrentRequestedMips().size() );
 
             }
 //            Log.formatLine("Total mips usage is %.2f", requestedMipsTemp);
@@ -845,10 +845,23 @@ public class ContainerVm {
      * @return true, if is suitable for container
      */
     public boolean isSuitableForContainer(Container container) {
+        boolean a = getContainerScheduler().getPeCapacity() >= container.getCurrentRequestedMaxMips();
 
-        return (getContainerScheduler().getPeCapacity() >= container.getCurrentRequestedMaxMips()&& getContainerScheduler().getAvailableMips() >= container.getWorkloadTotalMips()
-                && getContainerRamProvisioner().isSuitableForContainer(container, container.getCurrentRequestedRam()) && getContainerBwProvisioner()
-                .isSuitableForContainer(container, container.getCurrentRequestedBw()));
+        double b1 = getContainerScheduler().getAvailableMips();
+        double b2 = container.getWorkloadTotalMips();
+        boolean b =  b1 >= b2;
+
+        
+        boolean c = getContainerRamProvisioner().isSuitableForContainer(container, container.getCurrentRequestedRam());
+
+        boolean d = getContainerBwProvisioner()
+        .isSuitableForContainer(container, container.getCurrentRequestedBw());
+
+
+
+        boolean res = (a && b 
+                && c && d);
+        return res;
     }
 
        /**

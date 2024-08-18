@@ -180,7 +180,7 @@ public class ContainerCloudSimExample1 {
             /**
              * 12- Determining the simulation termination time according to the cloudlet's workload.
              */
-            CloudSim.terminateSimulation(86400.00);
+            CloudSim.terminateSimulation(1864000.00);
             /**
              * 13- Starting the simualtion.
              */
