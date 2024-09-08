@@ -808,5 +808,9 @@ public class Container {
         return getWorkloadMips() * getNumberOfPes();
     }
 
+    @Override
+    public String toString() {
+        return "Container [id=" + id + "]";
+    }
 
 }

@@ -1,5 +1,6 @@
 package org.cloudbus.cloudsim.examples.container;
 
+import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.container.containerPlacementPolicies.*;
 import org.cloudbus.cloudsim.container.containerSelectionPolicies.PowerContainerSelectionPolicy;
@@ -18,6 +19,8 @@ import org.cloudbus.cloudsim.container.vmSelectionPolicies.PowerContainerVmSelec
 import org.cloudbus.cloudsim.container.vmSelectionPolicies.PowerContainerVmSelectionPolicyMaximumCorrelation;
 import org.cloudbus.cloudsim.container.vmSelectionPolicies.PowerContainerVmSelectionPolicyMaximumUsage;
 import org.cloudbus.cloudsim.core.CloudSim;
+
+import com.ibm.icu.text.DecimalFormat;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -182,7 +185,7 @@ public abstract class RunnerAbs {
             broker.submitContainerList(containerList);
             broker.submitCloudletList(cloudletList.subList(0, containerList.size()));
             ;
-            CloudSim.terminateSimulation(86400.0D);
+            CloudSim.terminateSimulation(8886400.0D);
             double lastClock = CloudSim.startSimulation();
             List newList = broker.getCloudletReceivedList();
             Log.printLine("Received " + newList.size() + " cloudlets");
@@ -190,6 +193,7 @@ public abstract class RunnerAbs {
 
 //            HelperEx.printResults(e, broker.getVmsCreatedList(),broker.getContainersCreatedList() ,lastClock, experimentName, true, outputFolder);
             HelperEx.printResultsNew(e, broker, lastClock, experimentName, true, outputFolder);
+            printCloudletList(this.cloudletList);
         } catch (Exception var8) {
             var8.printStackTrace();
             Log.printLine("The simulation has been terminated due to an unexpected error");
@@ -197,6 +201,41 @@ public abstract class RunnerAbs {
         }
 
         Log.printLine("Finished " + experimentName);
+    }
+
+        /**
+     * Prints the Cloudlet objects.
+     *
+     * @param list list of Cloudlets
+     */
+    private void printCloudletList(List<ContainerCloudlet> list) {
+        int size = list.size();
+        Cloudlet cloudlet;
+
+        String indent = "    ";
+        Log.printLine();
+        Log.printLine("========== OUTPUT ==========");
+        Log.printLine("Cloudlet ID" + indent + "STATUS" + indent
+                + "Data center ID" + indent + "VM ID" + indent + "Time" + indent
+                + "Start Time" + indent + "Finish Time");
+
+        DecimalFormat dft = new DecimalFormat("###.##");
+        for (int i = 0; i < size; i++) {
+            cloudlet = list.get(i);
+            Log.print(indent + cloudlet.getCloudletId() + indent + indent);
+
+            if (cloudlet.getCloudletStatusString() == "Success") {
+                Log.print("SUCCESS");
+
+                Log.printLine(indent + indent + cloudlet.getResourceId()
+                        + indent + indent + indent + cloudlet.getVmId()
+                        + indent + indent
+                        + dft.format(cloudlet.getActualCPUTime()) + indent
+                        + indent + dft.format(cloudlet.getExecStartTime())
+                        + indent + indent
+                        + dft.format(cloudlet.getFinishTime()));
+            }
+        }
     }
 
     protected String getExperimentName(String... args) {

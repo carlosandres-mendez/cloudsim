@@ -652,6 +652,11 @@ public class ContainerHost {
         this.datacenter = datacenter;
     }
 
+    @Override
+    public String toString() {
+        return "Host [id=" + id + "]";
+    }
+
 
 }
 

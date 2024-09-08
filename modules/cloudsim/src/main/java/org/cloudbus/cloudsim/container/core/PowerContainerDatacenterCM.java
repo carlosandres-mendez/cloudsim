@@ -23,13 +23,13 @@ public class PowerContainerDatacenterCM extends PowerContainerDatacenter {
     /**
      * The disable container migrations.
      */
-    private boolean disableMigrations;
+    protected boolean disableMigrations;
     public int containerMigrationCount;
-    private CostumeCSVWriter newlyCreatedVmWriter;
-    private int newlyCreatedVms;
-    private List<Integer> newlyCreatedVmsList;
-    private double vmStartupDelay;
-    private double containerStartupDelay;
+    protected CostumeCSVWriter newlyCreatedVmWriter;
+    protected int newlyCreatedVms;
+    protected List<Integer> newlyCreatedVmsList;
+    protected double vmStartupDelay;
+    protected double containerStartupDelay;
 
 
     public PowerContainerDatacenterCM(String name, ContainerDatacenterCharacteristics characteristics,

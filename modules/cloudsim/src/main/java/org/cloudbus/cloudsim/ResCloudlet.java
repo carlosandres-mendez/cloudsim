@@ -8,6 +8,8 @@
 
 package org.cloudbus.cloudsim;
 
+import java.util.Arrays;
+
 import org.cloudbus.cloudsim.core.CloudSim;
 
 /**
@@ -484,6 +486,7 @@ public class ResCloudlet {
 	 */
 	public void updateCloudletFinishedSoFar(long miLength) {
 		cloudletFinishedSoFar += miLength;
+		System.out.println(this);
 	}
 
 	/**
@@ -557,6 +560,16 @@ public class ResCloudlet {
 	 */
 	public String getUid() {
 		return getUserId() + "-" + getCloudletId();
+	}
+
+	@Override
+	public String toString() {
+		return "ResCloudlet [cloudlet=" + cloudlet.getVmId() + " "+ cloudlet.getCloudletId()  + ", arrivalTime=" + arrivalTime + ", finishedTime=" + finishedTime
+				+ ", cloudletFinishedSoFar=" + cloudletFinishedSoFar + ", startExecTime=" + startExecTime
+				+ ", totalCompletionTime=" + totalCompletionTime + ", machineId=" + machineId + ", peId=" + peId
+				+ ", machineArrayId=" + Arrays.toString(machineArrayId) + ", peArrayId=" + Arrays.toString(peArrayId)
+				+ ", index=" + index + ", startTime=" + startTime + ", duration=" + duration + ", reservId=" + reservId
+				+ ", pesNumber=" + pesNumber + "]";
 	}
 
 }

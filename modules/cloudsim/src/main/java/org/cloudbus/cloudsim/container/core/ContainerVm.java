@@ -1240,6 +1240,15 @@ public class ContainerVm {
     public void setInWaiting(boolean inWaiting) {
         this.inWaiting = inWaiting;
     }
+
+
+
+    @Override
+    public String toString() {
+        return "Vm [id=" + id + "]";
+    }
+
+    
 }
 
 

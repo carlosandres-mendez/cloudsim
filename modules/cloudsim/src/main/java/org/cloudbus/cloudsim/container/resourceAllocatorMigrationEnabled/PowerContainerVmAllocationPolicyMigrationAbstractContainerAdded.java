@@ -6,7 +6,6 @@ import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisi
 import org.cloudbus.cloudsim.container.containerProvisioners.CotainerPeProvisionerSimple;
 import org.cloudbus.cloudsim.container.containerSelectionPolicies.PowerContainerSelectionPolicy;
 import org.cloudbus.cloudsim.container.core.*;
-import org.cloudbus.cloudsim.container.core.ContainerHostList;
 import org.cloudbus.cloudsim.container.lists.*;
 import org.cloudbus.cloudsim.container.resourceAllocators.PowerContainerAllocationPolicy;
 import org.cloudbus.cloudsim.container.schedulers.ContainerSchedulerTimeSharedOverSubscription;
@@ -89,6 +88,120 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
         return migrationMap;
 
 
+    }
+
+        /**
+     * Gets random hosts.
+     *
+     * @return the random hosts
+     */
+    protected List<PowerContainerHostUtilizationHistory> getRandomHosts(int n) {
+        List<PowerContainerHostUtilizationHistory> randomHosts = new LinkedList<PowerContainerHostUtilizationHistory>();
+        Random rand = new Random();
+        for(int i=0; i<n;i++){
+            randomHosts.add(this.<PowerContainerHostUtilizationHistory>getContainerHostList().get(rand.nextInt(getContainerHostList().size())));
+        }
+        return randomHosts;
+    }
+
+    /**
+     * Gets random vms.
+     *
+     * @return the random vms
+     */
+    protected List<PowerContainerVm> getRandomVms(PowerContainerHost host, int n, Set<? extends ContainerVm> excludedVmList) {
+        List<PowerContainerVm> randomVms = new LinkedList<PowerContainerVm>();
+        if (host.getVmList().size() > 0) {
+            Random rand = new Random();
+            for(int i=0; i<n;i++){
+                for(int j=0; j<host.getVmList().size();j++){
+                    
+                    int randomNum = rand.nextInt(host.getVmList().size());
+                    if (!excludedVmList.contains(host.<PowerContainerVm>getVmList().get(randomNum))){
+                        randomVms.add(host.<PowerContainerVm>getVmList().get(randomNum));
+                        break;
+                    }
+                } 
+            }
+        }
+        else {
+
+            Log.print(String.format("Error: The VM list Size is: %d", host.getVmList().size()));
+        }
+        return randomVms;
+    }
+
+    /**
+     * Gets random containers.
+     *
+     * @return the random containers
+     */
+    protected List<PowerContainer> getRandomContainers(PowerContainerVm vm, int n) {
+        List<PowerContainer> randomVms = new LinkedList<PowerContainer>();
+        Random rand = new Random();
+        for(int i=0; i<n;i++){
+            randomVms.add(vm.<PowerContainer>getContainerList().get((rand.nextInt(vm.getContainerList().size()))));
+        }
+        return randomVms;
+    }
+
+    public Allocation findRandomVmForContainer(Container container, Set<? extends ContainerHost> excludedHosts, boolean checkForVM) {
+        Allocation allocation = null;
+        double minPower = Double.MAX_VALUE;
+        PowerContainerHost allocatedHost = null;
+        ContainerVm allocatedVm = null;
+
+        List<PowerContainerHost> containerHostList = new ArrayList<>();
+        for (PowerContainerHost host : this.<PowerContainerHost>getContainerHostList()) {
+            containerHostList.add(host);
+        }
+        Collections.shuffle(containerHostList);
+
+        for (PowerContainerHost host : containerHostList) {
+            if (excludedHosts.contains(host)) {
+                continue;
+            }
+
+            List<ContainerVm> containerVmList = new ArrayList<>();
+            for (ContainerVm vm : host.getVmList()) {
+                containerVmList.add(vm);
+            }
+            Collections.shuffle(containerVmList);
+
+            for (ContainerVm vm : containerVmList) {
+                if (checkForVM) {
+                    if (vm.isInWaiting()) {
+                        continue;
+                    }
+                }
+                if (vm.isSuitableForContainer(container)) {
+                    // if vm is overutilized or host would be overutilized after the allocation, this host is not chosen!
+                    if (!isVmOverUtilized(vm)) {
+                        continue;
+                    }
+                    if (getUtilizationOfCpuMips(host) != 0 && isHostOverUtilizedAfterContainerAllocation(host, vm, container)) {
+                        continue;
+                    }
+
+                    try {
+                        double powerAfterAllocation = getPowerAfterContainerAllocation(host, container, vm);
+                        if (powerAfterAllocation != -1) {
+                            double powerDiff = powerAfterAllocation - host.getPower();
+                            if (powerDiff < minPower) {
+                                minPower = powerDiff;
+                                allocatedHost = host;
+                                allocatedVm = vm;
+                            }
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+            }
+        }
+        if(allocatedVm!=null)
+            allocation = new Allocation(container,allocatedVm,allocatedHost);
+
+        return allocation;
     }
 
     protected Collection<? extends Map<String, Object>> getContainerMigrationMapFromUnderUtilizedHosts(List<PowerContainerHostUtilizationHistory> overUtilizedHosts, List<Map<String, Object>> previouseMap) {
