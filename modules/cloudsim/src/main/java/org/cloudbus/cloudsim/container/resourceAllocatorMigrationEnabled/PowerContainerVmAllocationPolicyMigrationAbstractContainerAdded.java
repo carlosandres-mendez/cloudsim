@@ -79,7 +79,18 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
                 ExecutionTimeMeasurer.end("optimizeAllocationVmReallocation"));
         Log.printLine();
 
-        migrationMap.addAll(getContainerMigrationMapFromUnderUtilizedHosts(overUtilizedHosts, migrationMap));
+        //Particle Swarm Optimization (PSO) 
+        int numberOfIterations = 30;
+        Discrete_PSO_Swarm swarm = new Discrete_PSO_Swarm(new Discrete_FitnessFunction(), this );
+        for (int i = 0; i < numberOfIterations; i++)
+        swarm.evolve();
+        for(Allocation allocation : swarm.getBestPosition()){
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("host", allocation.getContainer());
+            map.put("vm", allocation.getVm());
+            map.put("container", allocation.getHost());
+            migrationMap.add(map);
+        }
 
         restoreAllocation();
 
@@ -89,6 +100,43 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 
 
     }
+
+    public List<Map<String, Object>> optimizeAllocationOriginal(List<? extends ContainerVm> vmList) {
+
+        ExecutionTimeMeasurer.start("optimizeAllocationTotal");
+
+        ExecutionTimeMeasurer.start("optimizeAllocationHostSelection");
+        List<PowerContainerHostUtilizationHistory> overUtilizedHosts = getOverUtilizedHosts();
+        getExecutionTimeHistoryHostSelection().add(
+                ExecutionTimeMeasurer.end("optimizeAllocationHostSelection"));
+
+        printOverUtilizedHosts(overUtilizedHosts);
+
+        saveAllocation();
+
+        ExecutionTimeMeasurer.start("optimizeAllocationContainerSelection");
+        List<? extends Container> containersToMigrate = getContainersToMigrateFromHosts(overUtilizedHosts);
+        getExecutionTimeHistoryVmSelection().add(ExecutionTimeMeasurer.end("optimizeAllocationContainerSelection"));
+
+        Log.printLine("Reallocation of Containers from the over-utilized hosts:");
+        ExecutionTimeMeasurer.start("optimizeAllocationVmReallocation");
+        List<Map<String, Object>> migrationMap = getPlacementForLeftContainers(containersToMigrate, new HashSet<ContainerHost>(overUtilizedHosts));
+
+
+        getExecutionTimeHistoryVmReallocation().add(
+                ExecutionTimeMeasurer.end("optimizeAllocationVmReallocation"));
+        Log.printLine();
+
+        migrationMap.addAll(getContainerMigrationMapFromUnderUtilizedHosts(overUtilizedHosts, migrationMap));
+
+        restoreAllocation();
+
+        getExecutionTimeHistoryTotal().add(ExecutionTimeMeasurer.end("optimizeAllocationTotal"));
+
+        return migrationMap;
+
+
+    }    
 
         /**
      * Gets random hosts.

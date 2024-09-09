@@ -29,8 +29,7 @@ public class Discrete_PSO_Swarm {
 	 * If unsure about this parameter, try Swarm.DEFAULT_NUMBER_OF_PARTICLES or greater
 	 * @param fitnessFunction : Fitness function used to evaluate each particle
 	 */
-    public Discrete_PSO_Swarm(ArrayList<Discrete_Particle> particles, Discrete_FitnessFunction fitnessFunction, PowerContainerVmAllocationPolicyMigrationAbstract allocationPolicy) {
-        this.particles = particles;
+    public Discrete_PSO_Swarm(Discrete_FitnessFunction fitnessFunction, PowerContainerVmAllocationPolicyMigrationAbstract allocationPolicy) {
         this.fitnessFunction = fitnessFunction;
         this.allocationPolicy = allocationPolicy;
 

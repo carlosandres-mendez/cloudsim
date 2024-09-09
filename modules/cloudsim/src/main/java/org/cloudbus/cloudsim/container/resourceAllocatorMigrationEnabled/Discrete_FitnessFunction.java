@@ -6,7 +6,7 @@ import java.util.*;
  * 
  * @author carlosandres.mendez
  */
-public abstract class Discrete_FitnessFunction {
+public class Discrete_FitnessFunction {
 
 	/** Should this funtion be maximized or minimized */
 	boolean maximize;
@@ -39,7 +39,11 @@ public abstract class Discrete_FitnessFunction {
 	 * @param position : Particle's position
 	 * @return Fitness function for a particle
 	 */
-	public abstract double evaluate(List<Allocation> position);
+	public double evaluate(List<Allocation> position){
+        double result = 0d;
+
+        return result;
+    }
 
 	/**
 	 * Evaluates a particles 
