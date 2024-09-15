@@ -42,6 +42,12 @@ public class Discrete_FitnessFunction {
 	public double evaluate(List<Allocation> position){
         double result = 0d;
 
+		double sum = 0d;
+		for(Allocation allocation : position){
+			sum += allocation.vm.getMips();
+		}
+		result = sum;
+
         return result;
     }
 

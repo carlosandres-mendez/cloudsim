@@ -45,10 +45,10 @@ public class Discrete_ParticleUpdate {
         this.swarm = swarm;
 
         // Update velocity 
-        List<Allocation> possibleMigrationsPersonal = generatePossibleMigrations(WEIGHT_R1, COGNIT_COEFFICIENT, particle.getBestPosition(), particle.getPosition());
-        List<Allocation> possibleMigrationsGlobal = generatePossibleMigrations(WEIGHT_R2, SOCIAL_COEFFICIENT, swarm.getBestPosition(), particle.getPosition());
+        List<Allocation> personalPossibleMigrations = generatePossibleMigrations(WEIGHT_R1, COGNIT_COEFFICIENT, particle.getBestPosition(), particle.getPosition());
+        List<Allocation> globalPossibleMigrations = generatePossibleMigrations(WEIGHT_R2, SOCIAL_COEFFICIENT, swarm.getBestPosition(), particle.getPosition());
 
-        for (Allocation possibleMigration : possibleMigrationsPersonal){
+        for (Allocation possibleMigration : personalPossibleMigrations){
             boolean isFounded = false;
             for(Allocation allocation : particle.getVelocity()){
                 if(allocation.getContainer().equals(possibleMigration.getContainer())){
@@ -62,7 +62,7 @@ public class Discrete_ParticleUpdate {
                 particle.getVelocity().add(possibleMigration);
         }
 
-        for (Allocation possibleMigration : possibleMigrationsGlobal){
+        for (Allocation possibleMigration : globalPossibleMigrations){
             boolean isFounded = false;
             for(Allocation allocation : particle.getVelocity()){
                 if(allocation.getContainer().equals(possibleMigration.getContainer())){
@@ -90,11 +90,28 @@ public class Discrete_ParticleUpdate {
     private List<Allocation> generatePossibleMigrations(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleMigrations = new ArrayList<Allocation>();
 
+        List<PowerContainerHostUtilizationHistory> overUtilizedHosts = this.swarm.allocationPolicy.getOverUtilizedHosts();
+
+        if(overUtilizedHosts.size()>0) {
+            List<? extends Container> containersToMigrate = this.swarm.allocationPolicy.getContainersToMigrateFromHosts(overUtilizedHosts);
+
+            List<Map<String, Object>> migrationMap = this.swarm.allocationPolicy.getPlacementForLeftContainers(containersToMigrate, new HashSet<ContainerHost>(overUtilizedHosts));
+            migrationMap.addAll(this.swarm.allocationPolicy.getContainerMigrationMapFromUnderUtilizedHosts(overUtilizedHosts, migrationMap));
+
+            for(Map<String, Object> migration : migrationMap){
+                possibleMigrations.add(
+                    new Allocation((Container)migration.get("container"), (ContainerVm)migration.get("vm"), (ContainerHost)migration.get("host")));
+            }
+        }
+
+        // for(Allocation xAllocation : xPosition){
+        //     if(xPosition.get(xAllocation.getContainer().getId()) )
+        // }
 
         return possibleMigrations;
     }
 
-            /**
+    /**
      * Gets random hosts.
      *
      * @return the random hosts
@@ -108,7 +125,7 @@ public class Discrete_ParticleUpdate {
         return randomHosts;
     }
 
-       /**
+    /**
      * Gets random vms.
      *
      * @return the random vms
@@ -260,7 +277,7 @@ public class Discrete_ParticleUpdate {
         return pePotentialUtilization;
     }
 
-        /**
+    /**
      * Checks if is host over utilized after allocation.
      *
      * @param host      the host

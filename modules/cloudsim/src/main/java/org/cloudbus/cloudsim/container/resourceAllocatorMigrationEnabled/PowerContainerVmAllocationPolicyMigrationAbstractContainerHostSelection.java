@@ -92,7 +92,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
     }
 
     @Override
-    protected Collection<? extends Map<String, Object>> getContainerMigrationMapFromUnderUtilizedHosts(List<PowerContainerHostUtilizationHistory> overUtilizedHosts, List<Map<String, Object>> previouseMap) {
+    public Collection<? extends Map<String, Object>> getContainerMigrationMapFromUnderUtilizedHosts(List<PowerContainerHostUtilizationHistory> overUtilizedHosts, List<Map<String, Object>> previouseMap) {
 
 
         List<Map<String, Object>> migrationMap = new LinkedList<Map<String, Object>>();
@@ -171,7 +171,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
      * @param host the host
      * @return the vms to migrate from under utilized host
      */
-    protected List<? extends Container> getContainersToMigrateFromUnderUtilizedHost(PowerContainerHost host) {
+    public List<? extends Container> getContainersToMigrateFromUnderUtilizedHost(PowerContainerHost host) {
         List<Container> containersToMigrate = new LinkedList<>();
         for (ContainerVm vm : host.getVmList()) {
             if (!vm.isInMigration()) {
@@ -192,7 +192,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
      * @param excludedHosts the excluded hosts
      * @return the new vm placement from under utilized host
      */
-    protected List<Map<String, Object>> getNewContainerPlacementFromUnderUtilizedHost(
+    public List<Map<String, Object>> getNewContainerPlacementFromUnderUtilizedHost(
             List<? extends Container> containersToMigrate,
             Set<? extends ContainerHost> excludedHosts) {
         List<Map<String, Object>> migrationMap = new LinkedList<Map<String, Object>>();
@@ -217,7 +217,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
 
 
 @Override
-    protected Map<String, Object> findAvailableHostForContainer(Container container,
+    public Map<String, Object> findAvailableHostForContainer(Container container,
                                                                 List<Map<String, Object>> createdVm) {
 
 

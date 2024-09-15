@@ -34,7 +34,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
      * @param excludedHosts the excluded hosts
      * @return the under utilized host
      */
-    protected PowerContainerHost getUnderUtilizedHost(Set<? extends ContainerHost> excludedHosts) {
+    public PowerContainerHost getUnderUtilizedHost(Set<? extends ContainerHost> excludedHosts) {
 
         List<ContainerHost> underUtilizedHostList = getUnderUtilizedHostList(excludedHosts);
         if (underUtilizedHostList.size() == 0) {
@@ -55,7 +55,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
      * @param excludedHosts the excluded hosts
      * @return the under utilized host
      */
-    protected List<ContainerHost> getUnderUtilizedHostList(Set<? extends ContainerHost> excludedHosts) {
+    public List<ContainerHost> getUnderUtilizedHostList(Set<? extends ContainerHost> excludedHosts) {
         List<ContainerHost> underUtilizedHostList = new ArrayList<>();
         for (PowerContainerHost host : this.<PowerContainerHost>getContainerHostList()) {
             if (excludedHosts.contains(host)) {

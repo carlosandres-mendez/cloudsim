@@ -2,8 +2,13 @@ package org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled;
 
 import java.util.*;
 
+import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.ContainerHost;
+import org.cloudbus.cloudsim.container.core.ContainerVm;
+import org.cloudbus.cloudsim.container.core.PowerContainer;
+import org.cloudbus.cloudsim.container.core.PowerContainerVm;
+import org.cloudbus.cloudsim.container.core.PowerContainerHostUtilizationHistory;
 
 /**
  * 
@@ -21,7 +26,7 @@ public class Discrete_PSO_Swarm {
 
     private ArrayList<Discrete_Particle> particles;
 
-    PowerContainerVmAllocationPolicyMigrationAbstract allocationPolicy;
+    PowerContainerVmAllocationPolicyMigrationAbstractContainerAdded allocationPolicy;
 
     /**
 	 * Create a Swarm and set default values
@@ -29,7 +34,7 @@ public class Discrete_PSO_Swarm {
 	 * If unsure about this parameter, try Swarm.DEFAULT_NUMBER_OF_PARTICLES or greater
 	 * @param fitnessFunction : Fitness function used to evaluate each particle
 	 */
-    public Discrete_PSO_Swarm(Discrete_FitnessFunction fitnessFunction, PowerContainerVmAllocationPolicyMigrationAbstract allocationPolicy) {
+    public Discrete_PSO_Swarm(Discrete_FitnessFunction fitnessFunction, PowerContainerVmAllocationPolicyMigrationAbstractContainerAdded allocationPolicy) {
         this.fitnessFunction = fitnessFunction;
         this.allocationPolicy = allocationPolicy;
 
@@ -42,8 +47,67 @@ public class Discrete_PSO_Swarm {
 	 * Warning: maxPosition[], minPosition[], maxVelocity[], minVelocity[] must be initialized and setted
 	 */
 	public void init() {
+
+		particles = new ArrayList<>();
+
+		//Creamos una particula con la posicion actual del datacenter
+		List<Allocation> position = new ArrayList<>();
+		List<Allocation> velocity = new ArrayList<>();
+		for(PowerContainerHostUtilizationHistory host : allocationPolicy.<PowerContainerHostUtilizationHistory>getContainerHostList()){
+			for(PowerContainerVm vm : host.<PowerContainerVm>getVmList()){
+				for(PowerContainer container : vm.<PowerContainer>getContainerList()){
+					position.add(new Allocation(container, vm, host));
+				}
+			}
+		}
+		if(position.size()>0)
+			particles.add(new Discrete_Particle(position, velocity));
+
+
+		// for (int i=0; i < 10; i++) {
+
+		// 	List<Allocation> position = new ArrayList<>();
+						
+		// 	List<Allocation> velocity = new ArrayList<>();
+
+		// 	for(PowerContainerHostUtilizationHistory host : allocationPolicy.getRandomHosts(5)){
+		// 		for(PowerContainerVm vm : allocationPolicy.getRandomVms(host, 5)){
+		// 			for(PowerContainer container : allocationPolicy.getRandomContainers(vm, 5)){
+		// 				position.add(new Allocation(container, vm, host));
+		// 				particles.add(new Discrete_Particle(position, velocity));
+		// 			}
+		// 		}
+		// 	}
+		// }
+
+        // List<PowerContainerHostUtilizationHistory> overUtilizedHosts = allocationPolicy.getOverUtilizedHosts();
+
+        // List<? extends Container> containersToMigrate = allocationPolicy.getContainersToMigrateFromHosts(overUtilizedHosts);
+
+        
+
+        // List<Map<String, Object>> migrationMap = allocationPolicy.getPlacementForLeftContainers(containersToMigrate, new HashSet<ContainerHost>(overUtilizedHosts));
+		// migrationMap.addAll(allocationPolicy.getContainerMigrationMapFromUnderUtilizedHosts(overUtilizedHosts, migrationMap));
+        // Log.printLine();
+
+		// for(Discrete_Particle particle : particles){
+
+		// 	Log.printLine("Reallocation of Containers from the over-utilized hosts:");
+		// 	for(Map<String, Object> mapa :  migrationMap){
+		// 		ContainerHost servidor = (ContainerHost)mapa.get("host");
+		// 		ContainerVm vm = (ContainerVm)mapa.get("vm");
+		// 		Container contenedor = (Container) mapa.get("container");
+		// 		Allocation asignacion = new Allocation(contenedor, vm, servidor);
+		// 		Log.printLine("servidor: " + contenedor + " vm: " + vm + " contanedor: " + servidor);
+		// 		particle.getVelocity().add(asignacion);
+		// 	} 
+
+		// }	
+
+
 		// // Init particles
 		// particles = new Particle[numberOfParticles];
+        
 
 		// // Check constraints (they will be used to initialize particles)
 		// if (maxPosition == null) throw new RuntimeException("maxPosition array is null!");
@@ -173,11 +237,11 @@ public class Discrete_PSO_Swarm {
         this.particles = particles;
     }
 
-    public PowerContainerVmAllocationPolicyMigrationAbstract getAllocationPolicy() {
+    public PowerContainerVmAllocationPolicyMigrationAbstractContainerAdded getAllocationPolicy() {
         return allocationPolicy;
     }
 
-    public void setAllocationPolicy(PowerContainerVmAllocationPolicyMigrationAbstract allocationPolicy) {
+    public void setAllocationPolicy(PowerContainerVmAllocationPolicyMigrationAbstractContainerAdded allocationPolicy) {
         this.allocationPolicy = allocationPolicy;
     }
 

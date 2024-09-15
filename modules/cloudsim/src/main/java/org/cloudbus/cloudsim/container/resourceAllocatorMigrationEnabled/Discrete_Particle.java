@@ -34,9 +34,18 @@ public class Discrete_Particle {
         fitness = Double.NaN;
     }
 
+    
+
     //-------------------------------------------------------------------------
     // Methods
     //-------------------------------------------------------------------------
+
+    public Discrete_Particle(List<Allocation> position, List<Allocation> velocity) {
+        this.position = position;
+        this.velocity = velocity;
+    }
+
+
 
     /** Copy position[] to positionCopy[] */
     public void copyPosition(List<Allocation> positionCopy) {

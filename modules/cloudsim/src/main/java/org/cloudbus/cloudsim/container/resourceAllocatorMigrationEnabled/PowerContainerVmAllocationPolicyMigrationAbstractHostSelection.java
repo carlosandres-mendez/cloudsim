@@ -80,7 +80,7 @@ public class PowerContainerVmAllocationPolicyMigrationAbstractHostSelection exte
      * @return true, if is host over utilized
      */
     @Override
-    protected boolean isHostOverUtilized(PowerContainerHost host) {
+    public boolean isHostOverUtilized(PowerContainerHost host) {
         addHistoryEntry(host, getUtilizationThreshold());
         double totalRequestedMips = 0;
         for (ContainerVm vm : host.getVmList()) {
@@ -91,7 +91,7 @@ public class PowerContainerVmAllocationPolicyMigrationAbstractHostSelection exte
     }
 
     @Override
-    protected boolean isHostUnderUtilized(PowerContainerHost host) {
+    public boolean isHostUnderUtilized(PowerContainerHost host) {
         return false;
     }
 
@@ -100,7 +100,7 @@ public class PowerContainerVmAllocationPolicyMigrationAbstractHostSelection exte
      *
      * @param utilizationThreshold the new utilization threshold
      */
-    protected void setUtilizationThreshold(double utilizationThreshold) {
+    public void setUtilizationThreshold(double utilizationThreshold) {
         this.utilizationThreshold = utilizationThreshold;
     }
 
@@ -109,7 +109,7 @@ public class PowerContainerVmAllocationPolicyMigrationAbstractHostSelection exte
      *
      * @return the utilization threshold
      */
-    protected double getUtilizationThreshold() {
+    public double getUtilizationThreshold() {
         return utilizationThreshold;
     }
 
@@ -129,7 +129,7 @@ public class PowerContainerVmAllocationPolicyMigrationAbstractHostSelection exte
      * @param excludedHosts the excluded hosts
      * @return the under utilized host
      */
-    protected PowerContainerHost getUnderUtilizedHost(Set<? extends ContainerHost> excludedHosts) {
+    public PowerContainerHost getUnderUtilizedHost(Set<? extends ContainerHost> excludedHosts) {
 
         List<ContainerHost> underUtilizedHostList = getUnderUtilizedHostList(excludedHosts);
         if (underUtilizedHostList.size() == 0) {
@@ -150,7 +150,7 @@ public class PowerContainerVmAllocationPolicyMigrationAbstractHostSelection exte
      * @param excludedHosts the excluded hosts
      * @return the under utilized host
      */
-    protected List<ContainerHost> getUnderUtilizedHostList(Set<? extends ContainerHost> excludedHosts) {
+    public List<ContainerHost> getUnderUtilizedHostList(Set<? extends ContainerHost> excludedHosts) {
         List<ContainerHost> underUtilizedHostList = new ArrayList<>();
         for (PowerContainerHost host : this.<PowerContainerHost>getContainerHostList()) {
             if (excludedHosts.contains(host)) {

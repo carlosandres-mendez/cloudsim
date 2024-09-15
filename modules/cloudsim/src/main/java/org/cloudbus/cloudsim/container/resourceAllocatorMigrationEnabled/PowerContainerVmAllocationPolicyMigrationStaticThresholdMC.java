@@ -43,7 +43,7 @@ public class PowerContainerVmAllocationPolicyMigrationStaticThresholdMC extends 
      * @return true, if is host over utilized
      */
     @Override
-    protected boolean isHostOverUtilized(PowerContainerHost host) {
+    public boolean isHostOverUtilized(PowerContainerHost host) {
         addHistoryEntry(host, getUtilizationThreshold());
         double totalRequestedMips = 0;
         for (ContainerVm vm : host.getVmList()) {
@@ -54,7 +54,7 @@ public class PowerContainerVmAllocationPolicyMigrationStaticThresholdMC extends 
     }
 
     @Override
-    protected boolean isHostUnderUtilized(PowerContainerHost host) {
+    public boolean isHostUnderUtilized(PowerContainerHost host) {
         return false;
     }
 
@@ -63,7 +63,7 @@ public class PowerContainerVmAllocationPolicyMigrationStaticThresholdMC extends 
      *
      * @param utilizationThreshold the new utilization threshold
      */
-    protected void setUtilizationThreshold(double utilizationThreshold) {
+    public void setUtilizationThreshold(double utilizationThreshold) {
         this.utilizationThreshold = utilizationThreshold;
     }
 
@@ -72,7 +72,7 @@ public class PowerContainerVmAllocationPolicyMigrationStaticThresholdMC extends 
      *
      * @return the utilization threshold
      */
-    protected double getUtilizationThreshold() {
+    public double getUtilizationThreshold() {
         return utilizationThreshold;
     }
     @Override
