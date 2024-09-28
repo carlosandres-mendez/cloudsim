@@ -159,11 +159,11 @@ public class Discrete_PSO_Swarm {
 			double fit = fitnessFunction.evaluate(particle);
 
 			// Update 'best global' position
-			if (fitnessFunction.isBetterThan(bestFitness, fit)) {
+			//if (fitnessFunction.isBetterThan(bestFitness, fit)) {
 				bestFitness = fit; // Copy best fitness, index, and position vector
 				if (bestPosition == null) bestPosition = new ArrayList<>();
 				particle.copyPosition(bestPosition);
-			}
+			//}
 
 		}
 	}

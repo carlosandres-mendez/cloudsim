@@ -188,7 +188,7 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
     /**
      * Gets the new vm placement from under utilized host.
      *
-     * @param containersToMigrate the vms to migrate
+     * @param containersToMigrate the vms to migrate candres: los contenedores quedan asociados a una mv del host nuevo
      * @param excludedHosts the excluded hosts
      * @return the new vm placement from under utilized host
      */

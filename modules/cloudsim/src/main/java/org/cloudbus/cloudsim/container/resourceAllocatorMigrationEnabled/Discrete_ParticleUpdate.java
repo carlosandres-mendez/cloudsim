@@ -46,7 +46,7 @@ public class Discrete_ParticleUpdate {
 
         // Update velocity 
         List<Allocation> personalPossibleMigrations = generatePossibleMigrations(WEIGHT_R1, COGNIT_COEFFICIENT, particle.getBestPosition(), particle.getPosition());
-        List<Allocation> globalPossibleMigrations = generatePossibleMigrations(WEIGHT_R2, SOCIAL_COEFFICIENT, swarm.getBestPosition(), particle.getPosition());
+        //List<Allocation> globalPossibleMigrations = generatePossibleMigrations(WEIGHT_R2, SOCIAL_COEFFICIENT, swarm.getBestPosition(), particle.getPosition());
 
         for (Allocation possibleMigration : personalPossibleMigrations){
             boolean isFounded = false;
@@ -62,19 +62,19 @@ public class Discrete_ParticleUpdate {
                 particle.getVelocity().add(possibleMigration);
         }
 
-        for (Allocation possibleMigration : globalPossibleMigrations){
-            boolean isFounded = false;
-            for(Allocation allocation : particle.getVelocity()){
-                if(allocation.getContainer().equals(possibleMigration.getContainer())){
-                    isFounded = true;
-                    allocation.setVm(possibleMigration.getVm());
-                    allocation.setHost(possibleMigration.getHost());
-                    break;
-                }
-            }
-            if(!isFounded)
-                particle.getVelocity().add(possibleMigration);
-        }
+        // for (Allocation possibleMigration : globalPossibleMigrations){
+        //     boolean isFounded = false;
+        //     for(Allocation allocation : particle.getVelocity()){
+        //         if(allocation.getContainer().equals(possibleMigration.getContainer())){
+        //             isFounded = true;
+        //             allocation.setVm(possibleMigration.getVm());
+        //             allocation.setHost(possibleMigration.getHost());
+        //             break;
+        //         }
+        //     }
+        //     if(!isFounded)
+        //         particle.getVelocity().add(possibleMigration);
+        // }
 
         // Update position
         for (Allocation positionAllocation : particle.getPosition()) {
@@ -92,7 +92,7 @@ public class Discrete_ParticleUpdate {
 
         List<PowerContainerHostUtilizationHistory> overUtilizedHosts = this.swarm.allocationPolicy.getOverUtilizedHosts();
 
-        if(overUtilizedHosts.size()>0) {
+        //if(overUtilizedHosts.size()>0) {
             List<? extends Container> containersToMigrate = this.swarm.allocationPolicy.getContainersToMigrateFromHosts(overUtilizedHosts);
 
             List<Map<String, Object>> migrationMap = this.swarm.allocationPolicy.getPlacementForLeftContainers(containersToMigrate, new HashSet<ContainerHost>(overUtilizedHosts));
@@ -102,7 +102,7 @@ public class Discrete_ParticleUpdate {
                 possibleMigrations.add(
                     new Allocation((Container)migration.get("container"), (ContainerVm)migration.get("vm"), (ContainerHost)migration.get("host")));
             }
-        }
+        //}
 
         // for(Allocation xAllocation : xPosition){
         //     if(xPosition.get(xAllocation.getContainer().getId()) )

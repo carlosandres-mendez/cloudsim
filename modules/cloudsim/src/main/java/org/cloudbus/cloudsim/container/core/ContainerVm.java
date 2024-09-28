@@ -869,7 +869,7 @@ public class ContainerVm {
 //            Log.printConcatLine("Size after removing", getContainerList().size());
             while(getContainerList().contains(container)){
                 Log.printConcatLine("The container", container.getId(), " is still here");
-//                getContainerList().remove(container);
+                getContainerList().remove(container);
             }
             container.setVm(null);
         }

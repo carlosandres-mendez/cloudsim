@@ -11,6 +11,7 @@ import org.cloudbus.cloudsim.container.hostSelectionPolicies.*;
 import org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled.PowerContainerVmAllocationPolicyMigrationAbstractHostSelection;
 import org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled.PowerContainerVmAllocationPolicyMigrationStaticThresholdMC;
 import org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled.PowerContainerVmAllocationPolicyMigrationStaticThresholdMCUnderUtilized;
+import org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled.PowerContainerVmAllocationPolicyMigrationStaticThresholdMCUnderUtilizedPSO;
 import org.cloudbus.cloudsim.container.resourceAllocators.ContainerAllocationPolicy;
 import org.cloudbus.cloudsim.container.resourceAllocators.ContainerAllocationPolicyRS;
 import org.cloudbus.cloudsim.container.resourceAllocators.ContainerVmAllocationPolicy;
@@ -276,7 +277,7 @@ public abstract class RunnerAbs {
         } else if (vmAllocationPolicyName.startsWith("MSThreshold-Under_")) {
             double overUtilizationThreshold = Double.parseDouble(vmAllocationPolicyName.substring(18, 22));
             double underUtilizationThreshold = Double.parseDouble(vmAllocationPolicyName.substring(24));
-            vmAllocationPolicy = new PowerContainerVmAllocationPolicyMigrationStaticThresholdMCUnderUtilized(hostList,
+            vmAllocationPolicy = new PowerContainerVmAllocationPolicyMigrationStaticThresholdMCUnderUtilizedPSO(hostList,
                     vmSelectionPolicy, containerSelectionPolicy, hostSelectionPolicy, overUtilizationThreshold,
                     underUtilizationThreshold,ConstantsExamples.VM_TYPES,ConstantsExamples.VM_PES, ConstantsExamples.VM_RAM, ConstantsExamples.VM_BW,
                     ConstantsExamples.VM_SIZE, ConstantsExamples.VM_MIPS );
