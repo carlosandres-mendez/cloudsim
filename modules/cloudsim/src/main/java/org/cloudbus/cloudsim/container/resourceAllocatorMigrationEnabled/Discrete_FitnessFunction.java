@@ -43,9 +43,14 @@ public class Discrete_FitnessFunction {
         double result = 0d;
 
 		double sum = 0d;
+		 for(Allocation allocation : position){
+			sum += allocation.vm.getCurrentRequestedTotalMips() / allocation.vm.getAvailableMips();
+		 }
 		for(Allocation allocation : position){
-			sum += allocation.vm.getCurrentRequestedTotalMips();
+			sum += allocation.host.getTotalAllocatedMipsForContainerVm(allocation.vm) / allocation.host.getTotalMips();
 		}
+		System.out.println(sum);
+
 		result = sum;
 
         return result;

@@ -314,6 +314,22 @@ public class Discrete_ParticleUpdate {
         for (Allocation allocation : this.particle.position) {
             PowerContainerVm vm = (PowerContainerVm) allocation.getVm();
 
+            for (Allocation allocation2 : this.particle.position) {
+                PowerContainerVm vm2 = (PowerContainerVm) allocation2.getVm();
+                Container container2 = (Container) allocation2.getContainer();
+                if (vm.getId() == vm2.getId()) {
+                    if (!vm.getContainerList().contains(container2)) {
+                        if (!vm.containerCreate(container2)) {
+                            Log.printConcatLine("Couldn't restore Container #", container2.getId(), " on vm #", vm.getId());
+                            System.exit(0);
+                        }
+                    } else {
+    
+                        Log.print("The Container is in the VM already");
+                    }
+                }
+            }
+
             PowerContainerHost host = (PowerContainerHost) allocation.getHost();
             if (!host.getVmList().contains(vm)) {
                 if (!host.containerVmCreate(vm)) {
@@ -333,15 +349,15 @@ public class Discrete_ParticleUpdate {
                 Container container = (Container) allocation.getContainer();
 //                Log.print(container);
 
-                if (!vm.getContainerList().contains(container)) {
-                    if (!vm.containerCreate(container)) {
-                        Log.printConcatLine("Couldn't restore Container #", container.getId(), " on vm #", vm.getId());
-                        System.exit(0);
-                    }
-                } else {
+                // if (!vm.getContainerList().contains(container)) {
+                //     if (!vm.containerCreate(container)) {
+                //         Log.printConcatLine("Couldn't restore Container #", container.getId(), " on vm #", vm.getId());
+                //         System.exit(0);
+                //     }
+                // } else {
 
-                    Log.print("The Container is in the VM already");
-                }
+                //     Log.print("The Container is in the VM already");
+                // }
 
                 if (container.getVm() == null) {
                     Log.print("The Vm is null");
