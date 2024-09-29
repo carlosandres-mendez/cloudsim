@@ -61,21 +61,40 @@ public class PowerContainerVmAllocationPolicyMigrationStaticThresholdMCUnderUtil
                 ExecutionTimeMeasurer.end("optimizeAllocationVmReallocation"));
         Log.printLine();
 
-        //Particle Swarm Optimization (PSO) 
-        int numberOfIterations = 2;
-        Discrete_PSO_Swarm swarm = new Discrete_PSO_Swarm(new Discrete_FitnessFunction(), this );
-        swarm.init();
-        if(swarm.getParticles().size() > 0){
+        System.out.println("--------------------savedAllocation------------------");
+        for(Map<String, Object> savedAllocation : getSavedAllocation()){
+            System.out.print(((Container)savedAllocation.get("container")).getId());
+            System.out.print(((ContainerVm)savedAllocation.get("vm")).getId());
+            System.out.println(((ContainerHost)savedAllocation.get("host")).getId());
+        }
 
-            for (int i = 0; i < numberOfIterations; i++)
-                swarm.evolve();
-            for(Allocation allocation : swarm.getBestPosition()){
-                if(!isAllocationInList(allocation)){
-                    Map<String, Object> map = new HashMap<String, Object>();
-                    map.put("host", allocation.getHost());
-                    map.put("vm", allocation.getVm());
-                    map.put("container", allocation.getContainer());
-                    migrationMap.add(map);
+        if(this.getContainerHostList()!=null && this.getContainerHostList().size()>0){
+
+            //Particle Swarm Optimization (PSO) 
+            int numberOfIterations = 2;
+            Discrete_PSO_Swarm swarm = new Discrete_PSO_Swarm(new Discrete_FitnessFunction(), this );
+            swarm.init();
+            if(swarm.getParticles().size() > 0 && swarm.getParticles().get(0).getPosition().size() > 0){ //si aun hay tareas y servidores
+
+                for (int i = 0; i < numberOfIterations; i++){
+                    swarm.evolve();
+                    System.out.println("--------------------savedAllocation------------------");
+                    for(Map<String, Object> savedAllocation : getSavedAllocation()){
+                        System.out.print(((Container)savedAllocation.get("container")).getId());
+                        System.out.print(((ContainerVm)savedAllocation.get("vm")).getId());
+                        System.out.println(((ContainerHost)savedAllocation.get("host")).getId());
+                    }
+                }
+                if(swarm.getBestPosition()!=null){
+                    for(Allocation allocation : swarm.getBestPosition()){
+                        if(!isAllocationInList(allocation)){
+                            Map<String, Object> map = new HashMap<String, Object>();
+                            map.put("host", allocation.getHost());
+                            map.put("vm", allocation.getVm());
+                            map.put("container", allocation.getContainer());
+                            migrationMap.add(map);
+                        }
+                    }
                 }
             }
         }

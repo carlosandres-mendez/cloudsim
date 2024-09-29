@@ -60,50 +60,39 @@ public class Discrete_PSO_Swarm {
 				}
 			}
 		}
-		if(position.size()>0)
+		if(position.size()>0){ //si al menos la particula del estado del datacenter se puede crear
 			particles.add(new Discrete_Particle(position, velocity));
 
 
-		// for (int i=0; i < 10; i++) {
+			//Creamos otras particulas aleatorias
+			for (int i=0; i < 10; i++) {
 
-		// 	List<Allocation> position = new ArrayList<>();
-						
-		// 	List<Allocation> velocity = new ArrayList<>();
+				position = new ArrayList<>();
+				velocity = new ArrayList<>();
 
-		// 	for(PowerContainerHostUtilizationHistory host : allocationPolicy.getRandomHosts(5)){
-		// 		for(PowerContainerVm vm : allocationPolicy.getRandomVms(host, 5)){
-		// 			for(PowerContainer container : allocationPolicy.getRandomContainers(vm, 5)){
-		// 				position.add(new Allocation(container, vm, host));
-		// 				particles.add(new Discrete_Particle(position, velocity));
-		// 			}
-		// 		}
-		// 	}
-		// }
+				for(Allocation allocation : particles.get(0).getPosition()){ //Para cada contenedor buscamos aleatoriamente un host y una vm
+					
+					boolean found=false;
+					while(!found) {//hasta que encontremos un host y una vm
+						for(PowerContainerHostUtilizationHistory host : allocationPolicy.getRandomHosts(1)){
+							if(host.getVmList().size()==0)
+								continue;
 
-        // List<PowerContainerHostUtilizationHistory> overUtilizedHosts = allocationPolicy.getOverUtilizedHosts();
-
-        // List<? extends Container> containersToMigrate = allocationPolicy.getContainersToMigrateFromHosts(overUtilizedHosts);
-
-        
-
-        // List<Map<String, Object>> migrationMap = allocationPolicy.getPlacementForLeftContainers(containersToMigrate, new HashSet<ContainerHost>(overUtilizedHosts));
-		// migrationMap.addAll(allocationPolicy.getContainerMigrationMapFromUnderUtilizedHosts(overUtilizedHosts, migrationMap));
-        // Log.printLine();
-
-		// for(Discrete_Particle particle : particles){
-
-		// 	Log.printLine("Reallocation of Containers from the over-utilized hosts:");
-		// 	for(Map<String, Object> mapa :  migrationMap){
-		// 		ContainerHost servidor = (ContainerHost)mapa.get("host");
-		// 		ContainerVm vm = (ContainerVm)mapa.get("vm");
-		// 		Container contenedor = (Container) mapa.get("container");
-		// 		Allocation asignacion = new Allocation(contenedor, vm, servidor);
-		// 		Log.printLine("servidor: " + contenedor + " vm: " + vm + " contanedor: " + servidor);
-		// 		particle.getVelocity().add(asignacion);
-		// 	} 
-
-		// }	
-
+							for(PowerContainerVm vm : allocationPolicy.getRandomVms(host, 1)){
+								position.add(new Allocation(allocation.getContainer(), vm, host));	
+								found=true;
+							}
+						}
+					}
+				}
+				particles.add(new Discrete_Particle(position, velocity));
+			}
+		
+			System.out.println();
+			for(Discrete_Particle particle : particles)
+				System.out.println(particle);
+			System.out.println();
+		}
 
 		// // Init particles
 		// particles = new Particle[numberOfParticles];
@@ -159,11 +148,11 @@ public class Discrete_PSO_Swarm {
 			double fit = fitnessFunction.evaluate(particle);
 
 			// Update 'best global' position
-			//if (fitnessFunction.isBetterThan(bestFitness, fit)) {
+			if (fitnessFunction.isBetterThan(bestFitness, fit)) {
 				bestFitness = fit; // Copy best fitness, index, and position vector
 				if (bestPosition == null) bestPosition = new ArrayList<>();
 				particle.copyPosition(bestPosition);
-			//}
+			}
 
 		}
 	}

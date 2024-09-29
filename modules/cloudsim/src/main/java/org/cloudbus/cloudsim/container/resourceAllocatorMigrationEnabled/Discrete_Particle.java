@@ -49,6 +49,7 @@ public class Discrete_Particle {
 
     /** Copy position[] to positionCopy[] */
     public void copyPosition(List<Allocation> positionCopy) {
+        positionCopy.clear();
         for(Allocation alloc : position)
             positionCopy.add(new Allocation(alloc.getContainer(), alloc.getVm(), alloc.getHost()));
     }
@@ -151,21 +152,24 @@ public class Discrete_Particle {
         String str = "fitness: " + fitness + "\tbest fitness: " + bestFitness;
 
         if (position != null) {
-            str += "\n\tPosition:\t";
+            str += "\n\tPosition:\n";
             for (Allocation allocation : position)
-                str += allocation + "\t";
+                str += allocation + "\n";
+            str += "\n";   
         }
 
         if (velocity != null) {
-            str += "\n\tVelocity:\t";
+            str += "\n\tVelocity:\n";
             for (Allocation allocation : velocity)
-                str += allocation + "\t";
+                str += allocation + "\n";
+            str += "\n";
         }
 
         if (bestPosition != null) {
-            str += "\n\tBest:\t";
+            str += "\n\tBest:\n";
             for (Allocation allocation : bestPosition)
-                str += allocation + "\t";
+                str += allocation + "\n";
+            str += "\n";
         }
 
         str += "\n";

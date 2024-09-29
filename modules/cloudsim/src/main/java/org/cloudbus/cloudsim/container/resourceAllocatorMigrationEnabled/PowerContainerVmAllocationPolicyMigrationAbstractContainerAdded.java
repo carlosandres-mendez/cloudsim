@@ -114,14 +114,11 @@ public abstract class PowerContainerVmAllocationPolicyMigrationAbstractContainer
         if (host.getVmList().size() > 0) {
             Random rand = new Random();
             for(int i=0; i<n;i++){
-                for(int j=0; j<host.getVmList().size();j++){
-                    
-                    int randomNum = rand.nextInt(host.getVmList().size());
-                    //if (!excludedVmList.contains(host.<PowerContainerVm>getVmList().get(randomNum))){
-                        randomVms.add(host.<PowerContainerVm>getVmList().get(randomNum));
-                        break;
-                    //}
-                } 
+                int randomNum = rand.nextInt(host.getVmList().size());
+                //if (!excludedVmList.contains(host.<PowerContainerVm>getVmList().get(randomNum))){
+                    randomVms.add(host.<PowerContainerVm>getVmList().get(randomNum));
+                    break;
+                //}
             }
         }
         else {

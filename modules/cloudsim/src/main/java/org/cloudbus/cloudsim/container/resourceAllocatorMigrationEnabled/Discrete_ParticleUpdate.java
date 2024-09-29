@@ -10,6 +10,7 @@ import org.cloudbus.cloudsim.container.core.PowerContainer;
 import org.cloudbus.cloudsim.container.core.PowerContainerHost;
 import org.cloudbus.cloudsim.container.core.PowerContainerHostUtilizationHistory;
 import org.cloudbus.cloudsim.container.core.PowerContainerVm;
+import org.cloudbus.cloudsim.container.resourceAllocators.PowerContainerAllocationPolicy;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 /**
@@ -25,6 +26,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
 public class Discrete_ParticleUpdate {
 
     Discrete_PSO_Swarm swarm;
+    Discrete_Particle particle;
 
     //A random weight r1.
     private final double WEIGHT_R1 = 0.2d;
@@ -43,6 +45,9 @@ public class Discrete_ParticleUpdate {
     /** Update particle's velocity and position */
     public void update(Discrete_PSO_Swarm swarm, Discrete_Particle particle) {
         this.swarm = swarm;
+        this.particle = particle;
+
+        restoreParticleAllocation();
 
         // Update velocity 
         List<Allocation> personalPossibleMigrations = generatePossibleMigrations(WEIGHT_R1, COGNIT_COEFFICIENT, particle.getBestPosition(), particle.getPosition());
@@ -291,6 +296,65 @@ public class Discrete_ParticleUpdate {
             vm.containerDestroy(container);
         }
         return isHostOverUtilizedAfterAllocation;
+    }
+
+    /**
+     * Restore allocation.
+     */
+    public void restoreParticleAllocation() {
+        for (ContainerHost host : this.swarm.allocationPolicy.getContainerHostList()) {
+            for (ContainerVm vm : host.getVmList()) {
+                vm.containerDestroyAll();
+                vm.reallocateMigratingInContainers();
+            }
+
+            host.containerVmDestroyAll();
+            host.reallocateMigratingInContainerVms();
+        }
+        for (Allocation allocation : this.particle.position) {
+            PowerContainerVm vm = (PowerContainerVm) allocation.getVm();
+
+            PowerContainerHost host = (PowerContainerHost) allocation.getHost();
+            if (!host.getVmList().contains(vm)) {
+                if (!host.containerVmCreate(vm)) {
+                    Log.printConcatLine("Couldn't restore VM #", vm.getId(), " on host #", host.getId());
+                    System.exit(0);
+                }
+
+                this.swarm.allocationPolicy.getVmTable().put(vm.getUid(), host);
+            }
+//            vm.containerDestroyAll();
+//            vm.reallocateMigratingInContainers();
+        }
+//        List<ContainerVm > restoredVms = new ArrayList<>();
+        for (Allocation allocation : this.particle.position) {
+            PowerContainerVm vm = (PowerContainerVm) allocation.getVm();
+            if (allocation.getContainer() != null) {
+                Container container = (Container) allocation.getContainer();
+//                Log.print(container);
+
+                if (!vm.getContainerList().contains(container)) {
+                    if (!vm.containerCreate(container)) {
+                        Log.printConcatLine("Couldn't restore Container #", container.getId(), " on vm #", vm.getId());
+                        System.exit(0);
+                    }
+                } else {
+
+                    Log.print("The Container is in the VM already");
+                }
+
+                if (container.getVm() == null) {
+                    Log.print("The Vm is null");
+
+                }
+                ((PowerContainerAllocationPolicy) this.swarm.allocationPolicy.getDatacenter().getContainerAllocationPolicy()).
+                        getContainerTable().put(container.getUid(), vm);
+//            container.setVm(vm);
+
+            }
+        }
+
+
     }
     
 }
