@@ -55,7 +55,7 @@ public class PowerContainerHost extends ContainerHostDynamicWorkload {
      * @param utilization the utilization
      * @return the power
      */
-    protected double getPower(double utilization) {
+    public double getPower(double utilization) {
         double power = 0;
         try {
             power = getPowerModel().getPower(utilization);

@@ -1,4 +1,4 @@
-package org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled;
+package net.sourceforge.jswarm_pso;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -8,7 +8,7 @@ import java.lang.reflect.InvocationTargetException;
  * 
  * @author Pablo Cingolani <pcingola@users.sourceforge.net>
  */
-public abstract class PSO_Particle {
+public abstract class Particle {
 
 	/** Best fitness function so far */
 	double bestFitness;
@@ -28,7 +28,7 @@ public abstract class PSO_Particle {
 	/**
 	 * Constructor 
 	 */
-	public PSO_Particle() {
+	public Particle() {
 		throw new RuntimeException("You probably need to implement your own 'Particle' class");
 	}
 
@@ -36,7 +36,7 @@ public abstract class PSO_Particle {
 	 * Constructor 
 	 * @param dimension : Particle's dimension
 	 */
-	public PSO_Particle(int dimension) {
+	public Particle(int dimension) {
 		allocate(dimension);
 	}
 
@@ -44,7 +44,7 @@ public abstract class PSO_Particle {
 	 * Constructor 
 	 * @param sampleParticle : A sample particles to copy
 	 */
-	public PSO_Particle(PSO_Particle sampleParticle) {
+	public Particle(Particle sampleParticle) {
 		int dimension = sampleParticle.getDimension();
 		allocate(dimension);
 	}
