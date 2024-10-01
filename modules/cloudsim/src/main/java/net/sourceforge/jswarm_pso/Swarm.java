@@ -1,9 +1,14 @@
 package net.sourceforge.jswarm_pso;
 
 import java.awt.Color;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import java.awt.*; 
+import java.awt.event.WindowAdapter; 
+import java.awt.event.WindowEvent; 
 
 /**
  * A swarm of particles
@@ -59,6 +64,8 @@ public class Swarm implements Iterable<Particle> {
 	/** A collection used for 'Iterable' interface */
 	ArrayList<Particle> particlesList;
 
+	MyFrame frame;
+
 	//-------------------------------------------------------------------------
 	// Constructors
 	//-------------------------------------------------------------------------
@@ -93,6 +100,8 @@ public class Swarm implements Iterable<Particle> {
 		neighborhood = null;
 		neighborhoodIncrement = 0.0;
 		particlesList = null;
+
+		frame = new MyFrame();
 	}
 
 	//-------------------------------------------------------------------------
@@ -427,9 +436,10 @@ public class Swarm implements Iterable<Particle> {
 	 * @param dim1 : Dimention to show ('y' axis)
 	 * @param showVelocity : Show velocity tails?
 	 */
-	public void show(Graphics graphics, Color foreground, int width, int height, int dim0, int dim1, boolean showVelocity) {
-		graphics.setColor(foreground);
-
+	public void show(int width, int height, int dim0, int dim1, boolean showVelocity) {
+		frame.repaint();
+		frame.getGraphics().setColor(Color.BLUE);
+		frame.getGraphics().clearRect(0,0,4,4);
 		if (particles != null) {
 			double scalePosW = width / (maxPosition[dim0] - minPosition[dim0]);
 			double scalePosH = height / (maxPosition[dim1] - minPosition[dim1]);
@@ -447,11 +457,11 @@ public class Swarm implements Iterable<Particle> {
 				double vel[] = particles[i].getVelocity();
 				x = (int) (scalePosW * (pos[dim0] - minPosW));
 				y = height - (int) (scalePosH * (pos[dim1] - minPosH));
-				graphics.drawRect(x - 1, y - 1, 3, 3);
+				frame.getGraphics().drawRect(x - 1, y - 1, 3, 3);
 				if (showVelocity) {
 					vx = (int) (scaleVelW * (vel[dim0] - minVelW));
 					vy = (int) (scaleVelH * (vel[dim1] - minVelH));
-					graphics.drawLine(x, y, x + vx, y + vy);
+					frame.getGraphics().drawLine(x, y, x + vx, y + vy);
 				}
 			}
 		}
@@ -530,4 +540,26 @@ public class Swarm implements Iterable<Particle> {
 		// Finish a particle update iteration
 		particleUpdate.end(this);
 	}
+
+	public class MyFrame extends Frame { 
+        public MyFrame() 
+        { 
+            setVisible(true); 
+            setSize(300, 200); 
+            setBackground(Color.red); 
+            addWindowListener(new WindowAdapter() { 
+                @Override
+                public void windowClosing(WindowEvent e) 
+                { 
+                    System.exit(0); 
+                } 
+            }); 
+        } 
+        public void paint(Graphics g) 
+        { 
+            g.setColor(Color.green); 
+            g.setXORMode(Color.black); 
+            g.fillRect(100, 100, 100, 50); 
+        } 
+    }
 }

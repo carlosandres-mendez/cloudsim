@@ -51,7 +51,7 @@ public class ContainerSelectionTest {
 
 //          String containerAllocationPolicy= "MostFull";
 
-            String containerAllocationPolicy= "FirstFit";
+            String containerAllocationPolicy= "PSO"; //FirstFit
             /**
              * The host selection policy determines which hosts should be selected as the migration destination.
              */

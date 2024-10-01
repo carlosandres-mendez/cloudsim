@@ -61,7 +61,7 @@ public class DrawingArea extends JComponent {
 
 	/** Show swarm's points */
 	protected void showSwarm() {
-		controller.getSwarm().show(getGraphics(), getForeground(), getWidth(), getHeight(), controller.getShowDimention0(), controller.getShowDimention1(), controller.isShowVelocity());
+		//controller.getSwarm().show(getGraphics(), getForeground(), getWidth(), getHeight(), controller.getShowDimention0(), controller.getShowDimention1(), controller.isShowVelocity());
 	}
 
 }

@@ -328,6 +328,9 @@ public abstract class RunnerAbs {
             case "Random":
                 placementPolicy = new ContainerPlacementPolicyRandomSelection();
                 break;
+            case "PSO":
+                placementPolicy = new ContainerPlacementPolicyPSO(cloudletList, vmList, hostList);
+                break;
             default:
                 placementPolicy = null;
                 System.out.println("The container placement policy is not defined");

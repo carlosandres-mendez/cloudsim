@@ -1,4 +1,4 @@
-package org.cloudbus.cloudsim.examples.container;
+package org.cloudbus.cloudsim.container.containerPlacementPolicies;
 
 import java.util.List;
 
@@ -23,6 +23,10 @@ public class PSO_FitnessFunction extends FitnessFunction{
         this.cloudletList = cloudletList;
         this.vmList = vmList;
         this.hostList = hostList;
+
+        executionTime = new double[cloudletList.size()];
+        vmUtilization = new double[cloudletList.size()]; 
+        energy = new double[cloudletList.size()];
     }
 
     public double evaluate(double[] position) {
@@ -35,14 +39,14 @@ public class PSO_FitnessFunction extends FitnessFunction{
         //for()
 
         //energy 
-        for(int i=0; i< position.length; i++) 
-            energy[i] = executionTime[i] 
-                * ((PowerContainerHost) vmList.get((int)position[i]).getHost()).getPower(90);
+        // for(int i=0; i< position.length; i++) 
+        //     energy[i] = executionTime[i] 
+        //         * ((PowerContainerHost) vmList.get((int)position[i]).getHost()).getPower(90);
 
 
         double ponderado = 0.0d;
         for(int i=0; i< position.length; i++)
-            ponderado += executionTime[i] * energy[i];
+            ponderado += executionTime[i]; // * energy[i];
 
 		return ponderado;
 	}
