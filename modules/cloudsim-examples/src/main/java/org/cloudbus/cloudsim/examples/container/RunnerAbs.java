@@ -329,7 +329,7 @@ public abstract class RunnerAbs {
                 placementPolicy = new ContainerPlacementPolicyRandomSelection();
                 break;
             case "PSO":
-                placementPolicy = new ContainerPlacementPolicyPSO(cloudletList, vmList, hostList);
+                placementPolicy = new ContainerPlacementPolicyPSO();
                 break;
             default:
                 placementPolicy = null;
