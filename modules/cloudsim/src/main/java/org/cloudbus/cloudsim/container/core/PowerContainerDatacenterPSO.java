@@ -43,7 +43,7 @@ public class PowerContainerDatacenterPSO extends PowerContainerDatacenterCM {
         fitnessFunction = new PSO_FitnessFunction(containerList, this.getContainerVmList(), this.getHostList());
         swarm = new Swarm(containerList.size(), new PSO_Particle(containerList.size(), this.getContainerVmList().size()), fitnessFunction);
         swarm.setMinPosition(0);//minimum value is the minimum value of vm id
-        swarm.setMaxPosition(this.getNumberOfVms()-1);//maximum value of vm id
+        swarm.setMaxPosition(this.getContainerVmList().size()-1);//maximum value of vm id
         swarm.setMaxMinVelocity(1.1);
         swarm.setParticles(particles);
         swarm.setParticleUpdate(new ParticleUpdateSimple(new PSO_Particle(containerList.size(),  this.getContainerVmList().size())));
@@ -57,7 +57,6 @@ public class PowerContainerDatacenterPSO extends PowerContainerDatacenterCM {
         System.out.println("The best fitness value is "+swarm.getBestFitness());
         PSO_Particle bestparticle = (PSO_Particle)swarm.getBestParticle();
         System.out.println(bestparticle.toString());
-        
     }
 
     @Override
@@ -65,6 +64,16 @@ public class PowerContainerDatacenterPSO extends PowerContainerDatacenterCM {
         List<Container> containerList = (List<Container>) ev.getData();
 
         optimize(containerList);
+
+        //allocate vm for each container according to the pso optimization
+        for(int i=0; i < swarm.getBestParticle().getPosition().length; i++){
+            for(ContainerVm vm : this.getContainerVmList()){
+                if(vm.getId()-1==(int)swarm.getBestParticle().getPosition()[i]){
+                    containerList.get(i).getCloudlet().setVmId(vm.getId());
+                    containerList.get(i).setVm(vm);
+                }
+            }
+        }
 
         for (Container container : containerList) {
             boolean result = getContainerAllocationPolicy().allocateVmForContainer(container, getContainerVmList());

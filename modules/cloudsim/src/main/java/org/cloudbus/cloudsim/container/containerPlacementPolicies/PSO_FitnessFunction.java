@@ -28,6 +28,8 @@ public class PSO_FitnessFunction extends FitnessFunction{
         executionTime = new double[containerList.size()];
         vmUtilization = new double[containerList.size()]; 
         energy = new double[containerList.size()];
+
+        setMaximize(false);
     }
 
     public double evaluate(double[] position) {

@@ -277,7 +277,8 @@ public abstract class RunnerAbs {
         } else if (vmAllocationPolicyName.startsWith("MSThreshold-Under_")) {
             double overUtilizationThreshold = Double.parseDouble(vmAllocationPolicyName.substring(18, 22));
             double underUtilizationThreshold = Double.parseDouble(vmAllocationPolicyName.substring(24));
-            vmAllocationPolicy = new PowerContainerVmAllocationPolicyMigrationStaticThresholdMCUnderUtilizedPSO(hostList,
+            //vmAllocationPolicy = new PowerContainerVmAllocationPolicyMigrationStaticThresholdMCUnderUtilizedPSO(hostList,
+            vmAllocationPolicy = new PowerContainerVmAllocationPolicyMigrationStaticThresholdMCUnderUtilized(hostList,
                     vmSelectionPolicy, containerSelectionPolicy, hostSelectionPolicy, overUtilizationThreshold,
                     underUtilizationThreshold,ConstantsExamples.VM_TYPES,ConstantsExamples.VM_PES, ConstantsExamples.VM_RAM, ConstantsExamples.VM_BW,
                     ConstantsExamples.VM_SIZE, ConstantsExamples.VM_MIPS );
