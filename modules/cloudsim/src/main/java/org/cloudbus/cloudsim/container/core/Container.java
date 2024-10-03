@@ -129,6 +129,11 @@ public class Container {
      */
     private double schedulingInterval;
 
+    /**
+     * For submit to the datacenter
+     */
+    private Cloudlet cloudlet;
+
 
     /**
      * Creates a new Container object.
@@ -795,6 +800,14 @@ public class Container {
 
     public void setWorkloadMips(double workloadMips) {
         this.workloadMips = workloadMips;
+    }
+
+    public Cloudlet getCloudlet() {
+        return cloudlet;
+    }
+
+    public void setCloudlet(Cloudlet cloudlet) {
+        this.cloudlet = cloudlet;
     }
 
     /**

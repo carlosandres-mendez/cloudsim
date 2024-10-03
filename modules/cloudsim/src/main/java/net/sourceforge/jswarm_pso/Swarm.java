@@ -535,6 +535,7 @@ public class Swarm implements Iterable<Particle> {
 
 			// Apply position and velocity constraints
 			particles[i].applyConstraints(minPosition, maxPosition, minVelocity, maxVelocity);
+			System.out.println(particles[i]);
 		}
 
 		// Finish a particle update iteration

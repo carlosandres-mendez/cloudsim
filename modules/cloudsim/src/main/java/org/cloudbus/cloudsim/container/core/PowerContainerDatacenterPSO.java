@@ -97,6 +97,8 @@ public class PowerContainerDatacenterPSO extends PowerContainerDatacenterCM {
                 }
                 send(ev.getSource(), CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK, data);
 
+                //in addition, we need to sumit the cloudlet events for process the cloudlets to the CloudResource and send ack to broker
+                send(getId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.CLOUDLET_SUBMIT, container.getCloudlet());
             }
         }
 

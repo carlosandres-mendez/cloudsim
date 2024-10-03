@@ -271,7 +271,7 @@ public class ContainerDatacenterBroker extends SimEntity {
         incrementContainersAcks();
         if (getContainersAcks() == getContainerList().size()) {
             //Log.print(getContainersCreatedList().size() + "vs asli"+getContainerList().size());
-            submitCloudlets();
+            //submitCloudlets();
             getContainerList().clear();
         }
 
@@ -576,7 +576,7 @@ public class ContainerDatacenterBroker extends SimEntity {
     protected void submitContainers(){
         List<Container> successfullySubmitted = new ArrayList<>();
         int i = 0;
-        for(Container container:getContainerList()) {
+        for(Container container : getContainerList()) {
             ContainerCloudlet cloudlet = getCloudletList().get(i);
                 //Log.printLine("Containers Created" + getContainersCreated());
 
@@ -594,9 +594,13 @@ public class ContainerDatacenterBroker extends SimEntity {
 //                    bindCloudletToContainer(cloudlet.getCloudletId(), container.getId());
                     cloudlet.setContainerId(container.getId());
                     if(cloudlet.getContainerId() != container.getId()){
-//                        Log.printConcatLine("Binding Cloudlet: ", cloudlet.getCloudletId(), "To Container: ",container.getId() , "Now it is", cloudlet.getContainerId());
+                        Log.printConcatLine("Binding Cloudlet: ", cloudlet.getCloudletId(), "To Container: ",container.getId() , "Now it is", cloudlet.getContainerId());
                     }
 
+                    //add the cloulet to the container to submit it to the datacenter
+                    container.setCloudlet(cloudlet);
+                    cloudletsSubmitted++;
+                    getCloudletSubmittedList().add(cloudlet);
                 }
             i++;
 

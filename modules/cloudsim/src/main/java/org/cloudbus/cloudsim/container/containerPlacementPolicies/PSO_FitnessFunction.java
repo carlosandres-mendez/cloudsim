@@ -34,7 +34,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
         //execution time = cloudlet length (total mips) / mv mips
         for(int i=0; i< position.length; i++) 
-            executionTime[i] = containerList.get(i).getContainerCloudletScheduler().getCloudletExecList().get(0).getCloudletLength() / vmList.get((int)position[i]).getMips();
+            executionTime[i] = containerList.get(i).getCloudlet().getCloudletLength() / vmList.get((int)position[i]).getMips();
 
         //utilization
         //for()
@@ -42,7 +42,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         //energy 
          for(int i=0; i< position.length; i++) 
              energy[i] = executionTime[i] 
-                 * ((PowerContainerHost) vmList.get((int)position[i]).getHost()).getPower(90);
+                 * ((PowerContainerHost) vmList.get((int)position[i]).getHost()).getPower(0.9);
 
 
         double ponderado = 0.0d;
