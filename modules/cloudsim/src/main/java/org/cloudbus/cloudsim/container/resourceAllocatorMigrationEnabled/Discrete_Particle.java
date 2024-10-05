@@ -34,6 +34,18 @@ public class Discrete_Particle {
         fitness = Double.NaN;
     }
 
+    public Discrete_Particle(int numberCloudlets, int numberVms) {
+        position = new ArrayList<>();
+        bestPosition = new ArrayList<>();
+        velocity = new ArrayList<>();
+        bestFitness = Double.NaN;
+        fitness = Double.NaN;
+
+        for (int i = 0; i < numberCloudlets; i++) {
+            
+        }
+    }
+
     
 
     //-------------------------------------------------------------------------

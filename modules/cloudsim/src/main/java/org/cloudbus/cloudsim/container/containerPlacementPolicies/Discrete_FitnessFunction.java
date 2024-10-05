@@ -9,7 +9,7 @@ import org.cloudbus.cloudsim.container.core.PowerContainerHost;
 
 import net.sourceforge.jswarm_pso.FitnessFunction;
 
-public class PSO_FitnessFunction extends FitnessFunction{
+public class Discrete_FitnessFunction extends FitnessFunction{
 
     List<Container> containerList;
     List<ContainerVm> vmList;
@@ -19,7 +19,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
     double hostUtilization[]; //utilization for each host
     double energy[]; //energy for each task
 
-    public PSO_FitnessFunction(List<Container> containerList, List<ContainerVm> vmList, List<ContainerHost> hostList){
+    public Discrete_FitnessFunction(List<Container> containerList, List<ContainerVm> vmList, List<ContainerHost> hostList){
         this.containerList = containerList;
         this.vmList = vmList;
         this.hostList = hostList;
@@ -115,7 +115,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         System.out.println(functOutput);
 
         return functOutput;
-	}
+    }
 
     // Método para calcular la varianza de un arreglo de doubles
     public double calculateVariance(double[] numeros) {
@@ -139,3 +139,4 @@ public class PSO_FitnessFunction extends FitnessFunction{
     }
 
 }
+

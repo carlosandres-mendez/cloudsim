@@ -5,9 +5,9 @@ import org.cloudbus.cloudsim.container.core.ContainerHost;
 import org.cloudbus.cloudsim.container.core.ContainerVm;
 
 public class Allocation {
-    Container container;
-    ContainerVm vm;
-    ContainerHost host;
+    public Container container;
+    public ContainerVm vm;
+    public ContainerHost host;
     
     public Allocation(Container container, ContainerVm vm, ContainerHost host) {
         this.container = container;

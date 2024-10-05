@@ -4,26 +4,27 @@ import java.util.List;
 
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Storage;
+import org.cloudbus.cloudsim.container.containerPlacementPolicies.Discrete_FitnessFunction;
+import org.cloudbus.cloudsim.container.containerPlacementPolicies.Discrete_PSO_Swarm;
 import org.cloudbus.cloudsim.container.containerPlacementPolicies.PSO_FitnessFunction;
 import org.cloudbus.cloudsim.container.containerPlacementPolicies.PSO_Particle;
+import org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled.Allocation;
 import org.cloudbus.cloudsim.container.resourceAllocators.ContainerAllocationPolicy;
 import org.cloudbus.cloudsim.container.resourceAllocators.ContainerVmAllocationPolicy;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
 
-import net.sourceforge.jswarm_pso.ParticleUpdateSimple;
-import net.sourceforge.jswarm_pso.Swarm;
 
-public class PowerContainerDatacenterPSO extends PowerContainerDatacenterCM {
+public class PowerContainerDatacenterDiscretePSO extends PowerContainerDatacenterCM {
 
     public static final int NoOfParticles = 25;
 	public static final int NoOfIterations = 10;
 
-    Swarm swarm;
+    Discrete_PSO_Swarm swarm;
     PSO_FitnessFunction fitnessFunction;
 
-    public PowerContainerDatacenterPSO(String name, ContainerDatacenterCharacteristics characteristics,
+    public PowerContainerDatacenterDiscretePSO(String name, ContainerDatacenterCharacteristics characteristics,
             ContainerVmAllocationPolicy vmAllocationPolicy, ContainerAllocationPolicy containerAllocationPolicy,
             List<Storage> storageList, double schedulingInterval, String experimentName, String logAddress,
             double vmStartupDelay, double containerStartupDelay) throws Exception {
@@ -41,23 +42,24 @@ public class PowerContainerDatacenterPSO extends PowerContainerDatacenterCM {
             System.out.println(particles[i]);
         }
 
-        fitnessFunction = new PSO_FitnessFunction(containerList, this.getContainerVmList(), this.getHostList());
-        swarm = new Swarm(containerList.size(), new PSO_Particle(containerList.size(), this.getContainerVmList().size()), fitnessFunction);
-        swarm.setMinPosition(0);//minimum value is the minimum value of vm id
-        swarm.setMaxPosition(this.getContainerVmList().size()-1);//maximum value of vm id
-        swarm.setMaxMinVelocity(1.1);
-        swarm.setParticles(particles);
-        swarm.setParticleUpdate(new ParticleUpdateSimple(new PSO_Particle(containerList.size(),  this.getContainerVmList().size())));
-        for(int i=0;i<NoOfIterations;i++) {
-            swarm.evolve();
-            swarm.show(300, 300, 0, 4, false);
-            if(i%10 == 0) {
-                System.out.println("Global best at iteration "+i+" :"+swarm.getBestFitness());
+        swarm = new Discrete_PSO_Swarm(new Discrete_FitnessFunction(containerList, this.getContainerVmList(), this.getHostList()), 
+            this.getHostList(), this.getContainerVmList(), containerList);
+        swarm.init();
+        if(swarm.getParticles().size() > 0 && swarm.getParticles().get(0).getPosition().size() > 0){ //si aun hay tareas y servidores
+
+            for (int i = 0; i < NoOfIterations; i++){
+                swarm.evolve();
+                if(i%10 == 0) {
+                    System.out.println("Global best at iteration "+i+" :"+swarm.getBestFitness());
+                }
+                System.out.println("--------------------Global best------------------");
+            }
+            if(swarm.getBestPosition()!=null){
+                for(Allocation allocation : swarm.getBestPosition()){
+                    System.out.println("host" + allocation.getHost() + "vm" + allocation.getVm()+ "container"+ allocation.getContainer());
+                }
             }
         }
-        System.out.println("The best fitness value is "+swarm.getBestFitness());
-        PSO_Particle bestparticle = (PSO_Particle)swarm.getBestParticle();
-        System.out.println(bestparticle.toString());
     }
 
     @Override
@@ -66,18 +68,8 @@ public class PowerContainerDatacenterPSO extends PowerContainerDatacenterCM {
 
         optimize(containerList);
 
-        //allocate vm for each container according to the pso optimization
-        // for(int i=0; i < swarm.getBestParticle().getPosition().length; i++){
-        //     for(ContainerVm vm : this.getContainerVmList()){
-        //         if(vm.getId()-1==(int)swarm.getBestParticle().getPosition()[i]){
-        //             containerList.get(i).getCloudlet().setVmId(vm.getId());
-        //             containerList.get(i).setVm(vm);
-        //         }
-        //     }
-        // }
-
         for (Container container : containerList) {
-            ContainerVm vm = this.getContainerVmList().get((int)swarm.getBestParticle().getPosition()[container.getId()-1]);
+            ContainerVm vm = swarm.getBestPosition().get(container.getId()-1).getVm();
             container.setVm(vm);
             container.getCloudlet().setVmId(vm.getId());
         }
