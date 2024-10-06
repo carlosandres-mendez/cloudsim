@@ -72,6 +72,7 @@ public class PowerContainerDatacenterDiscretePSO extends PowerContainerDatacente
             ContainerVm vm = swarm.getBestPosition().get(container.getId()-1).getVm();
             container.setVm(vm);
             container.getCloudlet().setVmId(vm.getId());
+            vm.getContainerList().add(container);
         }
 
         for (Container container : containerList) {

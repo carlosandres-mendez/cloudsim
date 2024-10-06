@@ -80,6 +80,7 @@ public class PowerContainerDatacenterPSO extends PowerContainerDatacenterCM {
             ContainerVm vm = this.getContainerVmList().get((int)swarm.getBestParticle().getPosition()[container.getId()-1]);
             container.setVm(vm);
             container.getCloudlet().setVmId(vm.getId());
+            vm.getContainerList().add(container);
         }
 
         for (Container container : containerList) {
