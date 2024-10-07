@@ -22,7 +22,6 @@ public class PowerContainerDatacenterDiscretePSO extends PowerContainerDatacente
 	public static final int NoOfIterations = 10;
 
     Discrete_PSO_Swarm swarm;
-    PSO_FitnessFunction fitnessFunction;
 
     public PowerContainerDatacenterDiscretePSO(String name, ContainerDatacenterCharacteristics characteristics,
             ContainerVmAllocationPolicy vmAllocationPolicy, ContainerAllocationPolicy containerAllocationPolicy,

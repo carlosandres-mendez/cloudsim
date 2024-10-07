@@ -95,16 +95,36 @@ public class Discrete_ParticleUpdate {
     private List<Allocation> generatePossibleCombinations(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
+        Collections.shuffle(bestPosition);
+
         //Random generated
-        int numberSwaps =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
-        for(int i = 0; i < numberSwaps; i++){
-            Random random = new Random();
-            int j = random.nextInt(bestPosition.size()); // Índice aleatorio j
-            int k = random.nextInt(xPosition.size()); // Índice aleatorio k
+        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
+        for(int i = 0; i < numPossibleCombinations; i++){
+            // Random random = new Random();
+            // int j = random.nextInt(bestPosition.size()); // Índice aleatorio j
+            // int k = random.nextInt(xPosition.size()); // Índice aleatorio k
             
             //the container remains the same, but vm and host are different
-            xPosition.get(j).setVm(bestPosition.get(k).getVm());
-            xPosition.get(j).setHost(bestPosition.get(k).getHost());;   
+            // xPosition.get(j).setVm(bestPosition.get(k).getVm());
+            // xPosition.get(j).setHost(bestPosition.get(k).getHost());
+
+            // Calcular el total de MIPS de la VM
+            ContainerVm vm = bestPosition.get(i).getVm(); //Vm we are going to allocate the container
+            double totalVmCapacity = vm.getMips() * vm.getNumberOfPes(); //total cpu vm 
+            double totalMipsUsed = 0.0d; //total vm cpu already is using
+            for(Allocation allocation : xPosition){
+                if(allocation.getVm().getId()==vm.getId())
+                    totalMipsUsed += allocation.getContainer().getMips();
+            }
+            
+            // if is valid (if vm cpu already is using + the container we are trying to allocate is less or equal to total vm cpu capacity)
+            if(totalMipsUsed + bestPosition.get(i).getContainer().getMips() <= totalVmCapacity){
+                possibleCombinations.add(
+                        new Allocation(bestPosition.get(i).getContainer(), bestPosition.get(i).getVm(), bestPosition.get(i).getHost())
+                    );
+            }
+            else 
+                continue;
         }
 
         return possibleCombinations;

@@ -53,7 +53,7 @@ public class Discrete_PSO_Swarm {
 
 		particles = new ArrayList<>();
 
-        //Creamos otras particulas aleatorias
+        //Creamos particulas aleatorias
         for (int i=0; i < 10; i++) {
 
             List<Allocation> position = new ArrayList<>();
@@ -126,25 +126,15 @@ public class Discrete_PSO_Swarm {
 		// Evaluate each particle (and find the 'best' one)
 		//---
 		for (Discrete_Particle particle : particles) {
-            double[] positionArray = new double[particle.getPosition().size()];
-            for(Allocation allocation : particle.getPosition()){
-                positionArray[allocation.getContainer().getId()-1] = allocation.getVm().getId()-1;
-            }
 
 			// Evaluate particle
-			double fit = fitnessFunction.evaluate(positionArray);
+			double fit = fitnessFunction.evaluate(particle);
 
 			// Update 'best global' position
 			if (fitnessFunction.isBetterThan(bestFitness, fit)) {
 				bestFitness = fit; // Copy best fitness, index, and position vector
 				if (bestPosition == null) bestPosition = new ArrayList<>();
 				particle.copyPosition(bestPosition);
-			}
-
-            if (fitnessFunction.isBetterThan(particle.getBestFitness(), fit)) {
-				particle.setBestFitness(fit); // Copy best fitness, index, and position vector
-				if (particle.getBestPosition() == null) particle.setBestPosition(new ArrayList<>()); 
-				particle.copyPosition(particle.getBestPosition());
 			}
 
 		}
