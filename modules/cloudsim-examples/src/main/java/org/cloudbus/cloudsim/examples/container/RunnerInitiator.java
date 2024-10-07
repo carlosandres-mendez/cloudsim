@@ -1,6 +1,7 @@
 package org.cloudbus.cloudsim.examples.container;
 
 import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.container.core.ContainerDatacenter;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.util.Calendar;
@@ -34,7 +35,7 @@ public class RunnerInitiator extends RunnerAbs {
             String vmSelectionPolicy,
             String containerSelectionPolicy,
             String hostSelectionPolicy,
-            double overBookingFactor, String runTime, String logAddress) {
+            double overBookingFactor, String runTime, String logAddress, Class<? extends ContainerDatacenter> datacenterClass) {
 
 
         super(enableOutput,
@@ -46,7 +47,7 @@ public class RunnerInitiator extends RunnerAbs {
                 vmSelectionPolicy,
                 containerSelectionPolicy,
                 hostSelectionPolicy,
-                overBookingFactor, runTime, logAddress);
+                overBookingFactor, runTime, logAddress, datacenterClass);
 
     }
 

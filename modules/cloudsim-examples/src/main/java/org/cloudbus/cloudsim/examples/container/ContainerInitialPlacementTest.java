@@ -3,6 +3,9 @@ package org.cloudbus.cloudsim.examples.container;
 
 import java.io.IOException;
 
+import org.cloudbus.cloudsim.container.core.PowerContainerDatacenter;
+import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterCM;
+
 /**
  * This Example is following the format for {@link org.cloudbus.cloudsim.examples.power.planetlab.Dvfs}
  * It specifically studies the initial placement of containers.
@@ -75,7 +78,7 @@ public class ContainerInitialPlacementTest {
                     vmSelectionPolicy,
                     containerSelectionPolicy,
                     hostSelectionPolicy,
-                    OverBookingFactor, Integer.toString(i), outputFolder);
+                    OverBookingFactor, Integer.toString(i), outputFolder, PowerContainerDatacenterCM.class);
 
         }
 

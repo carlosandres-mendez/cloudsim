@@ -68,7 +68,7 @@ public abstract class RunnerAbs {
     private String runTime;
 
 
-    public RunnerAbs(boolean enableOutput, boolean outputToFile, String inputFolder, String outputFolder, String vmAllocationPolicy, String containerAllocationPolicy, String vmSelectionPolicy, String containerSelectionPolicy, String hostSelectionPolicy, double overBookingFactor, String runTime, String logAddress) {
+    public RunnerAbs(boolean enableOutput, boolean outputToFile, String inputFolder, String outputFolder, String vmAllocationPolicy, String containerAllocationPolicy, String vmSelectionPolicy, String containerSelectionPolicy, String hostSelectionPolicy, double overBookingFactor, String runTime, String logAddress, Class<? extends ContainerDatacenter> datacenterClass) {
         setOverBookingFactor(overBookingFactor);
         setRunTime(runTime);
         setLogAddress(logAddress);
@@ -82,7 +82,7 @@ public abstract class RunnerAbs {
         }
 
         this.init(inputFolder + "/", getOverBookingFactor());
-        this.start(getExperimentName(), outputFolder, this.getVmAllocationPolicy(vmAllocationPolicy, vmSelectionPolicy, containerSelectionPolicy, hostSelectionPolicy), getContainerAllocationPolicy(containerAllocationPolicy));
+        this.start(getExperimentName(), outputFolder, this.getVmAllocationPolicy(vmAllocationPolicy, vmSelectionPolicy, containerSelectionPolicy, hostSelectionPolicy), getContainerAllocationPolicy(containerAllocationPolicy),datacenterClass);
     }
 
     public String getLogAddress() {
@@ -171,12 +171,12 @@ public abstract class RunnerAbs {
 
     protected abstract void init(String var1, double overBookingFactor);
 
-    protected void start(String experimentName, String outputFolder, ContainerVmAllocationPolicy vmAllocationPolicy, ContainerAllocationPolicy containerAllocationPolicy) {
+    protected void start(String experimentName, String outputFolder, ContainerVmAllocationPolicy vmAllocationPolicy, ContainerAllocationPolicy containerAllocationPolicy, Class<? extends ContainerDatacenter> datacenterClass) {
         System.out.println("Starting " + experimentName);
 
         try {
             PowerContainerDatacenter e = (PowerContainerDatacenter) HelperEx.createDatacenter("datacenter",
-                    PowerContainerDatacenterCM.class, hostList, vmAllocationPolicy, containerAllocationPolicy,
+                    datacenterClass, hostList, vmAllocationPolicy, containerAllocationPolicy,
                     getExperimentName(), ConstantsExamples.SCHEDULING_INTERVAL, getLogAddress(),
                     ConstantsExamples.VM_STARTTUP_DELAY, ConstantsExamples.CONTAINER_STARTTUP_DELAY);
 //            PowerContainerDatacenter e = (PowerContainerDatacenter) HelperEx.createDatacenter("Datacenter", PowerContainerDatacenter.class, hostList, vmAllocationPolicy, containerAllocationPolicy);

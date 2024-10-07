@@ -3,6 +3,8 @@ package org.cloudbus.cloudsim.examples.container;
 
 import java.io.IOException;
 
+import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterCM;
+
 /**
  * This Example is following the format for {@link org.cloudbus.cloudsim.examples.power.planetlab.Dvfs}
  * It specifically studies the placement of containers.
@@ -73,7 +75,7 @@ public class ContainerOverbooking {
                     vmSelectionPolicy,
                     containerSelectionPolicy,
                     hostSelectionPolicy,
-                    i, Integer.toString(runTime), outputFolder);
+                    i, Integer.toString(runTime), outputFolder, PowerContainerDatacenterCM.class);
         }
 
     }

@@ -19,6 +19,7 @@ import org.cloudbus.cloudsim.container.schedulers.ContainerSchedulerTimeSharedOv
 import org.cloudbus.cloudsim.container.schedulers.ContainerVmSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.container.utils.IDs;
 import org.cloudbus.cloudsim.util.MathUtil;
+import java.lang.reflect.Constructor;
 
 import java.io.*;
 import java.io.File;
@@ -246,9 +247,18 @@ public class HelperEx {
         ContainerDatacenterCharacteristics characteristics = new
                 ContainerDatacenterCharacteristics(arch, os, vmm, hostList, time_zone, cost, costPerMem, costPerStorage,
                 costPerBw);
-        ContainerDatacenter datacenter = new PowerContainerDatacenterPSO(name, characteristics, vmAllocationPolicy,
-                containerAllocationPolicy, new LinkedList<Storage>(), schedulingInterval, experimentName, logAddress,
-                VMStartupDelay, ContainerStartupDelay);
+
+        ContainerDatacenter datacenter = null;
+        Constructor<?>[] constructores = datacenterClass.getDeclaredConstructors();
+        for (Constructor<?> constructor : constructores) {
+            datacenter = datacenterClass.cast(constructor.newInstance(name, characteristics, vmAllocationPolicy,
+            containerAllocationPolicy, new LinkedList<Storage>(), schedulingInterval, experimentName, logAddress,
+            VMStartupDelay, ContainerStartupDelay));
+        }
+
+        // ContainerDatacenter datacenter = new PowerContainerDatacenterPSO(name, characteristics, vmAllocationPolicy,
+        //         containerAllocationPolicy, new LinkedList<Storage>(), schedulingInterval, experimentName, logAddress,
+        //         VMStartupDelay, ContainerStartupDelay);
 
         return datacenter;
     }
