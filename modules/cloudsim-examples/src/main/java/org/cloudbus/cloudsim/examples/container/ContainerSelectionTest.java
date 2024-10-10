@@ -3,7 +3,7 @@ package org.cloudbus.cloudsim.examples.container;
 
 import java.io.IOException;
 
-import org.cloudbus.cloudsim.container.core.ContainerDatacenter;
+import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterDiscretePSO;
 import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterPSO;
 import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterDiscretePSO;
 /**
@@ -82,7 +82,7 @@ public class ContainerSelectionTest {
                     vmSelectionPolicy,
                     containerSelectionPolicy,
                     hostSelectionPolicy,
-                    OverBookingFactor, Integer.toString(i), outputFolder, PowerContainerDatacenterDiscretePSO.class);
+                    OverBookingFactor, Integer.toString(i), outputFolder, PowerContainerDatacenterDiscretePSO.class); 
         }
 
     }

@@ -36,7 +36,9 @@ public class Discrete_PSO_Swarm {
 	 * @param fitnessFunction : Fitness function used to evaluate each particle
 	 */
     public Discrete_PSO_Swarm(Discrete_FitnessFunction fitnessFunction, List<ContainerHost> containerHosts, List<ContainerVm> containerVms, List<Container> containers) {
-        this.fitnessFunction = fitnessFunction;
+        bestFitness = Double.NaN; // important for setting the best fitness
+		
+		this.fitnessFunction = fitnessFunction;
 
         this.containerHosts = containerHosts;
         this.containerVms = containerVms;
