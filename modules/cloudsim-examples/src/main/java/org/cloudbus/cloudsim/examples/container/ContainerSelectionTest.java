@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.cloudbus.cloudsim.container.core.ContainerDatacenter;
 import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterPSO;
+import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterDiscretePSO;
 /**
  * This Example is following the format for {@link org.cloudbus.cloudsim.examples.power.planetlab.Dvfs}
  * It specifically studies the placement of containers.
@@ -81,7 +82,7 @@ public class ContainerSelectionTest {
                     vmSelectionPolicy,
                     containerSelectionPolicy,
                     hostSelectionPolicy,
-                    OverBookingFactor, Integer.toString(i), outputFolder, PowerContainerDatacenterPSO.class);
+                    OverBookingFactor, Integer.toString(i), outputFolder, PowerContainerDatacenterDiscretePSO.class);
         }
 
     }

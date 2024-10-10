@@ -5,6 +5,7 @@ import java.util.*;
 import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.ContainerHost;
 import org.cloudbus.cloudsim.container.core.ContainerVm;
+import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterDiscretePSO;
 import org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled.Allocation;
 import org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled.Discrete_Particle;
 
@@ -45,16 +46,16 @@ public class Discrete_PSO_Swarm {
 		particleUpdate = new Discrete_ParticleUpdate();
     }
 
-    /**
+	/**
 	 * Initialize every particle
 	 * Warning: maxPosition[], minPosition[], maxVelocity[], minVelocity[] must be initialized and setted
 	 */
-	public void init() {
+	public void init_no_validate() {
 
 		particles = new ArrayList<>();
 
         //Creamos particulas aleatorias
-        for (int i=0; i < 10; i++) {
+        for (int i=0; i < PowerContainerDatacenterDiscretePSO.NoOfParticles; i++) {
 
             List<Allocation> position = new ArrayList<>();
             List<Allocation> velocity = new ArrayList<>();
@@ -68,6 +69,70 @@ public class Discrete_PSO_Swarm {
                 position.add(allocation);
             }
             particles.add(new Discrete_Particle(position, velocity));
+        }
+    
+        System.out.println();
+        for(Discrete_Particle particle : particles)
+            System.out.println(particle);
+        System.out.println();
+	}
+
+    /**
+	 * Initialize every particle
+	 * Warning: maxPosition[], minPosition[], maxVelocity[], minVelocity[] must be initialized and setted
+	 */
+	public void init() {
+
+		particles = new ArrayList<>();
+
+		//copy the vm ids in a new list
+		List<Integer> vmIds = new ArrayList<>();
+		for(ContainerVm vm : this.containerVms)
+			vmIds.add(vm.getId());
+
+        //generate random particles
+        for (int i=0; i < PowerContainerDatacenterDiscretePSO.NoOfParticles; i++) {
+
+			//por each particle we are going to init the position and velocity
+            List<Allocation> position = new ArrayList<>();
+            List<Allocation> velocity = new ArrayList<>();
+
+			//for each container we are trying to find a valid vm
+
+			//generate random vm list
+			Collections.shuffle(vmIds);
+			
+
+            for(Container container : this.containers){ //Para cada contenedor buscamos aleatoriamente un host y una vm
+
+				for(Integer vmId : vmIds){
+
+					// Calcular el total de MIPS de la VM
+					ContainerVm vm = this.containerVms.get(vmId-1); //Vm we are going to allocate the container
+					double totalVmCapacity = vm.getMips() * vm.getNumberOfPes(); //total cpu vm 
+					double totalMipsUsed = 0.0d; //total vm cpu already is using
+					for(Allocation allocation : position){
+						if(allocation.getVm().getId()==vm.getId())
+							totalMipsUsed += allocation.getContainer().getMips();
+					}
+
+					// if is valid (if vm cpu already is using + the container we are trying to allocate is less or equal to total vm cpu capacity)
+					if(totalMipsUsed + container.getMips() <= totalVmCapacity){
+						Allocation allocation = new Allocation(
+							container, 
+							this.containerVms.get(vmId-1), 
+							this.containerHosts.get((int)Math.random()*this.containerHosts.size()));
+						position.add(allocation);
+						break;
+					}
+					else 
+						continue;
+				}
+            }
+
+			//add the new particle to the list of particles generated
+			if(position.size()==this.containers.size())
+            	particles.add(new Discrete_Particle(position, velocity));
         }
     
         System.out.println();
