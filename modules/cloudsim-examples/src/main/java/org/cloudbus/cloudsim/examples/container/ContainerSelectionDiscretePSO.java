@@ -3,7 +3,7 @@ package org.cloudbus.cloudsim.examples.container;
 
 import java.io.IOException;
 
-import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterCM;
+import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterDiscretePSO;
 
 /**
  * This Example is following the format for {@link org.cloudbus.cloudsim.examples.power.planetlab.Dvfs}
@@ -11,7 +11,7 @@ import org.cloudbus.cloudsim.container.core.PowerContainerDatacenterCM;
  *
  * @author Sareh Fotuhi Piraghaj
  */
-public class ContainerSelectionTest {
+public class ContainerSelectionDiscretePSO {
 
 
     /**
@@ -47,14 +47,14 @@ public class ContainerSelectionTest {
              * The selection policy for containers where a container migration is triggered.
              */
 //           String containerSelectionPolicy = "MaxUsage";
-            String containerSelectionPolicy = "Cor"; //mmt
+            String containerSelectionPolicy = "Cor";
             /**
              * The allocation policy used for allocating containers to VMs.
              */
 
 //          String containerAllocationPolicy= "MostFull";
 
-            String containerAllocationPolicy= "FirstFit"; 
+            String containerAllocationPolicy= "PSO"; //FirstFit
             /**
              * The host selection policy determines which hosts should be selected as the migration destination.
              */
@@ -81,7 +81,7 @@ public class ContainerSelectionTest {
                     vmSelectionPolicy,
                     containerSelectionPolicy,
                     hostSelectionPolicy,
-                    OverBookingFactor, Integer.toString(i), outputFolder, PowerContainerDatacenterCM.class); 
+                    OverBookingFactor, Integer.toString(i), outputFolder, PowerContainerDatacenterDiscretePSO.class); 
         }
 
     }

@@ -8,7 +8,6 @@ import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.ContainerHost;
 import org.cloudbus.cloudsim.container.core.ContainerVm;
 import org.cloudbus.cloudsim.container.core.PowerContainerHost;
-import org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled.Allocation;
 
 import net.sourceforge.jswarm_pso.FitnessFunction;
 

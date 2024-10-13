@@ -301,6 +301,11 @@ public class ContainerDatacenter extends SimEntity {
 
                         Log.printConcatLine("The ContainerVM ID is not known (-1) !");
                     }
+
+                    container.setVm(containerVm);
+                    container.getCloudlet().setVmId(containerVm.getId());
+                    containerVm.getContainerList().add(container);
+
 //                    Log.printConcatLine("Assigning the container#" + container.getUid() + "to VM #" + containerVm.getUid());
                     getContainerList().add(container);
                     if (container.isBeingInstantiated()) {
@@ -315,6 +320,8 @@ public class ContainerDatacenter extends SimEntity {
                 }
                 send(ev.getSource(), CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK, data);
 
+                //in addition, we need to sumit the cloudlet events for process the cloudlets to the CloudResource and send ack to broker
+                send(getId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.CLOUDLET_SUBMIT, container.getCloudlet());
             }
         }
 

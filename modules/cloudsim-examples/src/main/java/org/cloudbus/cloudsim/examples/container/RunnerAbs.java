@@ -6,6 +6,7 @@ import org.cloudbus.cloudsim.container.containerPlacementPolicies.*;
 import org.cloudbus.cloudsim.container.containerSelectionPolicies.PowerContainerSelectionPolicy;
 import org.cloudbus.cloudsim.container.containerSelectionPolicies.PowerContainerSelectionPolicyCor;
 import org.cloudbus.cloudsim.container.containerSelectionPolicies.PowerContainerSelectionPolicyMaximumUsage;
+import org.cloudbus.cloudsim.container.containerSelectionPolicies.PowerContainerSelectionPolicyMinimumMigrationTime;
 import org.cloudbus.cloudsim.container.core.*;
 import org.cloudbus.cloudsim.container.hostSelectionPolicies.*;
 import org.cloudbus.cloudsim.container.resourceAllocatorMigrationEnabled.PowerContainerVmAllocationPolicyMigrationAbstractHostSelection;
@@ -395,13 +396,11 @@ public abstract class RunnerAbs {
 
 
         }
-// else if(vmSelectionPolicyName.equals("mmt")) {
-//            vmSelectionPolicy = new PowerVmSelectionPolicyMinimumMigrationTime();
-//        } else if(vmSelectionPolicyName.equals("mu")) {
-//            vmSelectionPolicy = new PowerVmSelectionPolicyMinimumUtilization();
-//        } else if(vmSelectionPolicyName.equals("rs")) {
-//            vmSelectionPolicy = new PowerVmSelectionPolicyRandomSelection();
-//        }
+        else if (containerSelectionPolicyName.equals("mmt")) {
+            containerSelectionPolicy = new PowerContainerSelectionPolicyMinimumMigrationTime();
+
+
+        }
         else {
             System.out.println("Unknown Container selection policy: " + containerSelectionPolicyName);
             System.exit(0);
