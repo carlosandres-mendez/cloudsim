@@ -1,11 +1,15 @@
 package org.cloudbus.cloudsim.examples.pso.discrete;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.VmAllocationPolicy;
 import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
@@ -15,7 +19,9 @@ import org.cloudbus.cloudsim.examples.pso.RandomHelper;
 import org.cloudbus.cloudsim.examples.pso.RunnerAbstract;
 import org.cloudbus.cloudsim.examples.pso.original.PSO_FitnessFunction;
 import org.cloudbus.cloudsim.power.PowerDatacenter;
+import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
+import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThresholdPSO;
 
 
 /**
@@ -138,8 +144,33 @@ public class RandomRunner extends RunnerAbstract {
 			broker.submitVmList(vmList);
 			broker.submitCloudletList(cloudletList);
 
+			//scheduler may know allocation policy, so it can figure out host assignment (important for scheduling considering host power)
+			PowerVmAllocationPolicyMigrationStaticThresholdPSO vmAllocationMigrationMSPolicy = (PowerVmAllocationPolicyMigrationStaticThresholdPSO)vmAllocationPolicy;
+			vmAllocationMigrationMSPolicy.setHostList(hostList);
+			Set<? extends Host> excludedHosts = new HashSet<>();
+			for(PowerVm vm : (List<PowerVm>)(Object)(RandomRunner.vmList)){
+				PowerHost host = vmAllocationMigrationMSPolicy.findHostForVm(vm, excludedHosts);
+				host.getVmList().add(vm);
+
+				List<Double> mips = new ArrayList<Double>();
+				for(int i=0; i < vm.getNumberOfPes(); i++) 
+					mips.add(vm.getMips());
+				host.getVmScheduler().allocatePesForVm(vm, mips);
+				vm.setHost(host);
+				vm.setBeingInstantiated(true);
+				System.out.println(" CANDRES "+vm.getId() + ": " + host.getId());
+			}
 
 			optimize();
+
+			for(PowerVm vm : (List<PowerVm>)(Object)(RandomRunner.vmList)){
+				vm.setHost(null);
+			}
+
+			for(PowerHost host : hostList){
+				host.getVmList().clear();
+				host.getVmScheduler().deallocatePesForAllVms();
+			}
 
 			for (Allocation allocation : swarm.getBestPosition()){
 				broker.bindCloudletToVm(allocation.getCloudlet().getCloudletId(), allocation.getVm().getId());

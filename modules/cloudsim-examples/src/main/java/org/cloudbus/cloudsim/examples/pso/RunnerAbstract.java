@@ -20,6 +20,7 @@ import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationLocalRegressi
 import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationLocalRegressionRobust;
 import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationMedianAbsoluteDeviation;
 import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThreshold;
+import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThresholdPSO;
 import org.cloudbus.cloudsim.power.PowerVmAllocationPolicySimple;
 import org.cloudbus.cloudsim.power.PowerVmSelectionPolicy;
 import org.cloudbus.cloudsim.power.PowerVmSelectionPolicyMaximumCorrelation;
@@ -279,7 +280,7 @@ public abstract class RunnerAbstract {
 					Constants.SCHEDULING_INTERVAL,
 					fallbackVmSelectionPolicy);
 		} else if (vmAllocationPolicyName.equals("thr")) {
-			vmAllocationPolicy = new PowerVmAllocationPolicyMigrationStaticThreshold(
+			vmAllocationPolicy = new PowerVmAllocationPolicyMigrationStaticThresholdPSO(
 					hostList,
 					vmSelectionPolicy,
 					parameter);
