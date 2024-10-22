@@ -185,6 +185,8 @@ public abstract class RunnerAbstract {
 					Constants.OUTPUT_CSV,
 					outputFolder);
 
+			Helper.printCloudletList(cloudletList);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.printLine("The simulation has been terminated due to an unexpected error");

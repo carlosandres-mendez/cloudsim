@@ -719,6 +719,7 @@ public class Helper {
 	 * @param list list of Cloudlets
 	 */
 	public static void printCloudletList(List<Cloudlet> list) {
+		Log.enable();
 		int size = list.size();
 		Cloudlet cloudlet;
 
@@ -735,6 +736,12 @@ public class Helper {
 
 			if (cloudlet.getCloudletStatus() == Cloudlet.SUCCESS) {
 				Log.printLine(indent + "SUCCESS" + indent + indent + cloudlet.getResourceId() + indent
+						+ cloudlet.getVmId() + indent + dft.format(cloudlet.getActualCPUTime()) + indent
+						+ dft.format(cloudlet.getExecStartTime()) + indent + indent
+						+ dft.format(cloudlet.getFinishTime()));
+			}
+			else{
+				Log.printLine(indent + "FAIL" + indent + indent + cloudlet.getResourceId() + indent
 						+ cloudlet.getVmId() + indent + dft.format(cloudlet.getActualCPUTime()) + indent
 						+ dft.format(cloudlet.getExecStartTime()) + indent + indent
 						+ dft.format(cloudlet.getFinishTime()));
