@@ -162,7 +162,7 @@ public class RandomRunner extends RunnerAbstract {
 					host.getVmScheduler().allocatePesForVm(vm, mips);
 					vm.setHost(host);
 					vm.setBeingInstantiated(true);
-					System.out.println(" CANDRES "+vm.getId() + ": " + host.getId());
+					System.out.println(" Vm allocation in scheduling time: Vm: "+vm.getId() + " Host: " + host.getId());
 				}
 				else 
 					throw new Exception("According to the allocation policy, all Vms cannot be allocated in the datacenter. You need to increase servers on them.");

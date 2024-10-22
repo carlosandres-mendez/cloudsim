@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.examples.pso.Constants;
+import org.cloudbus.cloudsim.examples.pso.RandomConstants;
 import org.cloudbus.cloudsim.power.PowerVm;
 import org.cloudbus.cloudsim.power.PowerHost;
 
@@ -49,7 +51,130 @@ public class PSO_FitnessFunction extends FitnessFunction{
                     executionTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
             }
             //consider the vm capacity
-            executionTime[vm.getId()] = executionTime[vm.getId()] / vm.getMips();
+            executionTime[vm.getId()] = executionTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
+        } 
+        
+/**
+ *      This is when we have the host information
+ * 
+**/
+        //host utilization
+        for(int i=0; i< hostUtilization.length; i++) 
+            hostUtilization[i]=0.0d;
+        for(PowerVm vm : vmList){
+            //sum all cloudlet the vm has to process
+            for(int i=0; i< position.length; i++){
+                if((int)position[i]==vm.getId()){
+                    double utilization = (double)vm.getMips() / (double)vm.getHost().getTotalMips();
+                    hostUtilization[vm.getHost().getId()]+= vm.getMips() * vm.getNumberOfPes();
+                }
+            }
+        } 
+
+        int hostOverUtilized = 0;
+        for(int i=0; i< hostUtilization.length; i++){ 
+            if(hostUtilization[i]>Constants.UTILIZATION_THRESHOLD)
+                hostOverUtilized++;
+        }
+
+        int numberOfHosts = 0;
+        double hostsAvailableMips = 0.0d;
+        double hostsTotalMips = 0.0d;
+        for(int i=1; i< hostUtilization.length+1; i++){ 
+            for(PowerHost host : hostList){
+                if(host.getId()==i){
+                    numberOfHosts++;
+                    hostsTotalMips += (double)host.getTotalMips();
+                    hostsAvailableMips += (double)host.getTotalMips() - hostUtilization[i];
+                }
+            }
+        }
+
+
+
+
+        //total
+        double makespan = 0.0d;
+        for(int i=0; i< vmList.size(); i++){
+            makespan = Math.max(makespan, executionTime[i]);
+        }
+
+        //desbalancing degree calculated as the variance of host utilization
+        double desbalancingDegree = 0;//calculateVariance(executionTime);
+
+        //normalize: make comparable variables
+        double minClouletLenght = Double.MAX_VALUE;
+        double maxVmMips = Double.MAX_VALUE;
+        for(int i=0; i< position.length; i++){ 
+            minClouletLenght = Math.min(minClouletLenght, clouletList.get(i).getCloudletLength());
+            maxVmMips = Math.max(maxVmMips, vmList.get(i).getMips() * vmList.get(i).getNumberOfPes());
+        }
+        double minPosibleExcecutionTime = minClouletLenght / maxVmMips;
+        makespan = minPosibleExcecutionTime / makespan;
+
+        //objetive function
+        double weight1 = 0.6;
+        double weight2 = 0;
+        double weight3 = 0.4;
+        double functOutput =  1/((weight1 * hostsAvailableMips/hostsTotalMips) + (weight2 * desbalancingDegree) + (weight3 * hostOverUtilized==0?0:(hostOverUtilized/numberOfHosts)));
+
+/**
+ *      This is when we need to validate, for example in containers
+ * 
+
+        //We are going to remove invalid position setting functOutput to 0.
+        //invalid position is when cpu capacity of a vm is bigger than the sum of cpu demanded of tasks
+        //Required for the Original PSO
+
+        //The next map is used for set the capacity MIPS of each VM
+        Map<Integer, Double> vmCapacity = new HashMap<>();
+        //The next map is used for set the demanded MIPS of each VM 
+        Map<Integer, Double> vmDemanded = new HashMap<>();
+
+        //fill the maps
+        for(int i=0; i< position.length; i++){ 
+            PowerVm vm = vmList.get((int)position[i]);
+            if(!vmCapacity.containsKey(vm.getId()))
+                vmCapacity.put(vm.getId(), vm.getMips() * vm.getNumberOfPes());
+            
+            if(!vmDemanded.containsKey(vm.getId()))
+                vmDemanded.put(vm.getId(), clouletList.get(i).getMips());
+            else
+            vmDemanded.put(vm.getId(), vmDemanded.get(vm.getId()) + clouletList.get(i).getMips());
+        }
+
+        //when invalid position set to 0
+        for (Map.Entry<Integer, Double> entry : vmDemanded.entrySet()) {
+            if(entry.getValue() > vmCapacity.get(entry.getKey()))
+                functOutput = 0.0d;
+        }
+ */
+
+        //print results
+        System.out.print("--------- evaluate ");
+        for(int i=0;i<position.length;i++) {
+            System.out.print(position[i]+" ");
+        }
+        System.out.println(functOutput);
+
+        return functOutput;
+	}
+
+    public double evaluate2(double[] position) {
+
+        //cloudlet execution time = cloudlet length (total mips) / mv mips
+        // for(int i=0; i< position.length; i++) 
+        //     executionTime[i] = clouletList.get(i).getCloudletLength() / vmList.get((int)position[i]).getMips();
+
+        //For each vm we are going to calculate the execution time using the cloudlets mips it has to process
+        for(PowerVm vm : vmList){
+            //sum all cloudlet the vm has to process
+            for(int i=0; i< position.length; i++){
+                if((int)position[i]==vm.getId())
+                    executionTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
+            }
+            //consider the vm capacity
+            executionTime[vm.getId()] = executionTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
         } 
         
 /**
@@ -96,7 +221,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         //desbalancing degree calculated as the variance of host utilization
         double desbalancingDegree = calculateVariance(executionTime);
 
-        //make comparable variables
+        //normalize: make comparable variables
         double minClouletLenght = Double.MAX_VALUE;
         double maxVmMips = Double.MAX_VALUE;
         for(int i=0; i< position.length; i++){ 

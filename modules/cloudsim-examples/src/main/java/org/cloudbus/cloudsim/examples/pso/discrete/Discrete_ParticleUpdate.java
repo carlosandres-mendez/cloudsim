@@ -2,7 +2,11 @@ package org.cloudbus.cloudsim.examples.pso.discrete;
 
 import java.util.*;
 
+import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
+import org.cloudbus.cloudsim.examples.pso.Constants;
+import org.cloudbus.cloudsim.power.PowerHost;
+import org.cloudbus.cloudsim.power.PowerHostUtilizationHistory;
 
 /**
  * Particle update strategy
@@ -141,6 +145,52 @@ public class Discrete_ParticleUpdate {
         }
         return possibleCombinations;
     }
+
+    private List<Allocation> generatePossibleCombinations2(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+        List<Allocation> possibleCombinations = new ArrayList<Allocation>();
+
+        Collections.shuffle(bestPosition);
+
+        //Random generated
+        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
+        for(int i = 0; i < numPossibleCombinations; i++){
+
+            possibleCombinations.add(
+                        new Allocation(bestPosition.get(i).getCloudlet(), bestPosition.get(i).getVm(), bestPosition.get(i).getHost())
+                    );
+        }
+        return possibleCombinations;
+    }
+
+    	/**
+	 * Gets the over utilized hosts.
+	 * 
+	 * @return the over utilized hosts
+	 */
+	protected List<PowerHost> getOverUtilizedHosts() {
+		List<PowerHost> overUtilizedHosts = new LinkedList<PowerHost>();
+		for (PowerHost host : swarm.powerHosts ) {
+			if (isHostOverUtilized(host)) {
+				overUtilizedHosts.add(host);
+			}
+		}
+		return overUtilizedHosts;
+	}
+
+    /**
+	 * Checks if a host is over utilized, based on CPU usage.
+	 * 
+	 * @param host the host
+	 * @return true, if the host is over utilized; false otherwise
+	 */
+	protected boolean isHostOverUtilized(PowerHost host) {
+		double totalRequestedMips = 0;
+		for (Vm vm : host.getVmList()) {
+			totalRequestedMips += vm.getCurrentRequestedTotalMips();
+		}
+		double utilization = totalRequestedMips / host.getTotalMips();
+		return utilization > Constants.UTILIZATION_THRESHOLD;
+	}
 
 
 }

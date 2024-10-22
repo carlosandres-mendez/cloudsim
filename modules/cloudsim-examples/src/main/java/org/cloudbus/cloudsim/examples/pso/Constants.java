@@ -28,6 +28,7 @@ public class Constants {
 	public final static int CLOUDLET_PES	= 1;
 
 	public final static int NUM_PARTICLES	= 20;
+	public final static double UTILIZATION_THRESHOLD = 0.8;
 
 	/*
 	 * VM instance types:
