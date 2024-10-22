@@ -144,25 +144,36 @@ public class RandomRunner extends RunnerAbstract {
 			broker.submitVmList(vmList);
 			broker.submitCloudletList(cloudletList);
 
-			//scheduler may know allocation policy, so it can figure out host assignment (important for scheduling considering host power)
+			/*** 
+			 * Before optimization (see After optimization)
+			 * scheduler may know allocation policy, so it can figure out host assignment (important for host power consideration in the scheduling process)
+			 * */
 			PowerVmAllocationPolicyMigrationStaticThresholdPSO vmAllocationMigrationMSPolicy = (PowerVmAllocationPolicyMigrationStaticThresholdPSO)vmAllocationPolicy;
 			vmAllocationMigrationMSPolicy.setHostList(hostList);
 			Set<? extends Host> excludedHosts = new HashSet<>();
 			for(PowerVm vm : (List<PowerVm>)(Object)(RandomRunner.vmList)){
 				PowerHost host = vmAllocationMigrationMSPolicy.findHostForVm(vm, excludedHosts);
-				host.getVmList().add(vm);
+					if(host != null){
+					host.getVmList().add(vm);
 
-				List<Double> mips = new ArrayList<Double>();
-				for(int i=0; i < vm.getNumberOfPes(); i++) 
-					mips.add(vm.getMips());
-				host.getVmScheduler().allocatePesForVm(vm, mips);
-				vm.setHost(host);
-				vm.setBeingInstantiated(true);
-				System.out.println(" CANDRES "+vm.getId() + ": " + host.getId());
+					List<Double> mips = new ArrayList<Double>();
+					for(int i=0; i < vm.getNumberOfPes(); i++) 
+						mips.add(vm.getMips());
+					host.getVmScheduler().allocatePesForVm(vm, mips);
+					vm.setHost(host);
+					vm.setBeingInstantiated(true);
+					System.out.println(" CANDRES "+vm.getId() + ": " + host.getId());
+				}
+				else 
+					throw new Exception("According to the allocation policy, all Vms cannot be allocated in the datacenter. You need to increase servers on them.");
 			}
 
 			optimize();
 
+			/*** 
+			 * After optimization (see Before optimization)
+			 * Clear the hosts and vms in the datacenter
+			 * */
 			for(PowerVm vm : (List<PowerVm>)(Object)(RandomRunner.vmList)){
 				vm.setHost(null);
 			}
@@ -172,6 +183,10 @@ public class RandomRunner extends RunnerAbstract {
 				host.getVmScheduler().deallocatePesForAllVms();
 			}
 
+			/*** 
+			 * After optimization (see Before optimization)
+			 * Bind cloudlets to vms in the datacenter
+			 * */
 			for (Allocation allocation : swarm.getBestPosition()){
 				broker.bindCloudletToVm(allocation.getCloudlet().getCloudletId(), allocation.getVm().getId());
 			}
@@ -194,6 +209,7 @@ public class RandomRunner extends RunnerAbstract {
 					outputFolder);
 
 		} catch (Exception e) {
+			System.out.println(e.getMessage());
 			e.printStackTrace();
 			Log.printLine("The simulation has been terminated due to an unexpected error");
 			System.exit(0);

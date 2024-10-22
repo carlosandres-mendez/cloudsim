@@ -83,7 +83,7 @@ public class CloudSimExample3 {
 
 			//VM description
 			int vmid = 0;
-			int mips = 250;
+			int mips = 1000;
 			long size = 10000; //image size (MB)
 			int ram = 2048; //vm memory (MB)
 			long bw = 1000;
@@ -95,7 +95,7 @@ public class CloudSimExample3 {
 
 			//the second VM will have twice the priority of VM1 and so will receive twice CPU time
 			vmid++;
-			Vm vm2 = new Vm(vmid, brokerId, mips * 2, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared());
+			Vm vm2 = new Vm(vmid, brokerId, mips , pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared());
 
 			//add the VMs to the vmList
 			vmlist.add(vm1);
@@ -132,8 +132,11 @@ public class CloudSimExample3 {
 
 			//bind the cloudlets to the vms. This way, the broker
 			// will submit the bound cloudlets only to the specific VM
-			broker.bindCloudletToVm(cloudlet1.getCloudletId(),vm1.getId());
-			broker.bindCloudletToVm(cloudlet2.getCloudletId(),vm2.getId());
+			// broker.bindCloudletToVm(cloudlet1.getCloudletId(),vm1.getId());
+			// broker.bindCloudletToVm(cloudlet2.getCloudletId(),vm2.getId());
+
+			optmizador(broker,vmlist,cloudletList);
+
 
 			// Sixth step: Starts the simulation
 			CloudSim.startSimulation();
@@ -152,6 +155,14 @@ public class CloudSimExample3 {
 			e.printStackTrace();
 			Log.printLine("The simulation has been terminated due to an unexpected error");
 		}
+	}
+
+	private static void optmizador(DatacenterBroker broker, List<Vm> vms, List<Cloudlet> tareas){
+			for(Cloudlet tarea : tareas){
+				//double veloc = vm.getMips()*vm.getNumberOfPes();
+				broker.bindCloudletToVm(tarea.getCloudletId(),0);
+			
+			}
 	}
 
 	private static Datacenter createDatacenter(String name){

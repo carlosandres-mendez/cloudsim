@@ -1,12 +1,16 @@
 package org.cloudbus.cloudsim.examples.pso.original;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicy;
 import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.examples.pso.Constants;
 import org.cloudbus.cloudsim.examples.pso.Helper;
@@ -16,7 +20,9 @@ import org.cloudbus.cloudsim.examples.pso.RunnerAbstract;
 import org.cloudbus.cloudsim.examples.pso.original.PSO_FitnessFunction;
 import org.cloudbus.cloudsim.examples.pso.original.PSO_Particle;
 import org.cloudbus.cloudsim.power.PowerDatacenter;
+import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
+import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThresholdPSO;
 
 import net.sourceforge.jswarm_pso.ParticleUpdateSimple;
 import net.sourceforge.jswarm_pso.Swarm;
@@ -148,9 +154,49 @@ public class RandomRunner extends RunnerAbstract {
 			broker.submitVmList(vmList);
 			broker.submitCloudletList(cloudletList);
 
+			/*** 
+			 * Before optimization (see After optimization)
+			 * scheduler may know allocation policy, so it can figure out host assignment (important for host power consideration in the scheduling process)
+			 * */
+			PowerVmAllocationPolicyMigrationStaticThresholdPSO vmAllocationMigrationMSPolicy = (PowerVmAllocationPolicyMigrationStaticThresholdPSO)vmAllocationPolicy;
+			vmAllocationMigrationMSPolicy.setHostList(hostList);
+			Set<? extends Host> excludedHosts = new HashSet<>();
+			for(PowerVm vm : (List<PowerVm>)(Object)(RandomRunner.vmList)){
+				PowerHost host = vmAllocationMigrationMSPolicy.findHostForVm(vm, excludedHosts);
+					if(host != null){
+					host.getVmList().add(vm);
+
+					List<Double> mips = new ArrayList<Double>();
+					for(int i=0; i < vm.getNumberOfPes(); i++) 
+						mips.add(vm.getMips());
+					host.getVmScheduler().allocatePesForVm(vm, mips);
+					vm.setHost(host);
+					vm.setBeingInstantiated(true);
+					System.out.println(" CANDRES "+vm.getId() + ": " + host.getId());
+				}
+				else 
+					throw new Exception("According to the allocation policy, all Vms cannot be allocated in the datacenter. You need to increase servers on them.");
+			}
 
 			optimize();
 
+			/*** 
+			 * After optimization (see Before optimization)
+			 * Clear the hosts and vms in the datacenter
+			 * */
+			for(PowerVm vm : (List<PowerVm>)(Object)(RandomRunner.vmList)){
+				vm.setHost(null);
+			}
+
+			for(PowerHost host : hostList){
+				host.getVmList().clear();
+				host.getVmScheduler().deallocatePesForAllVms();
+			}
+
+			/*** 
+			 * After optimization (see Before optimization)
+			 * Bind cloudlets to vms in the datacenter
+			 * */
 			for (Cloudlet cloudlet : cloudletList){
 				Vm vm = RandomRunner.vmList.get((int)swarm.getBestParticle().getPosition()[cloudlet.getCloudletId()]);
 				broker.bindCloudletToVm(cloudlet.getCloudletId(), vm.getId());

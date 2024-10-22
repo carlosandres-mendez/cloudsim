@@ -16,6 +16,7 @@ import org.cloudbus.cloudsim.examples.pso.Allocation;
  */
 public class Discrete_ParticleUpdate {
 
+    boolean allowRepeatedCloudletsInVelocityFIFO = false; // default dehavior for velocity (this option needs to be studied)
     Discrete_PSO_Swarm swarm;
     Discrete_Particle particle;
 
@@ -29,7 +30,7 @@ public class Discrete_ParticleUpdate {
     //The social coefficient
     private final double SOCIAL_COEFFICIENT = 0.5d;
 
-    
+ 
     public Discrete_ParticleUpdate() {
     }
 
@@ -38,39 +39,63 @@ public class Discrete_ParticleUpdate {
         this.swarm = swarm;
         this.particle = particle;
 
-        // Update velocity 
-        List<Allocation> personalPossibleMigrations = generatePossibleCombinations(WEIGHT_R1, COGNIT_COEFFICIENT, particle.getBestPosition(), particle.getPosition());
-        List<Allocation> globalPossibleMigrations = generatePossibleCombinations(WEIGHT_R2, SOCIAL_COEFFICIENT, swarm.getBestPosition(), particle.getPosition());
+        //***** Update velocity  ******/
+        List<Allocation> personalPossibleCombinations = generatePossibleCombinations(WEIGHT_R1, COGNIT_COEFFICIENT, particle.getBestPosition(), particle.getPosition());
+        List<Allocation> globalPossibleCombinations = generatePossibleCombinations(WEIGHT_R2, SOCIAL_COEFFICIENT, swarm.getBestPosition(), particle.getPosition());
 
-        for (Allocation possibleMigration : personalPossibleMigrations){
-            boolean isFounded = false;
-            for(Allocation allocation : particle.getVelocity()){
-                if(allocation.getCloudlet().equals(possibleMigration.getCloudlet())){
-                    isFounded = true;
-                    allocation.setVm(possibleMigration.getVm());
-                    allocation.setHost(possibleMigration.getHost());
-                    break;
-                }
+        //if the option allow repeated cloudlets in th Velocity queue is enabled (this option needs to be studied)
+        if(allowRepeatedCloudletsInVelocityFIFO){
+            //Add the personal possible combinations to velocity  
+            for (Allocation possibleCombination : personalPossibleCombinations){
+                particle.getVelocity().add(possibleCombination);
+                if(particle.getVelocity().size() > particle.getDimension())
+                    particle.getVelocity().poll(); //if max is reach remove from velocity queue
             }
-            if(!isFounded)
-                particle.getVelocity().add(possibleMigration);
+            //Add the global possible combinations to velocity
+            for (Allocation possibleCombination : globalPossibleCombinations){
+                particle.getVelocity().add(possibleCombination);
+                if(particle.getVelocity().size() > particle.getDimension())
+                    particle.getVelocity().poll(); //if max is reach remove from velocity queue
+            }
+        }
+        else{
+            //Add personal possible combinations to velocity
+            for (Allocation possibleCombination : personalPossibleCombinations){
+                //remove if cloudlet exists in velocity queue
+                for (Iterator<Allocation> iter = particle.getVelocity().iterator(); iter.hasNext();){
+                    Allocation allocation = iter.next();
+                        if(allocation.getCloudlet().equals(possibleCombination.getCloudlet())){
+                            iter.remove();
+                            break;
+                        }
+                
+                }
+                //add the cloudlet allocation to the velocity queue
+                particle.getVelocity().add(possibleCombination);
+                if(particle.getVelocity().size() > particle.getDimension())
+                    particle.getVelocity().poll(); //if max is reach remove from velocity queue
+            }
+
+            //Add global possible combinations to velocity
+            for (Allocation possibleCombination : globalPossibleCombinations){
+                //remove if cloudlet exists in velocity queue
+                for (Iterator<Allocation> iter = particle.getVelocity().iterator(); iter.hasNext();){
+                    Allocation allocation = iter.next();
+                        if(allocation.getCloudlet().equals(possibleCombination.getCloudlet())){
+                            iter.remove();
+                            break;
+                        }
+                
+                }
+                //add the cloudlet allocation to the velocity queue
+                particle.getVelocity().add(possibleCombination);
+                if(particle.getVelocity().size() > particle.getDimension())
+                    particle.getVelocity().poll(); //if max is reach remove from velocity queue
+            }
         }
 
-        for (Allocation possibleMigration : globalPossibleMigrations){
-            boolean isFounded = false;
-            for(Allocation allocation : particle.getVelocity()){
-                if(allocation.getCloudlet().equals(possibleMigration.getCloudlet())){
-                    isFounded = true;
-                    allocation.setVm(possibleMigration.getVm());
-                    allocation.setHost(possibleMigration.getHost());
-                    break;
-                }
-            }
-            if(!isFounded)
-                particle.getVelocity().add(possibleMigration);
-        }
-
-        // Update position
+        //***** Update position  ******/
+        // Update position by replacing the current position with the velocity values  
         for (Allocation positionAllocation : particle.getPosition()) {
             for (Allocation velocityAllocation : particle.getVelocity()){
                 if(positionAllocation.getCloudlet().equals(velocityAllocation.getCloudlet())){
@@ -90,7 +115,7 @@ public class Discrete_ParticleUpdate {
         int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
         for(int i = 0; i < numPossibleCombinations; i++){
 /**
- *      This is when we need to validate, for example in containers
+ *      This is when we need to validate, for example in containers. We validate the new posible allocation in the position of the particle.
  * 
             // Calcular el total de MIPS de la VM
             PowerVm vm = bestPosition.get(i).getVm(); //Vm we are going to allocate the container

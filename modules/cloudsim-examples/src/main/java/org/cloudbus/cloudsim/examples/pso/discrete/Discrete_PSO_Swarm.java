@@ -59,7 +59,7 @@ public class Discrete_PSO_Swarm {
         for (int i=0; i < Constants.NUM_PARTICLES; i++) {
 
             List<Allocation> position = new ArrayList<>();
-            List<Allocation> velocity = new ArrayList<>();
+            Queue<Allocation> velocity = new LinkedList<>();
 
             for(Cloudlet cloudlet : this.cloudlets){ //Para cada contenedor buscamos aleatoriamente un host y una vm
                 Random randObj = new Random();
