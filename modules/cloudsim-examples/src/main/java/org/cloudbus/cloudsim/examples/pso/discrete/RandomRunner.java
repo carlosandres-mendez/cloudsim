@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicy;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Host;
@@ -102,9 +103,41 @@ public class RandomRunner extends RunnerAbstract {
 
     private void optimize(){
 
+		//*** domain problem data ***
+		List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(RandomRunner.hostList); //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
+		List<PowerVm> powerVmsOrderByPowerConsumption = new ArrayList<>((List<PowerVm>)(Object)(RandomRunner.vmList)); //asc, according with the hosts power consumption and the initial policy allocation
+
+		//this is just for debuging porposes (host doest have power as an attribute -only the method-)
+		for(PowerHost h1 : powerHostsOrderByPowerConsumption){
+			h1.power = h1.getPower(Constants.UTILIZATION_THRESHOLD);
+		}
+
+		//sort HostsOrderByPowerConsumption sort by bubble method 
+		int n = powerHostsOrderByPowerConsumption.size();
+		PowerHost temp = null;  
+		for(int i=0; i < n; i++){  
+			for(int j=1; j < (n-i); j++){  
+					if(powerHostsOrderByPowerConsumption.get(j-1).getPower(Constants.UTILIZATION_THRESHOLD) > powerHostsOrderByPowerConsumption.get(j).getPower(Constants.UTILIZATION_THRESHOLD)){  
+						//swap elements  
+						temp = powerHostsOrderByPowerConsumption.get(j-1);  
+						powerHostsOrderByPowerConsumption.set(j-1, powerHostsOrderByPowerConsumption.get(j));  
+						powerHostsOrderByPowerConsumption.set(j, temp); ;  
+				}  
+						
+			}  
+		}  
+
+		//sort vms by estimated power consumption by using the powerHostsOrderByPowerConsumption list
+		for(PowerHost host : powerHostsOrderByPowerConsumption){
+			for(Vm vm : host.getVmList())
+				powerVmsOrderByPowerConsumption.add((PowerVm)vm);
+		}
+
+
         swarm = new Discrete_PSO_Swarm(new Discrete_FitnessFunction(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList), 
 			RandomRunner.hostList, (List<PowerVm>)(Object)(RandomRunner.vmList), cloudletList);
-        swarm.init();
+		swarm.setParticleUpdate(new Discrete_ParticleUpdate(powerHostsOrderByPowerConsumption, powerVmsOrderByPowerConsumption));
+		swarm.init();
 
 		for (int i = 0; i < NoOfIterations; i++){
 			swarm.evolve();
@@ -207,6 +240,8 @@ public class RandomRunner extends RunnerAbstract {
 					experimentName,
 					Constants.OUTPUT_CSV,
 					outputFolder);
+
+			Helper.printCloudletList(cloudletList);
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage());

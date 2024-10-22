@@ -38,6 +38,9 @@ public class PowerHost extends HostDynamicWorkload {
 	/** The power model used by the host. */
 	private PowerModel powerModel;
 
+		/** just for debuging porpuses. */
+		public double power;
+
 	/**
 	 * Instantiates a new PowerHost.
 	 * 
@@ -76,7 +79,7 @@ public class PowerHost extends HostDynamicWorkload {
          * is critical for power consumption
 	 * @return the power consumption
 	 */
-	protected double getPower(double utilization) {
+	public double getPower(double utilization) {
 		double power = 0;
 		try {
 			power = getPowerModel().getPower(utilization);

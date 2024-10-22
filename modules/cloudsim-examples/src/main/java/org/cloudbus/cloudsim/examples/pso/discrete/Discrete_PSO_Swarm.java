@@ -44,7 +44,7 @@ public class Discrete_PSO_Swarm {
         this.cloudlets = cloudlets;
 
         // Set up particle update strategy (default: ParticleUpdateSimple) 
-		particleUpdate = new Discrete_ParticleUpdate();
+		particleUpdate = new Discrete_ParticleUpdate(); //default update dehaviour
     }
 
 	/**

@@ -31,7 +31,7 @@ public class ThrMc {
 		boolean enableOutput = true;
 		boolean outputToFile = true;
 		String inputFolder = "";
-		String outputFolder = "/home/carlos/Documents/ECCI/cloudsim/mifolder";
+		String outputFolder = "C:\\Users\\Carlos\\Documents\\Fuentes\\cloudsim\\mifolder";
 		String workload = "random"; // Random workload
 		String vmAllocationPolicy = "thr"; // Static Threshold (THR) VM allocation policy
 		String vmSelectionPolicy = "mc"; // Maximum Correlation (MC) VM selection policy

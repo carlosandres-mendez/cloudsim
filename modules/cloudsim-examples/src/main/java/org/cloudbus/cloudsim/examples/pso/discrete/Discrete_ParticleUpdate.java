@@ -2,11 +2,13 @@ package org.cloudbus.cloudsim.examples.pso.discrete;
 
 import java.util.*;
 
+import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerHostUtilizationHistory;
+import org.cloudbus.cloudsim.power.PowerVm;
 
 /**
  * Particle update strategy
@@ -34,8 +36,18 @@ public class Discrete_ParticleUpdate {
     //The social coefficient
     private final double SOCIAL_COEFFICIENT = 0.5d;
 
- 
+    //*** domain problem data ***
+    List<PowerHost> powerHostsOrderByPowerConsumption; //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
+    List<PowerVm> powerVmsOrderByPowerConsumption; //asc, according with the hosts power consumption and the initial policy allocation
+    List<Cloudlet> cloudlets;
+
     public Discrete_ParticleUpdate() {
+        //not implemented the default dehaviour
+    }
+ 
+    public Discrete_ParticleUpdate(List<PowerHost> powerHostsOrderByPowerConsumption, List<PowerVm> powerVmsOrderByPowerConsumption) {
+        this.powerHostsOrderByPowerConsumption = powerHostsOrderByPowerConsumption;
+        this.powerVmsOrderByPowerConsumption = powerVmsOrderByPowerConsumption;
     }
 
     /** Update particle's velocity and position */
@@ -110,7 +122,7 @@ public class Discrete_ParticleUpdate {
         }
     }
 
-    private List<Allocation> generatePossibleCombinations(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+    private List<Allocation> generatePossibleCombinationsRandom(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
         Collections.shuffle(bestPosition);
@@ -146,8 +158,20 @@ public class Discrete_ParticleUpdate {
         return possibleCombinations;
     }
 
-    private List<Allocation> generatePossibleCombinations2(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+    private List<Allocation> generatePossibleCombinations(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
+
+        //buscamos evitar se tengan luego que migrar vms y las vms mas costosas en energia apagarlas lo mas pronto posible, mejor si no le damos tareas
+        //si es una vm muy eficiente en uso energia y muy rapida (muchos mips)
+
+        //detectamos mvs de xPosition cuyo servidor es sobreutilizado
+        //de la lista ordenada de vms vamos buscando la que pueda albergar la vm
+        //bestPosition se puede usar para buscar interseccion y agregarlas a la velocidad
+        //la interseccion puede ser coincidencias en el numero de vm o en la caracteristica (si nuevas vms -con tareas- generan utilizacion similar )
+        for(Allocation allocation : xPosition){
+
+        }
+
 
         Collections.shuffle(bestPosition);
 
