@@ -18,7 +18,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
     List<PowerVm> vmList;
     List<PowerHost> hostList;
 
-    double executionTime[]; //execution time for each vm considering the tasks are going to process
+    double vmExecutionTime[]; //execution time for each vm considering the tasks are going to process
     double hostUtilization[]; //utilization for each host
     double vmUtilization[]; //utilization for each host
     double energy[]; //energy for each task
@@ -29,7 +29,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         this.hostList = hostList;
 
         //executionTime = new double[clouletList.size()];
-        executionTime = new double[vmList.size()];
+        vmExecutionTime = new double[vmList.size()];
         hostUtilization = new double[hostList.size()]; 
         vmUtilization = new double[vmList.size()]; 
         energy = new double[clouletList.size()];
@@ -39,43 +39,61 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
     public double evaluate(double[] position) {
 
-        //cloudlet execution time = cloudlet length (total mips) / mv mips
-        // for(int i=0; i< position.length; i++) 
-        //     executionTime[i] = clouletList.get(i).getCloudletLength() / vmList.get((int)position[i]).getMips();
+/**
+ *      VM EXECUTION TIME
+ *      Estimated by mips: total cloudlets mips / total vm mips
+**/
 
         //For each vm we are going to calculate the execution time using the cloudlets mips it has to process
         for(PowerVm vm : vmList){
             //sum all cloudlet the vm has to process
             for(int i=0; i< position.length; i++){
                 if((int)position[i]==vm.getId())
-                    executionTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
+                    vmExecutionTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
             }
             //consider the vm capacity
-            executionTime[vm.getId()] = executionTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
+            vmExecutionTime[vm.getId()] = vmExecutionTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
         } 
         
+
 /**
- *      This is when we have the host information
- * 
+ *      HOST UTILIZATION
+ *      Estimated percentage: total VMs mips / total host mips
 **/
-        //host utilization
         for(int i=0; i< hostUtilization.length; i++) 
             hostUtilization[i]=0.0d;
         for(PowerVm vm : vmList){
-            //sum all cloudlet the vm has to process
+            //for each server in the position, sum all the vm mips
             for(int i=0; i< position.length; i++){
                 if((int)position[i]==vm.getId()){
-                    double utilization = (double)vm.getMips() / (double)vm.getHost().getTotalMips();
-                    hostUtilization[vm.getHost().getId()]+= vm.getMips() * vm.getNumberOfPes();
+                    double vmMIPS = vm.getMips() * vm.getNumberOfPes();
+                    hostUtilization[vm.getHost().getId()]+= vmMIPS;
                 }
             }
         } 
 
-        int hostOverUtilized = 0;
+        //set host utilization as a percentage
+        for(int i=0; i< hostUtilization.length; i++){ 
+            if(hostUtilization[i]!=0.0d)
+                hostUtilization[i]=hostUtilization[i]/(double)hostList.get(i).getTotalMips();
+        }
+   
+/**
+ *      NUMBER OF HOSTS WITH OVER UTILIZATION
+ *      Estimated count the number of host over UTILIZATION_THRESHOLD
+**/  
+
+        int numberHostOverUtilized = 0;
         for(int i=0; i< hostUtilization.length; i++){ 
             if(hostUtilization[i]>Constants.UTILIZATION_THRESHOLD)
-                hostOverUtilized++;
+                numberHostOverUtilized++;
         }
+
+/**
+ *      TOTAL AVAILABLE HOSTS MIPS of this solution (Estimated Resource SubUtilization)
+ *      We want to minimize the number of available mips in the datacenter.
+ *      This sum all the available mips of only the hosts of the especific solucion/allocation (particle position)
+**/ 
 
         int numberOfHosts = 0;
         double hostsAvailableMips = 0.0d;
@@ -83,40 +101,53 @@ public class PSO_FitnessFunction extends FitnessFunction{
         for(int i=1; i< hostUtilization.length+1; i++){ 
             for(PowerHost host : hostList){
                 if(host.getId()==i){
-                    numberOfHosts++;
-                    hostsTotalMips += (double)host.getTotalMips();
-                    hostsAvailableMips += (double)host.getTotalMips() - hostUtilization[i];
+                    if(hostUtilization[i]!=0.0d){ //considering only hosts in the this especific solucion/allocation (particle position)
+                        numberOfHosts++;
+                        hostsTotalMips += (double)host.getTotalMips();
+                        hostsAvailableMips += ((double)host.getTotalMips() * (1-hostUtilization[i]));
+                    }
                 }
             }
         }
 
+        double resourceSubUtilization = hostsAvailableMips/hostsTotalMips;
 
 
-
-        //total
+/**
+ *      MAKESPAN
+ *      Estimated by the max vm execution time
+**/ 
         double makespan = 0.0d;
         for(int i=0; i< vmList.size(); i++){
-            makespan = Math.max(makespan, executionTime[i]);
+            makespan = Math.max(makespan, vmExecutionTime[i]);
         }
+
+        //normalize: make the value comparable by changing the value from 0 to 1
+        double maxClouletLenght = 0.0d;
+        double minVmMips = Double.MAX_VALUE;
+        for(int i=0; i< position.length; i++){ 
+            maxClouletLenght = Math.max(maxClouletLenght, clouletList.get(i).getCloudletLength());
+            minVmMips = Math.min(minVmMips, vmList.get(i).getMips() * vmList.get(i).getNumberOfPes());
+        }
+        double maxPosibleExcecutionTime = maxClouletLenght / minVmMips;
+        makespan = makespan / maxPosibleExcecutionTime;
+
+
+/**
+ *      LOAD BALANCING
+ *      Estimated by the max vm execution time
+**/ 
 
         //desbalancing degree calculated as the variance of host utilization
-        double desbalancingDegree = 0;//calculateVariance(executionTime);
+        double desbalancingDegree = calculateVariance(vmExecutionTime);
 
-        //normalize: make comparable variables
-        double minClouletLenght = Double.MAX_VALUE;
-        double maxVmMips = Double.MAX_VALUE;
-        for(int i=0; i< position.length; i++){ 
-            minClouletLenght = Math.min(minClouletLenght, clouletList.get(i).getCloudletLength());
-            maxVmMips = Math.max(maxVmMips, vmList.get(i).getMips() * vmList.get(i).getNumberOfPes());
-        }
-        double minPosibleExcecutionTime = minClouletLenght / maxVmMips;
-        makespan = minPosibleExcecutionTime / makespan;
+
 
         //objetive function
         double weight1 = 0.6;
-        double weight2 = 0;
+        double weight2 = 0.2;
         double weight3 = 0.4;
-        double functOutput =  1/((weight1 * hostsAvailableMips/hostsTotalMips) + (weight2 * desbalancingDegree) + (weight3 * hostOverUtilized==0?0:(hostOverUtilized/numberOfHosts)));
+        double functOutput =  1/((weight1 * resourceSubUtilization) + (weight2 * desbalancingDegree) + (weight3 * numberHostOverUtilized==0?0:(numberHostOverUtilized/numberOfHosts)));
 
 /**
  *      This is when we need to validate, for example in containers
@@ -171,10 +202,10 @@ public class PSO_FitnessFunction extends FitnessFunction{
             //sum all cloudlet the vm has to process
             for(int i=0; i< position.length; i++){
                 if((int)position[i]==vm.getId())
-                    executionTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
+                    vmExecutionTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
             }
             //consider the vm capacity
-            executionTime[vm.getId()] = executionTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
+            vmExecutionTime[vm.getId()] = vmExecutionTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
         } 
         
 /**
@@ -215,11 +246,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
         //total
         double makespan = 0.0d;
         for(int i=0; i< vmList.size(); i++){
-            makespan = Math.max(makespan, executionTime[i]);
+            makespan = Math.max(makespan, vmExecutionTime[i]);
         }
 
         //desbalancing degree calculated as the variance of host utilization
-        double desbalancingDegree = calculateVariance(executionTime);
+        double desbalancingDegree = calculateVariance(vmExecutionTime);
 
         //normalize: make comparable variables
         double minClouletLenght = Double.MAX_VALUE;
@@ -284,7 +315,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         double sumaDiferenciasCuadradas = 0.0;
 
         for (double num : numeros) {
-            sumaDiferenciasCuadradas += Math.pow(num - media, 2);
+            sumaDiferenciasCuadradas += Math.pow((num - media)/media, 2);
         }
 
         return sumaDiferenciasCuadradas / numeros.length;
