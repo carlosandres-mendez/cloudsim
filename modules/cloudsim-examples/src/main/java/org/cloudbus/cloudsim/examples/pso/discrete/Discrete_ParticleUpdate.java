@@ -180,7 +180,7 @@ public class Discrete_ParticleUpdate {
         for(int i = 0; i < numPossibleCombinations; i++){
 
             possibleCombinations.add(
-                        new Allocation(bestPosition.get(i).getCloudlet(), bestPosition.get(i).getVm(), bestPosition.get(i).getHost())
+                        new Allocation(bestPosition.get(i).getCloudlet(), powerVmsOrderByPowerConsumption.get(i), bestPosition.get(i).getHost())
                     );
         }
         return possibleCombinations;
