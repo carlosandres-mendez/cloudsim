@@ -29,12 +29,12 @@ public class Discrete_ParticleUpdate {
     //A random weight r1.
     private final double WEIGHT_R1 = 0.3d;
     //The cognitive acceleration coefficient c1.
-    private final double COGNIT_COEFFICIENT = 0.5d;
+    private final double COGNIT_COEFFICIENT = 0.1d;
 
     //A random weight r2.
     private final double WEIGHT_R2 = 0.3d;
     //The social coefficient
-    private final double SOCIAL_COEFFICIENT = 0.5d;
+    private final double SOCIAL_COEFFICIENT = 0.1d;
 
     //*** domain problem data ***
     List<PowerHost> powerHostsOrderByPowerConsumption; //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
@@ -202,7 +202,7 @@ public class Discrete_ParticleUpdate {
 
                     //if vm not has the same characteristic than the vm in the best position then 
                     if(xPositionShuffled.get(j).getCloudlet()==bestPosition.get(k).getCloudlet() 
-                        && xPositionShuffled.get(j).getVm().getMips()!= bestPosition.get(j).getVm().getMips()){
+                        && ((PowerHost)xPositionShuffled.get(j).getVm().getHost()).power > ((PowerHost)bestPosition.get(j).getVm().getHost()).power ){
 
                         possibleCombinations.add(
                                     new Allocation(xPositionShuffled.get(i).getCloudlet(), powerVmsOrderByPowerConsumption.get(i), xPositionShuffled.get(i).getHost())
