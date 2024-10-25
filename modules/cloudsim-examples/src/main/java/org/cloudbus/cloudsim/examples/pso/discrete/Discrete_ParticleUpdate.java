@@ -7,7 +7,6 @@ import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
 import org.cloudbus.cloudsim.power.PowerHost;
-import org.cloudbus.cloudsim.power.PowerHostUtilizationHistory;
 import org.cloudbus.cloudsim.power.PowerVm;
 
 /**
@@ -22,19 +21,19 @@ import org.cloudbus.cloudsim.power.PowerVm;
  */
 public class Discrete_ParticleUpdate {
 
-    boolean allowRepeatedCloudletsInVelocityFIFO = false; // default dehavior for velocity (this option needs to be studied)
+    boolean allowRepeatedCloudletsInVelocityFIFO = false; // dehavior for velocity to allow repeated cloudlets (this option needs to be studied)
     Discrete_PSO_Swarm swarm;
     Discrete_Particle particle;
 
     //A random weight r1.
-    private final double WEIGHT_R1 = 0.3d;
+    private final double WEIGHT_R1 = 0.2d;
     //The cognitive acceleration coefficient c1.
-    private final double COGNIT_COEFFICIENT = 0.1d;
+    private final double COGNIT_COEFFICIENT = 0.5d;
 
     //A random weight r2.
-    private final double WEIGHT_R2 = 0.3d;
+    private final double WEIGHT_R2 = 0.2d;
     //The social coefficient
-    private final double SOCIAL_COEFFICIENT = 0.1d;
+    private final double SOCIAL_COEFFICIENT = 0.5d;
 
     //*** domain problem data ***
     List<PowerHost> powerHostsOrderByPowerConsumption; //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
@@ -185,15 +184,15 @@ public class Discrete_ParticleUpdate {
         return possibleCombinations;
     }
 
-    private List<Allocation> generatePossibleCombinations(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+    private List<Allocation> generatePossibleCombinations(double randomWeight, double wCoefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
         //Collections.shuffle(bestPosition);
         List<Allocation> xPositionShuffled = new ArrayList<>(xPosition);
         Collections.shuffle(xPositionShuffled);
 
-        //Random generated
-        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
+        //We are going to generate numPossibleCombinations new combinations acording with the w coefficient
+        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * wCoefficient * randomWeight ); 
         for(int i = 0; i < numPossibleCombinations; i++){
 
             numPossibleCombinationsLoop:

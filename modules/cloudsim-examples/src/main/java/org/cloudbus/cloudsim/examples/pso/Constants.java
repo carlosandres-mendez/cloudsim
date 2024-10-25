@@ -27,7 +27,6 @@ public class Constants {
 	public final static int CLOUDLET_LENGTH	= 2500 * (int) 24 * 60 * 60;
 	public final static int CLOUDLET_PES	= 1;
 
-	public final static int NUM_PARTICLES	= 20;
 	public final static double UTILIZATION_THRESHOLD = 0.8;
 
 	/*
@@ -64,5 +63,13 @@ public class Constants {
 		new PowerModelSpecPowerHpProLiantMl110G4Xeon3040(),
 		new PowerModelSpecPowerHpProLiantMl110G5Xeon3075()
 	};
+
+	/*
+	 * 2024 Carlos A. Mendez Rodriguez
+	 * Added for PSO Original and discrete
+	 */
+
+	public final static int NUM_PARTICLES	= 25;
+	public final static int NUM_ITERATIONS	= 100;
 
 }

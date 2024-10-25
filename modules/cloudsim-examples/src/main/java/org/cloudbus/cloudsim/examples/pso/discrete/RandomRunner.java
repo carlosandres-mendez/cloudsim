@@ -41,9 +41,6 @@ import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThresho
  */
 public class RandomRunner extends RunnerAbstract {
 
-	public static final int NoOfParticles = 25;
-	public static final int NoOfIterations = 100;
-
     Discrete_PSO_Swarm swarm;
     PSO_FitnessFunction fitnessFunction;
 
@@ -139,7 +136,7 @@ public class RandomRunner extends RunnerAbstract {
 		swarm.setParticleUpdate(new Discrete_ParticleUpdate(powerHostsOrderByPowerConsumption, powerVmsOrderByPowerConsumption));
 		swarm.init();
 
-		for (int i = 0; i < NoOfIterations; i++){
+		for (int i = 0; i < Constants.NUM_ITERATIONS; i++){
 			swarm.evolve();
 			if(i%10 == 0) {
 				System.out.println("Global best at iteration "+i+" :"+swarm.getBestFitness());

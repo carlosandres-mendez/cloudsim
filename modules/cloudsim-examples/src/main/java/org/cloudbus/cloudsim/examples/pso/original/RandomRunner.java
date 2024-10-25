@@ -17,8 +17,6 @@ import org.cloudbus.cloudsim.examples.pso.Helper;
 import org.cloudbus.cloudsim.examples.pso.RandomConstants;
 import org.cloudbus.cloudsim.examples.pso.RandomHelper;
 import org.cloudbus.cloudsim.examples.pso.RunnerAbstract;
-import org.cloudbus.cloudsim.examples.pso.original.PSO_FitnessFunction;
-import org.cloudbus.cloudsim.examples.pso.original.PSO_Particle;
 import org.cloudbus.cloudsim.power.PowerDatacenter;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
@@ -42,9 +40,6 @@ import net.sourceforge.jswarm_pso.Swarm;
  * @since Jan 5, 2012
  */
 public class RandomRunner extends RunnerAbstract {
-
-	public static final int NoOfParticles = 25;
-	public static final int NoOfIterations = 10;
 
     Swarm swarm;
     PSO_FitnessFunction fitnessFunction;
@@ -106,8 +101,8 @@ public class RandomRunner extends RunnerAbstract {
 	private void optimize(){
 
         //initialize particles
-        PSO_Particle[] particles = new PSO_Particle[NoOfParticles];
-        for(int i=0;i<NoOfParticles;i++) {
+        PSO_Particle[] particles = new PSO_Particle[Constants.NUM_PARTICLES];
+        for(int i=0;i<Constants.NUM_PARTICLES;i++) {
             particles[i]= new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size());
             System.out.println(particles[i]);
         }
@@ -119,7 +114,7 @@ public class RandomRunner extends RunnerAbstract {
         swarm.setMaxMinVelocity(1.1);
         swarm.setParticles(particles);
         swarm.setParticleUpdate(new ParticleUpdateSimple(new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size())));
-        for(int i=0;i<NoOfIterations;i++) {
+        for(int i=0;i<Constants.NUM_ITERATIONS;i++) {
             swarm.evolve();
             if(i%10 == 0) {
                 System.out.println("Global best at iteration "+i+" :"+swarm.getBestFitness());

@@ -7,6 +7,7 @@ import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
+import org.cloudbus.cloudsim.examples.pso.RandomConstants;
 
 /**
  * 
