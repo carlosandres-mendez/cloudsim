@@ -158,10 +158,12 @@ public class Discrete_ParticleUpdate {
         return possibleCombinations;
     }
 
-    private List<Allocation> generatePossibleCombinations(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+    private List<Allocation> generatePossibleCombinations0(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
-        Collections.shuffle(bestPosition);
+        //Collections.shuffle(bestPosition);
+        List<Allocation> xPositionShuffled = new ArrayList<>(bestPosition);
+        Collections.shuffle(xPositionShuffled);
 
         //Random generated
         int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
@@ -173,7 +175,7 @@ public class Discrete_ParticleUpdate {
                 if(xPosition.get(j).getVm().getMips()!= bestPosition.get(j).getVm().getMips()){
 
                     possibleCombinations.add(
-                                new Allocation(bestPosition.get(i).getCloudlet(), powerVmsOrderByPowerConsumption.get(i), bestPosition.get(i).getHost())
+                                new Allocation(xPositionShuffled.get(i).getCloudlet(), powerVmsOrderByPowerConsumption.get(i), xPositionShuffled.get(i).getHost())
                             );
                             break;
                 }
@@ -182,6 +184,38 @@ public class Discrete_ParticleUpdate {
         }
         return possibleCombinations;
     }
+
+    private List<Allocation> generatePossibleCombinations(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+        List<Allocation> possibleCombinations = new ArrayList<Allocation>();
+
+        //Collections.shuffle(bestPosition);
+        List<Allocation> xPositionShuffled = new ArrayList<>(xPosition);
+        Collections.shuffle(xPositionShuffled);
+
+        //Random generated
+        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
+        for(int i = 0; i < numPossibleCombinations; i++){
+
+            numPossibleCombinationsLoop:
+            for(int j=0; j< xPositionShuffled.size(); j++){
+                for(int k=0; k< bestPosition.size(); k++){
+
+                    //if vm not has the same characteristic than the vm in the best position then 
+                    if(xPositionShuffled.get(j).getCloudlet()==bestPosition.get(k).getCloudlet() 
+                        && xPositionShuffled.get(j).getVm().getMips()!= bestPosition.get(j).getVm().getMips()){
+
+                        possibleCombinations.add(
+                                    new Allocation(xPositionShuffled.get(i).getCloudlet(), powerVmsOrderByPowerConsumption.get(i), xPositionShuffled.get(i).getHost())
+                                );
+                                break numPossibleCombinationsLoop;
+                    }
+                }
+            }
+
+        }
+        return possibleCombinations;
+    }
+    
 
     private List<Allocation> generatePossibleCombinationsInDeveloping1(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();

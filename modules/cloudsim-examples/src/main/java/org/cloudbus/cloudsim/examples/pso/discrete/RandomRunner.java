@@ -42,7 +42,7 @@ import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThresho
 public class RandomRunner extends RunnerAbstract {
 
 	public static final int NoOfParticles = 25;
-	public static final int NoOfIterations = 10;
+	public static final int NoOfIterations = 100;
 
     Discrete_PSO_Swarm swarm;
     PSO_FitnessFunction fitnessFunction;
