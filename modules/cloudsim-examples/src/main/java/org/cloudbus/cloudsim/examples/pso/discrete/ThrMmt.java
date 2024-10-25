@@ -19,7 +19,7 @@ import java.io.IOException;
  * @author Anton Beloglazov
  * @since Jan 5, 2012
  */
-public class ThrMc {
+public class ThrMmt {
 
 	/**
 	 * The main method.
@@ -34,7 +34,7 @@ public class ThrMc {
 		String outputFolder = "/home/carlos/Documents/ECCI/cloudsim/mifolder";
 		String workload = "random"; // Random workload
 		String vmAllocationPolicy = "thr"; // Static Threshold (THR) VM allocation policy
-		String vmSelectionPolicy = "mc"; // Maximum Correlation (MC) VM selection policy
+		String vmSelectionPolicy = "mmt"; // Minimum Migration Time (MMT) VM selection policy
 		String parameter = "0.8"; // the static utilization threshold
 
 		new RandomRunner(

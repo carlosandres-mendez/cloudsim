@@ -161,6 +161,31 @@ public class Discrete_ParticleUpdate {
     private List<Allocation> generatePossibleCombinations(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
+        Collections.shuffle(bestPosition);
+
+        //Random generated
+        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
+        for(int i = 0; i < numPossibleCombinations; i++){
+
+            for(int j=0; j< xPosition.size(); j++){
+
+                //if vm not has the same characteristic than the vm in the best position then 
+                if(xPosition.get(j).getVm().getMips()!= bestPosition.get(j).getVm().getMips()){
+
+                    possibleCombinations.add(
+                                new Allocation(bestPosition.get(i).getCloudlet(), powerVmsOrderByPowerConsumption.get(i), bestPosition.get(i).getHost())
+                            );
+                            break;
+                }
+            }
+
+        }
+        return possibleCombinations;
+    }
+
+    private List<Allocation> generatePossibleCombinationsInDeveloping1(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+        List<Allocation> possibleCombinations = new ArrayList<Allocation>();
+
         //buscamos evitar se tengan luego que migrar vms y las vms mas costosas en energia apagarlas lo mas pronto posible, mejor si no le damos tareas
         //si es una vm muy eficiente en uso energia y muy rapida (muchos mips)
 
@@ -186,6 +211,66 @@ public class Discrete_ParticleUpdate {
         return possibleCombinations;
     }
 
+    private List<Allocation> generatePossibleCombinationsInDeveloping2(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+        List<Allocation> possibleCombinations = new ArrayList<Allocation>();
+        Set<Integer> vmsSelected = new HashSet<Integer>();
+        Set<Integer> cloudletChanged = new HashSet<Integer>();
+
+        //buscamos evitar se tengan luego que migrar vms y las vms mas costosas en energia apagarlas lo mas pronto posible, mejor si no le damos tareas
+        //si es una vm muy eficiente en uso energia y muy rapida (muchos mips)
+
+
+        List<Allocation> xPositionShuffled = new ArrayList<>(xPosition);
+        Collections.shuffle(xPositionShuffled);
+
+        //Random generated
+        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
+
+        //for each task in the position 
+        numPossibleCombinationsLoop:
+        for(int i=0; i< xPosition.size(); i++){
+
+            //if vm not has the same characteristic than the vm in the best position then 
+            if(xPosition.get(i).getVm().getMips()!= bestPosition.get(i).getVm().getMips()){
+
+                //find a vm from the vms ordered by power consumption which has the same mips as the best position
+                outerloop:
+                for(PowerVm vm : powerVmsOrderByPowerConsumption){
+                    if(!vmsSelected.contains(vm.getId())){ //only different vms are selected
+
+
+                        /** Trying an horizontal interchange with the same position */
+                        //find a vm from the vms ordered by power consumption which has the same mips as the best position
+                        for(Allocation allocation : xPositionShuffled){
+                            if(vm.getId()==allocation.getVm().getId() //if it is the vm suggested by the vms ordered by power consumption
+                                && !allocation.equals(xPosition.get(i)) //if this allocation is not the same we are iterating 
+                                && allocation.getVm().getMips() == bestPosition.get(i).getVm().getMips() //if it has the same mips as the best position
+                                && !cloudletChanged.contains(allocation.getCloudlet().getCloudletId())){ //if allocation is not already in the changes list
+
+                                //if found, add it to the list of possible changes
+                                possibleCombinations.add(
+                                    new Allocation(xPosition.get(i).getCloudlet(), allocation.getVm(), xPosition.get(i).getHost())
+                                );
+
+                                //add to the vms already allocated
+                                vmsSelected.add(allocation.getVm().getId());
+                                cloudletChanged.add(allocation.getCloudlet().getCloudletId());
+
+                                //if the number of possible combinations already reached the maximum number then finish
+                                if(i==numPossibleCombinations)
+                                    break numPossibleCombinationsLoop;
+                                else
+                                    break outerloop;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return new ArrayList<>();
+    } 
+    
     	/**
 	 * Gets the over utilized hosts.
 	 * 
