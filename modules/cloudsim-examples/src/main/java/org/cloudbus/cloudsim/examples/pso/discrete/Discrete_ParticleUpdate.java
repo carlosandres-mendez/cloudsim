@@ -25,16 +25,6 @@ public class Discrete_ParticleUpdate {
     Discrete_PSO_Swarm swarm;
     Discrete_Particle particle;
 
-    //A random weight r1.
-    private final double WEIGHT_R1 = 0.2d;
-    //The cognitive acceleration coefficient c1.
-    private final double COGNIT_COEFFICIENT = 0.5d;
-
-    //A random weight r2.
-    private final double WEIGHT_R2 = 0.2d;
-    //The social coefficient
-    private final double SOCIAL_COEFFICIENT = 0.5d;
-
     //*** domain problem data ***
     List<PowerHost> powerHostsOrderByPowerConsumption; //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
     List<PowerVm> powerVmsOrderByPowerConsumption; //asc, according with the hosts power consumption and the initial policy allocation
@@ -54,9 +44,14 @@ public class Discrete_ParticleUpdate {
         this.swarm = swarm;
         this.particle = particle;
 
+        //if inertia 0 then velocity can be full with personal and social bests.
+        //if inertia > 1 then velocity trend to keep the same. So, this variable is going to count the cloudlets updated. 
+        int countUpdatedCloudlets = 0; 
+        int inertia =  (int) Math.floor(((double)swarm.getDimension()) * swarm.getInertia());
+
         //***** Update velocity  ******/
-        List<Allocation> personalPossibleCombinations = generatePossibleCombinations(WEIGHT_R1, COGNIT_COEFFICIENT, particle.getBestPosition(), particle.getPosition());
-        List<Allocation> globalPossibleCombinations = generatePossibleCombinations(WEIGHT_R2, SOCIAL_COEFFICIENT, swarm.getBestPosition(), particle.getPosition());
+        List<Allocation> personalPossibleCombinations = generatePossibleCombinations(swarm.getParticleIncrement(), particle.getBestPosition(), particle.getPosition());
+        List<Allocation> globalPossibleCombinations = generatePossibleCombinations(swarm.getGlobalIncrement(), swarm.getBestPosition(), particle.getPosition());
 
         //if the option allow repeated cloudlets in th Velocity queue is enabled (this option needs to be studied)
         if(allowRepeatedCloudletsInVelocityFIFO){
@@ -76,36 +71,58 @@ public class Discrete_ParticleUpdate {
         else{
             //Add personal possible combinations to velocity
             for (Allocation possibleCombination : personalPossibleCombinations){
-                //remove if cloudlet exists in velocity queue
-                for (Iterator<Allocation> iter = particle.getVelocity().iterator(); iter.hasNext();){
-                    Allocation allocation = iter.next();
-                        if(allocation.getCloudlet().equals(possibleCombination.getCloudlet())){
-                            iter.remove();
-                            break;
-                        }
-                
+                if(countUpdatedCloudlets < inertia){
+                    countUpdatedCloudlets++;
+
+                    //remove if cloudlet exists in velocity queue
+                    for (Iterator<Allocation> iter = particle.getVelocity().iterator(); iter.hasNext();){
+                        Allocation allocation = iter.next();
+                            if(allocation.getCloudlet().equals(possibleCombination.getCloudlet())){
+                                //this is just for analyse the velocity queue
+                                if(allocation.getVm().getId()!= possibleCombination.getVm().getId())
+                                    swarm.cantNewVelocidad++;
+                                //remove allocation
+                                iter.remove();
+                                break;
+                            }
+                    
+                    }
+                    //add the cloudlet allocation to the velocity queue
+                    particle.getVelocity().add(possibleCombination);
+                    swarm.cantAddVelocidad++;
+                    if(particle.getVelocity().size() > particle.getDimension()){
+                        particle.getVelocity().poll(); //if max is reach remove from velocity queue
+                        swarm.cantPollVelocidad++;
+                    }
                 }
-                //add the cloudlet allocation to the velocity queue
-                particle.getVelocity().add(possibleCombination);
-                if(particle.getVelocity().size() > particle.getDimension())
-                    particle.getVelocity().poll(); //if max is reach remove from velocity queue
             }
 
             //Add global possible combinations to velocity
             for (Allocation possibleCombination : globalPossibleCombinations){
-                //remove if cloudlet exists in velocity queue
-                for (Iterator<Allocation> iter = particle.getVelocity().iterator(); iter.hasNext();){
-                    Allocation allocation = iter.next();
-                        if(allocation.getCloudlet().equals(possibleCombination.getCloudlet())){
-                            iter.remove();
-                            break;
-                        }
-                
+                if(countUpdatedCloudlets < inertia){
+                    countUpdatedCloudlets++;
+
+                    //remove if cloudlet exists in velocity queue
+                    for (Iterator<Allocation> iter = particle.getVelocity().iterator(); iter.hasNext();){
+                        Allocation allocation = iter.next();
+                            if(allocation.getCloudlet().equals(possibleCombination.getCloudlet())){
+                                //this is just for analyse the velocity queue
+                                if(allocation.getVm().getId()!= possibleCombination.getVm().getId())
+                                    swarm.cantNewVelocidad++;                           
+                                //remove allocation
+                                iter.remove();
+                                break;
+                            }
+                    
+                    }
+                    //add the cloudlet allocation to the velocity queue
+                    particle.getVelocity().add(possibleCombination);
+                    swarm.cantAddVelocidad++;
+                    if(particle.getVelocity().size() > particle.getDimension()){
+                        particle.getVelocity().poll(); //if max is reach remove from velocity queue
+                        swarm.cantPollVelocidad++;
+                    }
                 }
-                //add the cloudlet allocation to the velocity queue
-                particle.getVelocity().add(possibleCombination);
-                if(particle.getVelocity().size() > particle.getDimension())
-                    particle.getVelocity().poll(); //if max is reach remove from velocity queue
             }
         }
 
@@ -114,11 +131,20 @@ public class Discrete_ParticleUpdate {
         for (Allocation positionAllocation : particle.getPosition()) {
             for (Allocation velocityAllocation : particle.getVelocity()){
                 if(positionAllocation.getCloudlet().equals(velocityAllocation.getCloudlet())){
+                    //this is just for analyse the velocity queue
+                    if(positionAllocation.getVm().getId()!=velocityAllocation.getVm().getId())
+                        swarm.cantGetVelocidad++;
+                    //replace the vm and host
                     positionAllocation.setVm(velocityAllocation.getVm());
                     positionAllocation.setHost(velocityAllocation.getHost());
                 }
             }
         }
+
+        // for(Allocation alloc : particle.getVelocity())
+        //     System.out.print("("+alloc.getCloudlet().getCloudletId() +"-"+ alloc.getVm().getId()+"-"+ alloc.getHost().getId()+") ");
+        // System.out.println(); 
+        System.out.println("Velocity size: "+particle.getVelocity().size()+" adds: "+ swarm.cantAddVelocidad+ " news: " +swarm.cantNewVelocidad+ " gets: " +swarm.cantGetVelocidad+ " polls: " +swarm.cantPollVelocidad);
     }
 
     private List<Allocation> generatePossibleCombinationsRandom(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
@@ -184,15 +210,21 @@ public class Discrete_ParticleUpdate {
         return possibleCombinations;
     }
 
-    private List<Allocation> generatePossibleCombinations(double randomWeight, double wCoefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+    private List<Allocation> generatePossibleCombinations(double wCoefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
+
+        /**
+         * independent random number uniquely
+         * generated from 0-1 at every update for each individual dimension d = 1 to D
+         */
+        double random = Math.random(); //
 
         //Collections.shuffle(bestPosition);
         List<Allocation> xPositionShuffled = new ArrayList<>(xPosition);
         Collections.shuffle(xPositionShuffled);
 
         //We are going to generate numPossibleCombinations new combinations acording with the w coefficient
-        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * wCoefficient * randomWeight ); 
+        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * wCoefficient ); 
         for(int i = 0; i < numPossibleCombinations; i++){
 
             numPossibleCombinationsLoop:

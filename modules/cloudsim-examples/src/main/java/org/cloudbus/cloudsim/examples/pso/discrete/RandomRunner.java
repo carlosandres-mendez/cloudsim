@@ -134,6 +134,10 @@ public class RandomRunner extends RunnerAbstract {
         swarm = new Discrete_PSO_Swarm(new Discrete_FitnessFunction(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList), 
 			RandomRunner.hostList, (List<PowerVm>)(Object)(RandomRunner.vmList), cloudletList);
 		swarm.setParticleUpdate(new Discrete_ParticleUpdate(powerHostsOrderByPowerConsumption, powerVmsOrderByPowerConsumption));
+		swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
+		swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
+		swarm.setInertia(Constants.INERTIA_WEIGHT);
+		swarm.setNumberOfParticles(Constants.NUM_PARTICLES);
 		swarm.init();
 
 		for (int i = 0; i < Constants.NUM_ITERATIONS; i++){

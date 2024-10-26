@@ -69,7 +69,25 @@ public class Constants {
 	 * Added for PSO Original and discrete
 	 */
 
-	public final static int NUM_PARTICLES	= 25;
-	public final static int NUM_ITERATIONS	= 100;
+	public final static int NUM_PARTICLES	= 50;
+
+	public final static int NUM_ITERATIONS	= 2000;
+    
+	//The inertia Weight 
+	/**
+	 * The authors also
+		suggested using w as a dynamic value over the optimization
+		process, starting with a value greater than 1.0 to encourage
+		early exploration, and decreasing eventually to a value less
+		than 1.0 to focus the efforts of the swarm on the best area
+		found in the exploration. 
+		James Kennedy && Daniel Bratton, 2007. Defining a Standard for Particle Swarm Optimization */
+    public final static double INERTIA_WEIGHT = 0.5d;
+
+    //The cognitive acceleration coefficient c1.
+    public final static double COGNIT_COEFFICIENT = 0.1d;
+
+    //The social coefficient
+    public final static double SOCIAL_COEFFICIENT = 0.1d;
 
 }

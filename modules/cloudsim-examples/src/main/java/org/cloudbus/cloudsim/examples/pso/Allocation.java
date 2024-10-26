@@ -69,7 +69,10 @@ public class Allocation {
             return false;
         return true;
     }
-    
-    
+
+    @Override
+    public String toString() {
+        return "Allocation [cloudlet=" + cloudlet + ", vm=" + vm + ", host=" + host + "]";
+    }
 
 }

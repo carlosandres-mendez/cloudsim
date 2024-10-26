@@ -1656,4 +1656,9 @@ public class Cloudlet {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "Cloudlet [cloudletId=" + cloudletId + "]";
+    }
+
 }

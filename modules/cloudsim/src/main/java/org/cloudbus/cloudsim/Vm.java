@@ -637,4 +637,9 @@ public class Vm {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "Vm [id=" + id + "]";
+	}
+
 }

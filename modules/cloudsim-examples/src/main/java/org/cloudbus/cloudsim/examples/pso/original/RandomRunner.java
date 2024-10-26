@@ -109,6 +109,13 @@ public class RandomRunner extends RunnerAbstract {
 
         fitnessFunction = new PSO_FitnessFunction(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList);
         swarm = new Swarm(cloudletList.size(), new PSO_Particle(cloudletList.size(), RandomRunner.vmList.size()), fitnessFunction);
+		/**
+		 * better performance with the default parameters	
+		 * swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT); 
+		 * swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT); 
+		 * swarm.setInertia(Constants.INERTIA_WEIGHT);
+		 */
+		swarm.setNumberOfParticles(Constants.NUM_PARTICLES);
         swarm.setMinPosition(0);//minimum value is the minimum value of vm id
         swarm.setMaxPosition(RandomRunner.vmList.size()-1);//maximum value of vm id
         swarm.setMaxMinVelocity(1.1);

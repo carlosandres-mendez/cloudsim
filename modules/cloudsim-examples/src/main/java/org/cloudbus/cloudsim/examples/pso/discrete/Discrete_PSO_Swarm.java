@@ -7,13 +7,27 @@ import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
-import org.cloudbus.cloudsim.examples.pso.RandomConstants;
 
 /**
  * 
  * @author carlosandres.mendez
  */
 public class Discrete_PSO_Swarm {
+
+    public static double DEFAULT_GLOBAL_INCREMENT = 0.9;
+	public static double DEFAULT_INERTIA = 0.95;
+	public static int DEFAULT_NUMBER_OF_PARTICLES = 25;
+	public static double DEFAULT_PARTICLE_INCREMENT = 0.9;
+
+    /** Number of particles in this swarm */
+	int numberOfParticles;
+	/** Particle's increment (for velocity update), usually called 'c1' constant */
+	double particleIncrement;
+    /** Global increment (for velocity update), usually called 'c2' constant */
+	double globalIncrement;
+	/** Inertia (for velocity update), usually called 'w' constant */
+	double inertia;
+
     /** Best fitness so far (global best) */
     double bestFitness;
     /** Best position so far (global best) */
@@ -29,6 +43,12 @@ public class Discrete_PSO_Swarm {
     List<PowerVm> powerVms;
     List<Cloudlet> cloudlets;
 
+    //this is just for analyse the velocity queue
+    public int cantAddVelocidad;
+    public int cantNewVelocidad;
+    public int cantGetVelocidad;
+    public int cantPollVelocidad;
+
     /**
 	 * Create a Swarm and set default values
 	 * @param numberOfParticles : Number of particles in this swarm (should be greater than 0). 
@@ -36,6 +56,11 @@ public class Discrete_PSO_Swarm {
 	 * @param fitnessFunction : Fitness function used to evaluate each particle
 	 */
     public Discrete_PSO_Swarm(Discrete_FitnessFunction fitnessFunction, List<PowerHost> powerHosts, List<PowerVm> powerVms, List<Cloudlet> cloudlets) {
+		globalIncrement = DEFAULT_GLOBAL_INCREMENT;
+		inertia = DEFAULT_INERTIA;
+		particleIncrement = DEFAULT_PARTICLE_INCREMENT;
+        numberOfParticles = DEFAULT_NUMBER_OF_PARTICLES;
+
         bestFitness = Double.NaN; // important for setting the best fitness
 		
 		this.fitnessFunction = fitnessFunction;
@@ -141,6 +166,38 @@ public class Discrete_PSO_Swarm {
 
 	}
 
+    public int getNumberOfParticles() {
+        return numberOfParticles;
+    }
+
+    public void setNumberOfParticles(int numberOfParticles) {
+        this.numberOfParticles = numberOfParticles;
+    }
+
+    public double getParticleIncrement() {
+        return particleIncrement;
+    }
+
+    public void setParticleIncrement(double particleIncrement) {
+        this.particleIncrement = particleIncrement;
+    }
+
+    public double getGlobalIncrement() {
+        return globalIncrement;
+    }
+
+    public void setGlobalIncrement(double globalIncrement) {
+        this.globalIncrement = globalIncrement;
+    }
+
+    public double getInertia() {
+        return inertia;
+    }
+
+    public void setInertia(double inertia) {
+        this.inertia = inertia;
+    }
+
     public double getBestFitness() {
         return bestFitness;
     }
@@ -181,4 +238,7 @@ public class Discrete_PSO_Swarm {
         this.particles = particles;
     }
 
+    public int getDimension(){
+        return cloudlets.size();
+    }
 }

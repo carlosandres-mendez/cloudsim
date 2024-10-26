@@ -652,4 +652,9 @@ public class Host {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "Host [id=" + id + "]";
+	}
+
 }
