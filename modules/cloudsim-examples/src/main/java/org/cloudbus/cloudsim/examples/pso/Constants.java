@@ -71,7 +71,7 @@ public class Constants {
 
 	public final static int NUM_PARTICLES	= 50;
 
-	public final static int NUM_ITERATIONS	= 2000;
+	public final static int NUM_ITERATIONS	= 100;
     
 	//The inertia Weight 
 	/**

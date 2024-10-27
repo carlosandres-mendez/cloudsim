@@ -1,12 +1,9 @@
 package org.cloudbus.cloudsim.examples.pso.original;
 
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.examples.pso.Constants;
-import org.cloudbus.cloudsim.examples.pso.RandomConstants;
 import org.cloudbus.cloudsim.power.PowerVm;
 import org.cloudbus.cloudsim.power.PowerHost;
 
@@ -40,8 +37,12 @@ public class PSO_FitnessFunction extends FitnessFunction{
     public double evaluate(double[] position) {
 
 /**
- *      VM EXECUTION TIME
- *      Estimated by mips: total cloudlets mips / total vm mips
+ *      VM EXECUTION TIME (total execution time of a vm in the simulation considering the cloudlets it has to process)
+ *      Estimated by mips: total cloudlets Length or size in Millions Instructions (MI) / total vm MIPS
+ *           [mips refers to The total mips capacity of the PE of the VMs
+ *              Pe (Processing Element) class represents a CPU core of a physical machine (PM), 
+ *              defined in terms of Millions Instructions Per Second (MIPS) rating]
+ *              see org.cloudbus.cloudsim.provisioners.PeProvisioner.Pe.java
 **/
 
         //For each vm we are going to calculate the execution time using the cloudlets mips it has to process
@@ -59,6 +60,8 @@ public class PSO_FitnessFunction extends FitnessFunction{
 /**
  *      HOST UTILIZATION
  *      Estimated percentage: total VMs mips / total host mips
+ *      This is a estimated value when all the vms are started (in this simulation all the vms start at the same time)
+ *      However, during the simulation this value is going to be changed depending on the finish cloudlets time or vm migrations
 **/
         for(int i=0; i< hostUtilization.length; i++) 
             hostUtilization[i]=0.0d;
@@ -76,6 +79,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
         for(int i=0; i< hostUtilization.length; i++){ 
             if(hostUtilization[i]!=0.0d)
                 hostUtilization[i]=hostUtilization[i]/(double)hostList.get(i).getTotalMips();
+            
+            //host utilization is > 100 can occasionally occur because not validations are performed during initialization 
+            //this is informative, because UTILIZATION_THRESHOLD should be used in the calculation of objective function
+            if(hostUtilization[i]>1)
+                System.out.println("hostutilization > 100%: "+i+ " " + hostUtilization[i]);
         }
    
 /**
@@ -104,7 +112,9 @@ public class PSO_FitnessFunction extends FitnessFunction{
                     if(hostUtilization[i]!=0.0d){ //considering only hosts in the this especific solucion/allocation (particle position)
                         numberOfHosts++;
                         hostsTotalMips += (double)host.getTotalMips();
-                        hostsAvailableMips += ((double)host.getTotalMips() * (1-hostUtilization[i]));
+                        if(hostUtilization[i]>1)
+                            System.out.println("hostutilization > 100%: "+i+ " " + hostUtilization[i]);
+                            hostsAvailableMips += ((double)host.getTotalMips() * (1-hostUtilization[i]));
                     }
                 }
             }
@@ -114,8 +124,32 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
 
 /**
+ *      ENERGY
+ *      Estimated by the estimated host utilization
+**/ 
+        double totalDatacenterPowerConsumption=0.0d;
+        for(int i=1; i< hostUtilization.length+1; i++){ 
+            for(PowerHost host : hostList){
+                if(host.getId()==i){
+                    if(hostUtilization[i]!=0.0d){ //considering only hosts in the this especific solucion/allocation (particle position)
+                        totalDatacenterPowerConsumption += (hostUtilization[i]>1?1:host.getPower(hostUtilization[i])); //Constants.UTILIZATION_THRESHOLD
+                    }
+                }
+            }
+        }
+
+        //normalize: make the value comparable by changing the value from 0 to 1
+        double maxHostPowerConsumption=0.0d;
+        double worstDatacenterPowerConsumption = 0.0d;
+        for(PowerHost host : hostList){
+            maxHostPowerConsumption = Math.max(maxHostPowerConsumption, host.power);
+        }
+        worstDatacenterPowerConsumption = maxHostPowerConsumption * hostList.size();
+        totalDatacenterPowerConsumption = totalDatacenterPowerConsumption / worstDatacenterPowerConsumption;
+
+/**
  *      MAKESPAN
- *      Estimated by the max vm execution time
+ *      Estimated by the max vm execution time, since all vms start at the same time
 **/ 
         double makespan = 0.0d;
         for(int i=0; i< vmList.size(); i++){
@@ -135,7 +169,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
 /**
  *      LOAD BALANCING
- *      Estimated by the max vm execution time
+ *      Estimated by the vm execution time variance
 **/ 
 
         //desbalancing degree calculated as the variance of host utilization
@@ -144,10 +178,14 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
 
         //objetive function
-        double weight1 = 0.6;
-        double weight2 = 0.2;
-        double weight3 = 0.4;
-        double functOutput =  1/((weight1 * resourceSubUtilization) + (weight2 * desbalancingDegree) + (weight3 * numberHostOverUtilized==0?0:(numberHostOverUtilized/numberOfHosts)));
+        double weight1 = 0.0;
+        double weight2 = 0.6;
+        double weight3 = 0.2;
+        double weight4 = 0.2;
+        double functOutput =  1/((weight1 * totalDatacenterPowerConsumption) 
+            + (weight2 * resourceSubUtilization) 
+            + (weight3 * desbalancingDegree) 
+            + (weight4 * numberHostOverUtilized==0?0:(numberHostOverUtilized/numberOfHosts)));
 
 /**
  *      This is when we need to validate, for example in containers

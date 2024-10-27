@@ -2,6 +2,8 @@ package org.cloudbus.cloudsim.examples.pso.discrete;
 
 import java.io.IOException;
 
+import org.cloudbus.cloudsim.examples.pso.Constants;
+
 /**
  * A simulation of a heterogeneous power aware data center that applies the Static Threshold (THR)
  * VM allocation policy and Maximum Correlation (MC) VM selection policy.
@@ -31,11 +33,11 @@ public class ThrMmt {
 		boolean enableOutput = true;
 		boolean outputToFile = true;
 		String inputFolder = "";
-		String outputFolder = "C:\\Users\\Carlos\\Documents\\Fuentes\\cloudsim\\mifolder";
+		String outputFolder = "/home/carlos/Documents/ECCI/cloudsim/mifolder";
 		String workload = "random"; // Random workload
 		String vmAllocationPolicy = "thr"; // Static Threshold (THR) VM allocation policy
 		String vmSelectionPolicy = "mmt"; // Minimum Migration Time (MMT) VM selection policy
-		String parameter = "0.8"; // the static utilization threshold
+		String parameter = String.valueOf(Constants.UTILIZATION_THRESHOLD); // the static utilization threshold
 
 		new RandomRunner(
 				enableOutput,

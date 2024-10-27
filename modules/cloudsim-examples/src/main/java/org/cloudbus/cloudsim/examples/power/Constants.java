@@ -27,6 +27,9 @@ public class Constants {
 	public final static int CLOUDLET_LENGTH	= 2500 * (int) 24 * 60 * 60;
 	public final static int CLOUDLET_PES	= 1;
 
+	//Added by Carlos A. Mendez Rodriguez for tesis
+	public final static double UTILIZATION_THRESHOLD = 0.8;
+
 	/*
 	 * VM instance types:
 	 *   High-Memory Extra Large Instance: 3.25 EC2 Compute Units, 8.55 GB // too much MIPS

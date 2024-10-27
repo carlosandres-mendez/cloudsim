@@ -104,7 +104,7 @@ public class RandomRunner extends RunnerAbstract {
 		List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(RandomRunner.hostList); //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
 		List<PowerVm> powerVmsOrderByPowerConsumption = new ArrayList<>((List<PowerVm>)(Object)(RandomRunner.vmList)); //asc, according with the hosts power consumption and the initial policy allocation
 
-		//this is just for debuging porposes (host doest have power as an attribute -only the method-)
+		//host doest have power as an attribute -only the method-, but added for power consumption estimation
 		for(PowerHost h1 : powerHostsOrderByPowerConsumption){
 			h1.power = h1.getPower(Constants.UTILIZATION_THRESHOLD);
 		}
@@ -124,11 +124,25 @@ public class RandomRunner extends RunnerAbstract {
 			}  
 		}  
 
+		n = powerVmsOrderByPowerConsumption.size();
+		PowerVm temp2 = null;  
+		for(int i=0; i < n; i++){  
+			for(int j=1; j < (n-i); j++){  
+					if(((PowerHost)powerVmsOrderByPowerConsumption.get(j-1).getHost()).getTotalMips() < ((PowerHost)powerVmsOrderByPowerConsumption.get(j).getHost()).getTotalMips()){  
+						//swap elements  
+						temp2 = powerVmsOrderByPowerConsumption.get(j-1);  
+						powerVmsOrderByPowerConsumption.set(j-1, powerVmsOrderByPowerConsumption.get(j));  
+						powerVmsOrderByPowerConsumption.set(j, temp2); ;  
+				}  
+						
+			}  
+		}  
+
 		//sort vms by estimated power consumption by using the powerHostsOrderByPowerConsumption list
-		for(PowerHost host : powerHostsOrderByPowerConsumption){
-			for(Vm vm : host.getVmList())
-				powerVmsOrderByPowerConsumption.add((PowerVm)vm);
-		}
+		// for(PowerHost host : powerHostsOrderByPowerConsumption){
+		// 	for(Vm vm : host.getVmList())
+		// 		powerVmsOrderByPowerConsumption.add((PowerVm)vm);
+		// }
 
 
         swarm = new Discrete_PSO_Swarm(new Discrete_FitnessFunction(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList), 

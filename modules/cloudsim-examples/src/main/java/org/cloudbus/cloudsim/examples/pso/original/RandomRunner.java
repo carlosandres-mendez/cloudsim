@@ -100,6 +100,13 @@ public class RandomRunner extends RunnerAbstract {
 
 	private void optimize(){
 
+		//*** Estimate power consumption from all hosts ***
+		List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(RandomRunner.hostList); //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
+		//host doest have power as an attribute -only the method-, but added for power consumption estimation
+		for(PowerHost h1 : powerHostsOrderByPowerConsumption){
+			h1.power = h1.getPower(Constants.UTILIZATION_THRESHOLD);
+		}
+
         //initialize particles
         PSO_Particle[] particles = new PSO_Particle[Constants.NUM_PARTICLES];
         for(int i=0;i<Constants.NUM_PARTICLES;i++) {

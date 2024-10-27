@@ -679,7 +679,7 @@ public class Helper {
 			PowerVmAllocationPolicyMigrationAbstract vmAllocationPolicy,
 			String outputPath) {
 		// for (Host host : hosts) {
-		for (int j = 0; j < 10; j++) {
+		for (int j = 0; j < RandomConstants.NUMBER_OF_HOSTS; j++) {
 			Host host = hosts.get(j);
 
 			if (!vmAllocationPolicy.getTimeHistory().containsKey(host.getId())) {
@@ -758,7 +758,7 @@ public class Helper {
 	public static void printMetricHistory(
 			List<? extends Host> hosts,
 			PowerVmAllocationPolicyMigrationAbstract vmAllocationPolicy) {
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < RandomConstants.NUMBER_OF_HOSTS; i++) {
 			Host host = hosts.get(i);
 
 			Log.printLine("Host #" + host.getId());
