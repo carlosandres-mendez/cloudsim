@@ -81,13 +81,16 @@ public class Discrete_PSO_Swarm {
 
 		particles = new ArrayList<>();
 
+        // List<Allocation> xPositionShuffled = new ArrayList<>(bestPosition);
+        // Collections.shuffle(xPositionShuffled);
+
         //Creamos particulas aleatorias
-        for (int i=0; i < Constants.NUM_PARTICLES; i++) {
+        for (int i=0; i < Constants.NUM_PARTICLES-1; i++) {
 
             List<Allocation> position = new ArrayList<>();
             Queue<Allocation> velocity = new LinkedList<>();
 
-            for(Cloudlet cloudlet : this.cloudlets){ //Para cada contenedor buscamos aleatoriamente un host y una vm
+            for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
                 Random randObj = new Random();
                 Allocation allocation = new Allocation(
                     cloudlet, 
@@ -97,6 +100,21 @@ public class Discrete_PSO_Swarm {
             }
             particles.add(new Discrete_Particle(position, velocity));
         }
+
+        //adding particles that can represent especial situations, such as the real state of a datacenter
+        List<Allocation> position = new ArrayList<>();
+        Queue<Allocation> velocity = new LinkedList<>();
+
+        for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
+            PowerVm vm = this.powerVms.get(cloudlet.getCloudletId());
+            Allocation allocation = new Allocation(
+                cloudlet, 
+                vm, 
+                (PowerHost)vm.getHost()); 
+            position.add(allocation);
+        }
+        particles.add(new Discrete_Particle(position, velocity));
+
     
         System.out.println();
         for(Discrete_Particle particle : particles)

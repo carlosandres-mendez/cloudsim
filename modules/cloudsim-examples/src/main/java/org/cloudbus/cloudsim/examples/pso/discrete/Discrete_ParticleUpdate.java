@@ -213,12 +213,6 @@ public class Discrete_ParticleUpdate {
     private List<Allocation> generatePossibleCombinations(double wCoefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
-        /**
-         * independent random number uniquely
-         * generated from 0-1 at every update for each individual dimension d = 1 to D
-         */
-        double random = Math.random(); //
-
         //Collections.shuffle(bestPosition);
         List<Allocation> xPositionShuffled = new ArrayList<>(xPosition);
         Collections.shuffle(xPositionShuffled);
@@ -231,12 +225,21 @@ public class Discrete_ParticleUpdate {
             for(int j=0; j< xPositionShuffled.size(); j++){
                 for(int k=0; k< bestPosition.size(); k++){
 
-                    //if vm not has the same characteristic than the vm in the best position then 
+                    //if vm not has the same characteristic than the vm in the best position then take the vm from the bestPosition or a vm from the vms ordered list (usign random to decide)
                     if(xPositionShuffled.get(j).getCloudlet()==bestPosition.get(k).getCloudlet() 
-                        && ((PowerHost)xPositionShuffled.get(j).getVm().getHost()).power > ((PowerHost)bestPosition.get(j).getVm().getHost()).power ){
+                        && (((PowerHost)xPositionShuffled.get(j).getVm().getHost()).getPowerEstimation() > ((PowerHost)bestPosition.get(j).getVm().getHost()).getPowerEstimation() )
+                            || ((xPositionShuffled.get(j).getVm()).getMips() < (bestPosition.get(j).getVm()).getMips() )){
+
+
+                        /**
+                         * independent random number uniquely
+                         * generated from 0-1 at every update for each individual dimension d = 1 to D
+                         */
+                        double random = Math.random(); 
+                        PowerVm vm = random<0.5?bestPosition.get(j).getVm():powerVmsOrderByPowerConsumption.get(i);
 
                         possibleCombinations.add(
-                                    new Allocation(xPositionShuffled.get(i).getCloudlet(), powerVmsOrderByPowerConsumption.get(i), xPositionShuffled.get(i).getHost())
+                                    new Allocation(xPositionShuffled.get(i).getCloudlet(), vm , xPositionShuffled.get(i).getHost())
                                 );
                                 break numPossibleCombinationsLoop;
                     }
@@ -276,7 +279,7 @@ public class Discrete_ParticleUpdate {
         return possibleCombinations;
     }
 
-    private List<Allocation> generatePossibleCombinationsInDeveloping2(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+    private List<Allocation> generatePossibleCombinationsInDevelop(double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
         Set<Integer> vmsSelected = new HashSet<Integer>();
         Set<Integer> cloudletChanged = new HashSet<Integer>();
@@ -333,7 +336,7 @@ public class Discrete_ParticleUpdate {
             }
         }
 
-        return new ArrayList<>();
+        return possibleCombinations;
     } 
     
     	/**

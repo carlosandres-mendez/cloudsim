@@ -22,6 +22,19 @@ public class PSO_Particle extends Particle{
         setVelocity(velocity);
     }
 
+    public PSO_Particle(int numberCloudlets, int numberVms, int typeParticle){
+        super(numberCloudlets);
+        double[] position = new double[numberCloudlets];
+        double[] velocity = new double[numberCloudlets];
+
+        for (int i = 0; i < numberCloudlets; i++) {
+            position[i] = i;
+            velocity[i] = i;
+        }
+        setPosition(position);
+        setVelocity(velocity);
+    }
+
     public String toString() {
         String output = "";
         for(int i=0;i<RandomConstants.NUMBER_OF_VMS;i++) {

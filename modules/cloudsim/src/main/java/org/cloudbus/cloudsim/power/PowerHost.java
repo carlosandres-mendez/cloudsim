@@ -38,8 +38,8 @@ public class PowerHost extends HostDynamicWorkload {
 	/** The power model used by the host. */
 	private PowerModel powerModel;
 
-		/** just for debuging porpuses. */
-		public double power;
+		/** added for tesis Carlos A. Mendez R. */
+		public double powerEstimation; 
 
 	/**
 	 * Instantiates a new PowerHost.
@@ -141,4 +141,13 @@ public class PowerHost extends HostDynamicWorkload {
 		return powerModel;
 	}
 
+	public double getPowerEstimation() {
+		return powerEstimation;
+	}
+
+	public void setPowerEstimation(double powerEstimation) {
+		this.powerEstimation = powerEstimation;
+	}
+
+	
 }

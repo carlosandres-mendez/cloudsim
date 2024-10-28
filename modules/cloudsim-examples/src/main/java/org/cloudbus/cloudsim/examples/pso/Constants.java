@@ -22,7 +22,7 @@ public class Constants {
 	public final static boolean OUTPUT_CSV    = true;
 
 	public final static double SCHEDULING_INTERVAL = 300;
-	public final static double SIMULATION_LIMIT = 24 * 60 * 60 * 12;
+	public final static double SIMULATION_LIMIT = 24 * 60 * 60;
 
 	public final static int CLOUDLET_LENGTH	= 2500 * (int) 24 * 60 * 60;
 	public final static int CLOUDLET_PES	= 1;
@@ -69,7 +69,7 @@ public class Constants {
 	 * Added for PSO Original and discrete
 	 */
 
-	public final static int NUM_PARTICLES	= 50;
+	public final static int NUM_PARTICLES	= 100;
 
 	public final static int NUM_ITERATIONS	= 100;
     
@@ -85,9 +85,9 @@ public class Constants {
     public final static double INERTIA_WEIGHT = 0.5d;
 
     //The cognitive acceleration coefficient c1.
-    public final static double COGNIT_COEFFICIENT = 0.1d;
+    public final static double COGNIT_COEFFICIENT = 0.3d;
 
     //The social coefficient
-    public final static double SOCIAL_COEFFICIENT = 0.1d;
+    public final static double SOCIAL_COEFFICIENT = 0.3d;
 
 }

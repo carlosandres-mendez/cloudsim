@@ -104,15 +104,18 @@ public class RandomRunner extends RunnerAbstract {
 		List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(RandomRunner.hostList); //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
 		//host doest have power as an attribute -only the method-, but added for power consumption estimation
 		for(PowerHost h1 : powerHostsOrderByPowerConsumption){
-			h1.power = h1.getPower(Constants.UTILIZATION_THRESHOLD);
+			h1.setPowerEstimation(h1.getPower(Constants.UTILIZATION_THRESHOLD));
 		}
 
         //initialize particles
         PSO_Particle[] particles = new PSO_Particle[Constants.NUM_PARTICLES];
-        for(int i=0;i<Constants.NUM_PARTICLES;i++) {
+        for(int i=0;i<Constants.NUM_PARTICLES-1;i++) {
             particles[i]= new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size());
             System.out.println(particles[i]);
         }
+
+		//adding particles that can represent especial situations, such as the real state of a datacenter
+		particles[Constants.NUM_PARTICLES-1]= new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size() , 0);
 
         fitnessFunction = new PSO_FitnessFunction(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList);
         swarm = new Swarm(cloudletList.size(), new PSO_Particle(cloudletList.size(), RandomRunner.vmList.size()), fitnessFunction);
@@ -207,7 +210,7 @@ public class RandomRunner extends RunnerAbstract {
 			 * Bind cloudlets to vms in the datacenter
 			 * */
 			for (Cloudlet cloudlet : cloudletList){
-				Vm vm = RandomRunner.vmList.get((int)swarm.getBestParticle().getPosition()[cloudlet.getCloudletId()]);
+				Vm vm = RandomRunner.vmList.get((int)swarm.getBestParticle().getBestPosition()[cloudlet.getCloudletId()]);
 				broker.bindCloudletToVm(cloudlet.getCloudletId(), vm.getId());
 			}
 

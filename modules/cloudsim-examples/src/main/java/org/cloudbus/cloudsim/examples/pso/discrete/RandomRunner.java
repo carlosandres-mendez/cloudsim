@@ -2,8 +2,11 @@ package org.cloudbus.cloudsim.examples.pso.discrete;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cloudbus.cloudsim.Log;
@@ -106,43 +109,28 @@ public class RandomRunner extends RunnerAbstract {
 
 		//host doest have power as an attribute -only the method-, but added for power consumption estimation
 		for(PowerHost h1 : powerHostsOrderByPowerConsumption){
-			h1.power = h1.getPower(Constants.UTILIZATION_THRESHOLD);
+			h1.setPowerEstimation(h1.getPower(Constants.UTILIZATION_THRESHOLD));
 		}
 
-		//sort HostsOrderByPowerConsumption sort by bubble method 
-		int n = powerHostsOrderByPowerConsumption.size();
-		PowerHost temp = null;  
-		for(int i=0; i < n; i++){  
-			for(int j=1; j < (n-i); j++){  
-					if(powerHostsOrderByPowerConsumption.get(j-1).getPower(Constants.UTILIZATION_THRESHOLD) > powerHostsOrderByPowerConsumption.get(j).getPower(Constants.UTILIZATION_THRESHOLD)){  
-						//swap elements  
-						temp = powerHostsOrderByPowerConsumption.get(j-1);  
-						powerHostsOrderByPowerConsumption.set(j-1, powerHostsOrderByPowerConsumption.get(j));  
-						powerHostsOrderByPowerConsumption.set(j, temp); ;  
-				}  
-						
-			}  
-		}  
+		powerHostsOrderByPowerConsumption.sort(Comparator.comparingDouble((PowerHost p) -> p.getTotalMips()));
 
-		n = powerVmsOrderByPowerConsumption.size();
-		PowerVm temp2 = null;  
-		for(int i=0; i < n; i++){  
-			for(int j=1; j < (n-i); j++){  
-					if(((PowerHost)powerVmsOrderByPowerConsumption.get(j-1).getHost()).getTotalMips() < ((PowerHost)powerVmsOrderByPowerConsumption.get(j).getHost()).getTotalMips()){  
-						//swap elements  
-						temp2 = powerVmsOrderByPowerConsumption.get(j-1);  
-						powerVmsOrderByPowerConsumption.set(j-1, powerVmsOrderByPowerConsumption.get(j));  
-						powerVmsOrderByPowerConsumption.set(j, temp2); ;  
-				}  
-						
-			}  
-		}  
+		// powerVmsOrderByPowerConsumption.sort(Comparator.comparingDouble((PowerVm p) -> p.getMips()).reversed()
+        //                         .thenComparing((PowerVm p) -> ((PowerHost)p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD)  ));
 
-		//sort vms by estimated power consumption by using the powerHostsOrderByPowerConsumption list
-		// for(PowerHost host : powerHostsOrderByPowerConsumption){
-		// 	for(Vm vm : host.getVmList())
-		// 		powerVmsOrderByPowerConsumption.add((PowerVm)vm);
-		// }
+		powerVmsOrderByPowerConsumption.sort(
+			Comparator.comparingDouble((PowerVm p) -> ((PowerHost) p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD))
+						.thenComparing(Comparator.comparingDouble(PowerVm::getMips).reversed())
+		);
+
+		for(PowerHost host : powerHostsOrderByPowerConsumption){
+			System.out.println(host.getId()+" "+host.getPowerEstimation() );
+		}
+
+		System.out.println("Info Vms Ordered By VM mips and Host Power Consumption ************");
+		for(PowerVm p : powerVmsOrderByPowerConsumption){
+			System.out.println("Host: "+p.getHost().getId() +" power: "+ ((PowerHost)p.getHost()).getPowerEstimation()  + " mips: " + p.getHost().getTotalMips() + " vm: "+p.getId() + " vm mips:" + p.getMips());
+		}
+
 
 
         swarm = new Discrete_PSO_Swarm(new Discrete_FitnessFunction(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList), 
@@ -216,7 +204,29 @@ public class RandomRunner extends RunnerAbstract {
 					throw new Exception("According to the allocation policy, all Vms cannot be allocated in the datacenter. You need to increase servers on them.");
 			}
 
+
+			System.out.println(" PRE VALIDATION TO OPTMIZATION ");
+			for(PowerHost host : hostList){
+				double totalVmMIPS = 0.0d;
+				for(PowerVm vm : (List<PowerVm>)(Object)(host.getVmList())){
+					totalVmMIPS += vm.getMips();
+				}
+				if(totalVmMIPS > host.getTotalMips())
+					System.out.println(" totalVmMIPS > host.getTotalMips() in host: "+ host.getId());
+			}
+
+
 			optimize();
+
+			System.out.println(" POS VALIDATION TO OPTMIZATION ");
+			for(PowerHost host : hostList){
+				double totalVmMIPS = 0.0d;
+				for(PowerVm vm : (List<PowerVm>)(Object)(host.getVmList())){
+					totalVmMIPS += vm.getMips();
+				}
+				if(totalVmMIPS > host.getTotalMips())
+					System.out.println(" totalVmMIPS > host.getTotalMips() in host: "+ host.getId());
+			}
 
 			/*** 
 			 * After optimization (see Before optimization)
@@ -238,6 +248,136 @@ public class RandomRunner extends RunnerAbstract {
 			for (Allocation allocation : swarm.getBestPosition()){
 				broker.bindCloudletToVm(allocation.getCloudlet().getCloudletId(), allocation.getVm().getId());
 			}
+
+
+			CloudSim.terminateSimulation(Constants.SIMULATION_LIMIT);
+			double lastClock = CloudSim.startSimulation();
+
+			List<Cloudlet> newList = broker.getCloudletReceivedList();
+			Log.printLine("Received " + newList.size() + " cloudlets");
+
+			CloudSim.stopSimulation();
+
+			Helper.printResults(
+					datacenter,
+					vmList,
+					lastClock,
+					experimentName,
+					Constants.OUTPUT_CSV,
+					outputFolder);
+
+			Helper.printCloudletList(cloudletList);
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+			Log.printLine("The simulation has been terminated due to an unexpected error");
+			System.exit(0);
+		}
+
+		Log.printLine("Finished " + experimentName);
+	}
+
+	//@Override
+	protected void start2(String experimentName, String outputFolder, VmAllocationPolicy vmAllocationPolicy) {
+		System.out.println("Starting " + experimentName);
+
+		try {
+			PowerDatacenter datacenter = (PowerDatacenter) Helper.createDatacenter(
+					"Datacenter",
+					PowerDatacenter.class,
+					hostList,
+					vmAllocationPolicy);
+
+			datacenter.setDisableMigrations(false);
+
+			broker.submitVmList(vmList);
+			broker.submitCloudletList(cloudletList);
+
+			/*** 
+			 * Before optimization (see After optimization)
+			 * scheduler may know allocation policy, so it can figure out host assignment (important for host power consideration in the scheduling process)
+			 * */
+			PowerVmAllocationPolicyMigrationStaticThresholdPSO vmAllocationMigrationMSPolicy = (PowerVmAllocationPolicyMigrationStaticThresholdPSO)vmAllocationPolicy;
+			vmAllocationMigrationMSPolicy.setHostList(hostList);
+			Set<? extends Host> excludedHosts = new HashSet<>();
+			for(PowerVm vm : (List<PowerVm>)(Object)(RandomRunner.vmList)){
+				PowerHost host = vmAllocationMigrationMSPolicy.findHostForVm(vm, excludedHosts);
+					if(host != null){
+					host.getVmList().add(vm);
+
+					List<Double> mips = new ArrayList<Double>();
+					for(int i=0; i < vm.getNumberOfPes(); i++) 
+						mips.add(vm.getMips());
+					host.getVmScheduler().allocatePesForVm(vm, mips);
+					vm.setHost(host);
+					vm.setBeingInstantiated(true);
+					System.out.println(" Vm allocation in scheduling time: Vm: "+vm.getId() + " Host: " + host.getId());
+				}
+				else 
+					throw new Exception("According to the allocation policy, all Vms cannot be allocated in the datacenter. You need to increase servers on them.");
+			}
+
+
+			
+
+		//*** domain problem data ***
+		List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(RandomRunner.hostList); //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
+		List<PowerVm> powerVmsOrderByPowerConsumption = new ArrayList<>((List<PowerVm>)(Object)(RandomRunner.vmList)); //asc, according with the hosts power consumption and the initial policy allocation
+
+		//host doest have power as an attribute -only the method-, but added for power consumption estimation
+		for(PowerHost h1 : powerHostsOrderByPowerConsumption){
+			h1.setPowerEstimation(h1.getPower(Constants.UTILIZATION_THRESHOLD));
+		}
+
+		powerHostsOrderByPowerConsumption.sort(Comparator.comparingDouble((PowerHost p) -> p.getTotalMips()));
+
+		// powerVmsOrderByPowerConsumption.sort(
+		// 	Comparator.comparingDouble((PowerVm p) -> p.getMips()).reversed()
+        //                  .thenComparing((PowerVm p) -> ((PowerHost)p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD))
+		// );
+
+
+
+		powerVmsOrderByPowerConsumption.sort(
+			Comparator.comparingDouble((PowerVm p) -> ((PowerHost) p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD))
+						.thenComparing(Comparator.comparingDouble(PowerVm::getMips).reversed())
+		);
+
+
+		for(PowerHost host : powerHostsOrderByPowerConsumption){
+			System.out.println(host.getId()+" "+host.getPowerEstimation() );
+		}
+
+		System.out.println("Info Vms Ordered By VM mips and Host Power Consumption ************");
+		int count=0;
+		for(PowerVm p : powerVmsOrderByPowerConsumption){
+			System.out.println("Host: "+p.getHost().getId() +" power: "+ ((PowerHost)p.getHost()).getPowerEstimation()  + " mips: " + p.getHost().getTotalMips() + " vm: "+p.getId() + " vm mips:" + p.getMips());
+
+			broker.bindCloudletToVm(count, p.getId());
+			count++;
+			broker.bindCloudletToVm(count, p.getId());
+			count++;
+			if(count == 50)
+				break;
+		}
+
+
+
+
+			/*** 
+			 * After optimization (see Before optimization)
+			 * Clear the hosts and vms in the datacenter
+			 * */
+			for(PowerVm vm : (List<PowerVm>)(Object)(RandomRunner.vmList)){
+				vm.setHost(null);
+			}
+
+			for(PowerHost host : hostList){
+				host.getVmList().clear();
+				host.getVmScheduler().deallocatePesForAllVms();
+			}
+
 
 
 			CloudSim.terminateSimulation(Constants.SIMULATION_LIMIT);
