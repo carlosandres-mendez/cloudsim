@@ -21,7 +21,6 @@ import org.cloudbus.cloudsim.power.PowerVm;
  */
 public class Discrete_ParticleUpdate {
 
-    boolean allowRepeatedCloudletsInVelocityFIFO = false; // dehavior for velocity to allow repeated cloudlets (this option needs to be studied)
     Discrete_PSO_Swarm swarm;
     Discrete_Particle particle;
 
@@ -44,96 +43,63 @@ public class Discrete_ParticleUpdate {
         this.swarm = swarm;
         this.particle = particle;
 
-        //if inertia 0 then velocity can be full with personal and social bests.
-        //if inertia > 1 then velocity trend to keep the same. So, this variable is going to count the cloudlets updated. 
-        int countUpdatedCloudlets = 0; 
-        int inertia =  (int) Math.floor(((double)swarm.getDimension()) * swarm.getInertia());
-
         //***** Update velocity  ******/
-        List<Allocation> personalPossibleCombinations = generatePossibleCombinations(swarm.getParticleIncrement(), particle.getBestPosition(), particle.getPosition());
-        List<Allocation> globalPossibleCombinations = generatePossibleCombinations(swarm.getGlobalIncrement(), swarm.getBestPosition(), particle.getPosition());
+        List<Allocation> personalPossibleCombinations = generatePossibleCombinations(particle.getBestPosition(), particle.getPosition(), swarm.getParticleIncrement());
+        List<Allocation> globalPossibleCombinations = generatePossibleCombinations(swarm.getBestPosition(), particle.getPosition(), swarm.getGlobalIncrement());
 
-        //if the option allow repeated cloudlets in th Velocity queue is enabled (this option needs to be studied)
-        if(allowRepeatedCloudletsInVelocityFIFO){
-            //Add the personal possible combinations to velocity  
-            for (Allocation possibleCombination : personalPossibleCombinations){
-                particle.getVelocity().add(possibleCombination);
-                if(particle.getVelocity().size() > particle.getDimension())
-                    particle.getVelocity().poll(); //if max is reach remove from velocity queue
+        //Inertia allocations
+        List<Allocation> copyVelocity = new ArrayList<>(particle.getVelocity());
+        Collections.shuffle(copyVelocity);
+        ArrayList<Allocation> inertiaAllocations = new ArrayList<>(copyVelocity.subList(0, Constants.INERTIA_WEIGHT));
+
+        List<Allocation> nextVelocity = new ArrayList<>(particle.getVelocity());
+ 
+        //***** Next Velocity V(t+1) ******/
+        int w = 0; // *** Weight
+        int p = 0; // *** Personal
+        int g = 0; // *** Global
+        while(w < inertiaAllocations.size() || p < personalPossibleCombinations.size() || g < globalPossibleCombinations.size()){
+
+            int numberList = (int)(Math.random() * 3); 
+
+            if (numberList==1 && w < inertiaAllocations.size()) {
+                nextVelocity.get(inertiaAllocations.get(w).getCloudlet().getCloudletId()).setVm(inertiaAllocations.get(w).getVm());
+                w++;
             }
-            //Add the global possible combinations to velocity
-            for (Allocation possibleCombination : globalPossibleCombinations){
-                particle.getVelocity().add(possibleCombination);
-                if(particle.getVelocity().size() > particle.getDimension())
-                    particle.getVelocity().poll(); //if max is reach remove from velocity queue
-            }
-        }
-        else{
-            //Add personal possible combinations to velocity
-            for (Allocation possibleCombination : personalPossibleCombinations){
-                if(countUpdatedCloudlets < inertia){
-                    countUpdatedCloudlets++;
+            else if (numberList==2 && p < personalPossibleCombinations.size()) {
 
-                    //remove if cloudlet exists in velocity queue
-                    for (Iterator<Allocation> iter = particle.getVelocity().iterator(); iter.hasNext();){
-                        Allocation allocation = iter.next();
-                            if(allocation.getCloudlet().equals(possibleCombination.getCloudlet())){
-                                //this is just for analyse the velocity queue
-                                if(allocation.getVm().getId()!= possibleCombination.getVm().getId())
-                                    swarm.cantNewVelocidad++;
-                                //remove allocation
-                                iter.remove();
-                                break;
-                            }
-                    
-                    }
-                    //add the cloudlet allocation to the velocity queue
-                    particle.getVelocity().add(possibleCombination);
-                    swarm.cantAddVelocidad++;
-                    if(particle.getVelocity().size() > particle.getDimension()){
-                        particle.getVelocity().poll(); //if max is reach remove from velocity queue
-                        swarm.cantPollVelocidad++;
-                    }
-                }
-            }
+                /**
+                 * R1 independent random number uniquely
+                 * generated from 0-1 at every update for each individual dimension d = 1 to D
+                 */
+                PowerVm vm = personalPossibleCombinations.get(p).getVm();
+                if(Math.random()<0.5)
+                    vm = swarm.getPowerVms().get((int)(Math.random() * swarm.getDimension()));
+                
+                nextVelocity.get(personalPossibleCombinations.get(p).getCloudlet().getCloudletId()).setVm(vm);
+                p++;
+            } else if (numberList==3 && g < globalPossibleCombinations.size()) {
 
-            //Add global possible combinations to velocity
-            for (Allocation possibleCombination : globalPossibleCombinations){
-                if(countUpdatedCloudlets < inertia){
-                    countUpdatedCloudlets++;
+                /**
+                 * R2 independent random number uniquely
+                 * generated from 0-1 at every update for each individual dimension d = 1 to D
+                 */
+                PowerVm vm = globalPossibleCombinations.get(g).getVm();
+                if(Math.random()<0.5)
+                    vm = swarm.getPowerVms().get((int)(Math.random() * swarm.getDimension()));
 
-                    //remove if cloudlet exists in velocity queue
-                    for (Iterator<Allocation> iter = particle.getVelocity().iterator(); iter.hasNext();){
-                        Allocation allocation = iter.next();
-                            if(allocation.getCloudlet().equals(possibleCombination.getCloudlet())){
-                                //this is just for analyse the velocity queue
-                                if(allocation.getVm().getId()!= possibleCombination.getVm().getId())
-                                    swarm.cantNewVelocidad++;                           
-                                //remove allocation
-                                iter.remove();
-                                break;
-                            }
-                    
-                    }
-                    //add the cloudlet allocation to the velocity queue
-                    particle.getVelocity().add(possibleCombination);
-                    swarm.cantAddVelocidad++;
-                    if(particle.getVelocity().size() > particle.getDimension()){
-                        particle.getVelocity().poll(); //if max is reach remove from velocity queue
-                        swarm.cantPollVelocidad++;
-                    }
-                }
+                nextVelocity.get(globalPossibleCombinations.get(g).getCloudlet().getCloudletId()).setVm(vm);
+                g++;
             }
         }
+        particle.setVelocity(nextVelocity);
 
         //***** Update position  ******/
         // Update position by replacing the current position with the velocity values  
         for (Allocation positionAllocation : particle.getPosition()) {
-            for (Allocation velocityAllocation : particle.getVelocity()){
+            for (Allocation velocityAllocation : nextVelocity){
                 if(positionAllocation.getCloudlet().equals(velocityAllocation.getCloudlet())){
-                    //this is just for analyse the velocity queue
-                    if(positionAllocation.getVm().getId()!=velocityAllocation.getVm().getId())
-                        swarm.cantGetVelocidad++;
+
                     //replace the vm and host
                     positionAllocation.setVm(velocityAllocation.getVm());
                     positionAllocation.setHost(velocityAllocation.getHost());
@@ -141,112 +107,129 @@ public class Discrete_ParticleUpdate {
             }
         }
 
-        // for(Allocation alloc : particle.getVelocity())
-        //     System.out.print("("+alloc.getCloudlet().getCloudletId() +"-"+ alloc.getVm().getId()+"-"+ alloc.getHost().getId()+") ");
-        // System.out.println(); 
-        System.out.println("Velocity size: "+particle.getVelocity().size()+" adds: "+ swarm.cantAddVelocidad+ " news: " +swarm.cantNewVelocidad+ " gets: " +swarm.cantGetVelocidad+ " polls: " +swarm.cantPollVelocidad);
     }
 
-    private List<Allocation> generatePossibleCombinationsRandom(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
+    /**
+     * 
+     * @param bestPosition
+     * @param xPosition
+     * @param numMaxDifferences null or the maximum number of differences between the actual position and the best position to generate
+     * @return
+     */
+    private List<Allocation> generatePossibleCombinations(List<Allocation> bestPosition, List<Allocation> xPosition, Double incrementCoefficient){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
-        Collections.shuffle(bestPosition);
+        //Find different allocations between best position and the current position
+        List<Allocation> difAllocPositiontions = new ArrayList<>(); 
+        Set<Integer> changedCloulets = new HashSet<>();
+        Map<Integer, Allocation> difAllocBestPositionsMap = new HashMap<>();
+        for(int j=0; j< xPosition.size(); j++){
+            for(int k=0; k< bestPosition.size(); k++){
 
-        //Random generated
-        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
-        for(int i = 0; i < numPossibleCombinations; i++){
-/**
- *      This is when we need to validate, for example in containers. We validate the new posible allocation in the position of the particle.
- * 
-            // Calcular el total de MIPS de la VM
-            PowerVm vm = bestPosition.get(i).getVm(); //Vm we are going to allocate the container
-            double totalVmCapacity = vm.getMips() * vm.getNumberOfPes(); //total cpu vm 
-            double totalMipsUsed = 0.0d; //total vm cpu already is using
-            for(Allocation allocation : xPosition){
-                if(allocation.getVm().getId()==vm.getId())
-                    totalMipsUsed += allocation.getCloudlet().getMips();
-            }
-            
-            // if is valid (if vm cpu already is using + the container we are trying to allocate is less or equal to total vm cpu capacity)
-            if(totalMipsUsed + bestPosition.get(i).getCloudlet().getMips() <= totalVmCapacity){
-                possibleCombinations.add(
-                        new Allocation(bestPosition.get(i).getCloudlet(), bestPosition.get(i).getVm(), bestPosition.get(i).getHost())
-                    );
-            }
-            else 
-                continue;
-**/
-            possibleCombinations.add(
-                        new Allocation(bestPosition.get(i).getCloudlet(), bestPosition.get(i).getVm(), bestPosition.get(i).getHost())
-                    );
-        }
-        return possibleCombinations;
-    }
-
-    private List<Allocation> generatePossibleCombinations0(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
-        List<Allocation> possibleCombinations = new ArrayList<Allocation>();
-
-        //Collections.shuffle(bestPosition);
-        List<Allocation> xPositionShuffled = new ArrayList<>(bestPosition);
-        Collections.shuffle(xPositionShuffled);
-
-        //Random generated
-        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
-        for(int i = 0; i < numPossibleCombinations; i++){
-
-            for(int j=0; j< xPosition.size(); j++){
-
-                //if vm not has the same characteristic than the vm in the best position then 
-                if(xPosition.get(j).getVm().getMips()!= bestPosition.get(j).getVm().getMips()){
-
-                    possibleCombinations.add(
-                                new Allocation(xPositionShuffled.get(i).getCloudlet(), powerVmsOrderByPowerConsumption.get(i), xPositionShuffled.get(i).getHost())
-                            );
-                            break;
+                //if vm not has the same characteristic than the vm in the best position then take the vm from the bestPosition or a vm from the vms ordered list (usign random to decide)
+                if(xPosition.get(j).getCloudlet().getCloudletId()==bestPosition.get(k).getCloudlet().getCloudletId() 
+                    && xPosition.get(j).getVm().getId()!=bestPosition.get(k).getVm().getId()){
+                    difAllocPositiontions.add(xPosition.get(j));
+                    difAllocBestPositionsMap.put(xPosition.get(j).getCloudlet().getCloudletId(), bestPosition.get(k));
                 }
+                    //&& (((PowerHost)xPositionShuffled.get(j).getVm().getHost()).getPowerEstimation() > ((PowerHost)bestPosition.get(j).getVm().getHost()).getPowerEstimation() )
+                        /*|| ((xPositionShuffled.get(j).getVm()).getMips() < (bestPosition.get(j).getVm()).getMips() ) */
             }
-
         }
-        return possibleCombinations;
-    }
 
-    private List<Allocation> generatePossibleCombinations(double wCoefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
-        List<Allocation> possibleCombinations = new ArrayList<Allocation>();
-
-        //Collections.shuffle(bestPosition);
-        List<Allocation> xPositionShuffled = new ArrayList<>(xPosition);
-        Collections.shuffle(xPositionShuffled);
-
+        //Find a limited number of differences between the actual position and the best position
         //We are going to generate numPossibleCombinations new combinations acording with the w coefficient
-        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * wCoefficient ); 
-        for(int i = 0; i < numPossibleCombinations; i++){
+        int numPossibleCombinations =  (int) Math.floor(((double)xPosition.size()) * incrementCoefficient ); 
+        
 
-            numPossibleCombinationsLoop:
-            for(int j=0; j< xPositionShuffled.size(); j++){
-                for(int k=0; k< bestPosition.size(); k++){
+        //select random allocations
+        Collections.shuffle(difAllocPositiontions);
 
-                    //if vm not has the same characteristic than the vm in the best position then take the vm from the bestPosition or a vm from the vms ordered list (usign random to decide)
-                    if(xPositionShuffled.get(j).getCloudlet()==bestPosition.get(k).getCloudlet() 
-                        && (((PowerHost)xPositionShuffled.get(j).getVm().getHost()).getPowerEstimation() > ((PowerHost)bestPosition.get(j).getVm().getHost()).getPowerEstimation() )
-                            || ((xPositionShuffled.get(j).getVm()).getMips() < (bestPosition.get(j).getVm()).getMips() )){
+        //Apply any heuristic or intelligent process to change allocations that can be considered better options
+        for(Allocation allocation : difAllocPositiontions){
+            if(changedCloulets.size() < numPossibleCombinations){
+                if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
+                    if(((PowerHost)allocation.getVm().getHost()).getPowerEstimation() 
+                        > ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getPowerEstimation() ){
 
+                            //The vm to change the cloudlet is going to be the same used in the best position
+                            PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
 
-                        /**
-                         * independent random number uniquely
-                         * generated from 0-1 at every update for each individual dimension d = 1 to D
-                         */
-                        double random = Math.random(); 
-                        PowerVm vm = random<0.5?bestPosition.get(j).getVm():powerVmsOrderByPowerConsumption.get(i);
-
-                        possibleCombinations.add(
-                                    new Allocation(xPositionShuffled.get(i).getCloudlet(), vm , xPositionShuffled.get(i).getHost())
-                                );
-                                break numPossibleCombinationsLoop;
+                            possibleCombinations.add(
+                                    new Allocation(
+                                            allocation.getCloudlet(),
+                                            vm, 
+                                            (PowerHost)vm.getHost())
+                            );
+                            changedCloulets.add(allocation.getCloudlet().getCloudletId());
+                        
                     }
                 }
             }
-
+            else 
+                break;
         }
+
+        //Apply a second or all necesary heuristics or intelligent processes if necessary
+        //and complete changes in the different allocations
+        for(Allocation allocation : difAllocPositiontions){
+            if(changedCloulets.size() < numPossibleCombinations){
+                if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
+                    if(((PowerHost)allocation.getVm().getHost()).getUtilizationMips()
+                        < ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getPowerEstimation() ){
+
+
+                    }
+
+                    for(PowerVm vm : powerVmsOrderByPowerConsumption){
+
+
+                    }
+
+                    PowerVm vm = powerVmsOrderByPowerConsumption.get((int)(Math.random() * ((double)powerVmsOrderByPowerConsumption.size())/(double)2));
+
+
+                    possibleCombinations.add(
+                            new Allocation(
+                                    allocation.getCloudlet(),
+                                    vm, 
+                                    (PowerHost)vm.getHost())
+                    );
+                    changedCloulets.add(allocation.getCloudlet().getCloudletId());
+                }
+            }
+            else 
+                break;
+        }
+
+        //finally, if there are still more changes that need to be generated, then lets make them randomly
+        //or if best position is in the the current position (in this case there are no different allocations)
+        // for(int i=0; i < 10; i++){
+        //     if(changedCloulets.size() < numPossibleCombinations){
+        //         if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
+
+        //             /**
+        //              * independent random number uniquely
+        //              * generated from 0-1 at every update for each individual dimension d = 1 to D
+        //              */
+        //             double random = Math.random(); 
+        //             PowerVm vm;
+        //             if(random<0.5)
+        //                 vm = powerVmsOrderByPowerConsumption.get((int)(Math.random() * ((double)powerVmsOrderByPowerConsumption.size())/(double)2));
+        //             else 
+        //                 vm = swarm.getPowerVms().get((int)(Math.random() * swarm.getDimension()));
+
+        //             possibleCombinations.add(
+        //                     new Allocation(
+        //                             allocation.getCloudlet(),
+        //                             vm, 
+        //                             (PowerHost)vm.getHost())
+        //             );
+        //             changedCloulets.add(allocation.getCloudlet().getCloudletId());
+        //         }
+        //     }
+        // }
+
         return possibleCombinations;
     }
     

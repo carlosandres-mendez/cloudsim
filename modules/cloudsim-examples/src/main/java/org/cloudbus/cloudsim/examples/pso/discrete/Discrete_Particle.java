@@ -19,7 +19,7 @@ public class Discrete_Particle {
     /** Position */
     List<Allocation> position;
     /** Velocity */
-    Queue<Allocation> velocity;
+    List<Allocation> velocity;
 
     //-------------------------------------------------------------------------
     // Constructors
@@ -31,7 +31,7 @@ public class Discrete_Particle {
     public Discrete_Particle() {
         position = new ArrayList<>();
         bestPosition = new ArrayList<>();
-        velocity = new LinkedList<>();
+        velocity = new ArrayList<>();
         bestFitness = Double.NaN;
         fitness = Double.NaN;
     }
@@ -41,7 +41,7 @@ public class Discrete_Particle {
     // Methods
     //-------------------------------------------------------------------------
 
-    public Discrete_Particle(List<Allocation> position, Queue<Allocation> velocity) {
+    public Discrete_Particle(List<Allocation> position, List<Allocation> velocity) {
         this.position = position;
         this.velocity = velocity;
     }
@@ -82,8 +82,12 @@ public class Discrete_Particle {
         return position;
     }
 
-    public Queue<Allocation> getVelocity() {
+    public List<Allocation> getVelocity() {
         return velocity;
+    }
+
+    public void setVelocity(List<Allocation> velocity) {
+        this.velocity = velocity;
     }
 
     /**
@@ -143,9 +147,7 @@ public class Discrete_Particle {
         this.position = position;
     }
 
-    public void setVelocity(Queue<Allocation> velocity) {
-        this.velocity = velocity;
-    }
+
 
     /** Printable string */
     @Override

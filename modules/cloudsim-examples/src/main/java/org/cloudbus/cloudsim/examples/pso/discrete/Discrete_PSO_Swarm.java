@@ -43,12 +43,6 @@ public class Discrete_PSO_Swarm {
     List<PowerVm> powerVms;
     List<Cloudlet> cloudlets;
 
-    //this is just for analyse the velocity queue
-    public int cantAddVelocidad;
-    public int cantNewVelocidad;
-    public int cantGetVelocidad;
-    public int cantPollVelocidad;
-
     /**
 	 * Create a Swarm and set default values
 	 * @param numberOfParticles : Number of particles in this swarm (should be greater than 0). 
@@ -88,7 +82,7 @@ public class Discrete_PSO_Swarm {
         for (int i=0; i < Constants.NUM_PARTICLES-1; i++) {
 
             List<Allocation> position = new ArrayList<>();
-            Queue<Allocation> velocity = new LinkedList<>();
+            List<Allocation> velocity = new ArrayList<>();
 
             for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
                 Random randObj = new Random();
@@ -103,7 +97,7 @@ public class Discrete_PSO_Swarm {
 
         //adding particles that can represent especial situations, such as the real state of a datacenter
         List<Allocation> position = new ArrayList<>();
-        Queue<Allocation> velocity = new LinkedList<>();
+        List<Allocation> velocity = new ArrayList<>();
 
         for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
             PowerVm vm = this.powerVms.get(cloudlet.getCloudletId());
@@ -250,6 +244,30 @@ public class Discrete_PSO_Swarm {
 
     public ArrayList<Discrete_Particle> getParticles() {
         return particles;
+    }
+
+    public List<PowerHost> getPowerHosts() {
+        return powerHosts;
+    }
+
+    public void setPowerHosts(List<PowerHost> powerHosts) {
+        this.powerHosts = powerHosts;
+    }
+
+    public List<PowerVm> getPowerVms() {
+        return powerVms;
+    }
+
+    public void setPowerVms(List<PowerVm> powerVms) {
+        this.powerVms = powerVms;
+    }
+
+    public List<Cloudlet> getCloudlets() {
+        return cloudlets;
+    }
+
+    public void setCloudlets(List<Cloudlet> cloudlets) {
+        this.cloudlets = cloudlets;
     }
 
     public void setParticles(ArrayList<Discrete_Particle> particles) {

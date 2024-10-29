@@ -18,7 +18,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
     List<PowerVm> vmList;
     List<PowerHost> hostList;
 
-    double vmExecutionTime[]; //execution time for each vm considering the tasks are going to process
+    double vmTurnAroundTime[]; //execution time for each vm considering the tasks are going to process
     double hostUtilization[]; //utilization for each host
     double vmUtilization[]; //utilization for each host
     double energy[]; //energy for each task
@@ -28,8 +28,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         this.vmList = vmList;
         this.hostList = hostList;
 
-        //executionTime = new double[clouletList.size()];
-        vmExecutionTime = new double[vmList.size()];
+        vmTurnAroundTime = new double[vmList.size()];
         hostUtilization = new double[hostList.size()]; 
         vmUtilization = new double[vmList.size()]; 
         energy = new double[clouletList.size()];
@@ -56,7 +55,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         numberOfHosts = hostIds.size();
 
 /**
- *      VM EXECUTION TIME (total execution time of a vm in the simulation considering the cloudlets it has to process)
+ *      VM TURNAROUND TIME (total execution time of a vm in the simulation considering the cloudlets it has to process)
  *      Estimated by mips: total cloudlets Length or size in Millions Instructions (MI) / total vm MIPS
  *           [mips refers to The total mips capacity of the PE of the VMs
  *              Pe (Processing Element) class represents a CPU core of a physical machine (PM), 
@@ -69,10 +68,10 @@ public class PSO_FitnessFunction extends FitnessFunction{
             //sum all cloudlet the vm has to process
             for(int i=0; i< position.length; i++){
                 if((int)position[i]==vm.getId())
-                    vmExecutionTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
+                    vmTurnAroundTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
             }
             //consider the vm capacity
-            vmExecutionTime[vm.getId()] = vmExecutionTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
+            vmTurnAroundTime[vm.getId()] = vmTurnAroundTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
         } 
         
 
@@ -143,11 +142,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
 /**
  *      MAKESPAN
- *      Estimated by the max vm execution time, since all vms start at the same time
+ *      Estimated by the max vm turn aroundTime time, since all vms start at the same time
 **/ 
         double makespan = 0.0d;
         for(int i=0; i< vmList.size(); i++){
-            makespan = Math.max(makespan, vmExecutionTime[i]);
+            makespan = Math.max(makespan, vmTurnAroundTime[i]);
         }
 
         //normalize: make the value comparable by changing the value from 0 to 1
@@ -229,22 +228,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
         return functOutput;
 	}
 
-    public double evaluate2(double[] position) {
-
         //cloudlet execution time = cloudlet length (total mips) / mv mips
         // for(int i=0; i< position.length; i++) 
         //     executionTime[i] = clouletList.get(i).getCloudletLength() / vmList.get((int)position[i]).getMips();
 
-        //For each vm we are going to calculate the execution time using the cloudlets mips it has to process
-        for(PowerVm vm : vmList){
-            //sum all cloudlet the vm has to process
-            for(int i=0; i< position.length; i++){
-                if((int)position[i]==vm.getId())
-                    vmExecutionTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
-            }
-            //consider the vm capacity
-            vmExecutionTime[vm.getId()] = vmExecutionTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
-        } 
+
         
 /**
  *      This is when we have the host information
@@ -281,71 +269,6 @@ public class PSO_FitnessFunction extends FitnessFunction{
         }
 **/
 
-        //total
-        double makespan = 0.0d;
-        for(int i=0; i< vmList.size(); i++){
-            makespan = Math.max(makespan, vmExecutionTime[i]);
-        }
-
-        //desbalancing degree calculated as the variance of host utilization
-        double desbalancingDegree = calculateVariance(vmExecutionTime);
-
-        //normalize: make comparable variables
-        double minClouletLenght = Double.MAX_VALUE;
-        double maxVmMips = Double.MAX_VALUE;
-        for(int i=0; i< position.length; i++){ 
-            minClouletLenght = Math.min(minClouletLenght, clouletList.get(i).getCloudletLength());
-            maxVmMips = Math.max(maxVmMips, vmList.get(i).getMips() * vmList.get(i).getNumberOfPes());
-        }
-        double minPosibleExcecutionTime = minClouletLenght / maxVmMips;
-        makespan = minPosibleExcecutionTime / makespan;
-
-        //objetive function
-        double weight1 = 0.5;
-        double weight2 = 0.5;
-        double functOutput = (weight1 * makespan) + (weight2 * desbalancingDegree);
-
-/**
- *      This is when we need to validate, for example in containers
- * 
-
-        //We are going to remove invalid position setting functOutput to 0.
-        //invalid position is when cpu capacity of a vm is bigger than the sum of cpu demanded of tasks
-        //Required for the Original PSO
-
-        //The next map is used for set the capacity MIPS of each VM
-        Map<Integer, Double> vmCapacity = new HashMap<>();
-        //The next map is used for set the demanded MIPS of each VM 
-        Map<Integer, Double> vmDemanded = new HashMap<>();
-
-        //fill the maps
-        for(int i=0; i< position.length; i++){ 
-            PowerVm vm = vmList.get((int)position[i]);
-            if(!vmCapacity.containsKey(vm.getId()))
-                vmCapacity.put(vm.getId(), vm.getMips() * vm.getNumberOfPes());
-            
-            if(!vmDemanded.containsKey(vm.getId()))
-                vmDemanded.put(vm.getId(), clouletList.get(i).getMips());
-            else
-            vmDemanded.put(vm.getId(), vmDemanded.get(vm.getId()) + clouletList.get(i).getMips());
-        }
-
-        //when invalid position set to 0
-        for (Map.Entry<Integer, Double> entry : vmDemanded.entrySet()) {
-            if(entry.getValue() > vmCapacity.get(entry.getKey()))
-                functOutput = 0.0d;
-        }
- */
-
-        //print results
-        System.out.print("--------- evaluate ");
-        for(int i=0;i<position.length;i++) {
-            System.out.print(position[i]+" ");
-        }
-        System.out.println(functOutput);
-
-        return functOutput;
-	}
 
     // Método para calcular la varianza de un arreglo de doubles
     public double calculateVariance(double[] numeros) {
