@@ -100,6 +100,20 @@ public class RandomRunner extends RunnerAbstract {
 
 	private void optimize(){
 
+		/**
+		 *      HOST UTILIZATION
+		 *      Estimated percentage: total VMs mips / total host mips
+		 *      This is a estimated value when all the vms are started (in this simulation all the vms start at the same time)
+		 *      However, during the simulation this value is going to be changed depending on the finish cloudlets time or vm migrations
+		**/
+		for(PowerHost host : hostList){
+			double vmsMIPS = 0.0d;
+			for(Vm vm : host.getVmList()){
+				vmsMIPS += vm.getMips() * vm.getNumberOfPes();
+			}
+			host.setUtilizationEstimation(vmsMIPS/(double)host.getTotalMips());
+		}
+
 		//*** Estimate power consumption from all hosts ***
 		List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(RandomRunner.hostList); //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
 		//host doest have power as an attribute -only the method-, but added for power consumption estimation

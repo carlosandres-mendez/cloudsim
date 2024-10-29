@@ -18,10 +18,9 @@ public class PSO_FitnessFunction extends FitnessFunction{
     List<PowerVm> vmList;
     List<PowerHost> hostList;
 
-    double vmTurnAroundTime[]; //execution time for each vm considering the tasks are going to process
-    double hostUtilization[]; //utilization for each host
-    double vmUtilization[]; //utilization for each host
-    double energy[]; //energy for each task
+    protected double vmTurnAroundTime[]; //execution time for each vm considering the tasks are going to process
+    protected double vmUtilization[]; //utilization for each host
+    protected double energy[]; //energy for each task
 
     public PSO_FitnessFunction(List<Cloudlet> clouletList, List<PowerVm> vmList, List<PowerHost> hostList){
         this.clouletList = clouletList;
@@ -29,7 +28,6 @@ public class PSO_FitnessFunction extends FitnessFunction{
         this.hostList = hostList;
 
         vmTurnAroundTime = new double[vmList.size()];
-        hostUtilization = new double[hostList.size()]; 
         vmUtilization = new double[vmList.size()]; 
         energy = new double[clouletList.size()];
 
@@ -73,22 +71,6 @@ public class PSO_FitnessFunction extends FitnessFunction{
             //consider the vm capacity
             vmTurnAroundTime[vm.getId()] = vmTurnAroundTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
         } 
-        
-
-/**
- *      HOST UTILIZATION
- *      Estimated percentage: total VMs mips / total host mips
- *      This is a estimated value when all the vms are started (in this simulation all the vms start at the same time)
- *      However, during the simulation this value is going to be changed depending on the finish cloudlets time or vm migrations
-**/
-        for(PowerHost host : hostList){
-            double vmsMIPS = 0.0d;
-            for(Vm vm : host.getVmList()){
-                vmsMIPS += vm.getMips() * vm.getNumberOfPes();
-            }
-            hostUtilization[host.getId()]=vmsMIPS/(double)host.getTotalMips();
-        }
-
    
 /**
  *      NUMBER OF HOSTS WITH OVER UTILIZATION
@@ -96,8 +78,8 @@ public class PSO_FitnessFunction extends FitnessFunction{
 **/  
 
         int numberHostOverUtilized = 0;
-        for(int i=0; i< hostUtilization.length; i++){ 
-            if(hostUtilization[i]>Constants.UTILIZATION_THRESHOLD)
+        for(PowerHost host : hostList){ 
+            if(host.getUtilizationEstimation()>Constants.UTILIZATION_THRESHOLD)
                 numberHostOverUtilized++;
         }
 
@@ -112,7 +94,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         double hostsTotalMips = 0.0d;
         for(PowerHost host : hostList){
             if(hostIds.contains(host.getId())){ //considering only hosts in the this especific solucion/allocation (particle position)
-                hostsUtiliMips += hostUtilization[host.getId()]*host.getTotalMips();
+                hostsUtiliMips += host.getUtilizationEstimation()*host.getTotalMips();
                 hostsTotalMips += host.getTotalMips();
             }
         }
@@ -127,7 +109,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         double totalDatacenterPowerConsumption=0.0d;
         for(PowerHost host : hostList){
             if(hostIds.contains(host.getId())){ //considering only hosts in the this especific solucion/allocation (particle position)
-                    totalDatacenterPowerConsumption += host.getPower(hostUtilization[host.getId()]); //Constants.UTILIZATION_THRESHOLD
+                    totalDatacenterPowerConsumption += host.getPower(host.getUtilizationEstimation()); //Constants.UTILIZATION_THRESHOLD
             }
         }
 
@@ -175,9 +157,9 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
 
         //objetive function
-        double weight1 = 0.3;
-        double weight2 = 0.3;
-        double weight3 = 0.1;
+        double weight1 = 0.6;
+        double weight2 = 0.1;
+        double weight3 = 0.0;
         double weight4 = 0.3;
         double weight5 = 0;
         double functOutput =  1/((weight1 * totalDatacenterPowerConsumption) 

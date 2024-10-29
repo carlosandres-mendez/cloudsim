@@ -15,7 +15,7 @@ import org.cloudbus.cloudsim.examples.pso.Constants;
 public class Discrete_PSO_Swarm {
 
     public static double DEFAULT_GLOBAL_INCREMENT = 0.9;
-	public static double DEFAULT_INERTIA = 0.95;
+	public static int DEFAULT_INERTIA = 5;
 	public static int DEFAULT_NUMBER_OF_PARTICLES = 25;
 	public static double DEFAULT_PARTICLE_INCREMENT = 0.9;
 
@@ -26,7 +26,7 @@ public class Discrete_PSO_Swarm {
     /** Global increment (for velocity update), usually called 'c2' constant */
 	double globalIncrement;
 	/** Inertia (for velocity update), usually called 'w' constant */
-	double inertia;
+	int inertia;
 
     /** Best fitness so far (global best) */
     double bestFitness;
@@ -86,11 +86,16 @@ public class Discrete_PSO_Swarm {
 
             for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
                 Random randObj = new Random();
-                Allocation allocation = new Allocation(
+                Allocation positionAllocation = new Allocation(
                     cloudlet, 
                     this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
                     this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
-                position.add(allocation);
+                position.add(positionAllocation);
+                Allocation velocityAllocation = new Allocation(
+                    cloudlet, 
+                    this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
+                    this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
+                velocity.add(velocityAllocation);
             }
             particles.add(new Discrete_Particle(position, velocity));
         }
@@ -101,11 +106,18 @@ public class Discrete_PSO_Swarm {
 
         for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
             PowerVm vm = this.powerVms.get(cloudlet.getCloudletId());
-            Allocation allocation = new Allocation(
+            Allocation positionAllocation = new Allocation(
                 cloudlet, 
                 vm, 
                 (PowerHost)vm.getHost()); 
-            position.add(allocation);
+            position.add(positionAllocation);
+
+            Random randObj = new Random();
+            Allocation velocityAllocation = new Allocation(
+                cloudlet, 
+                this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
+                (PowerHost)vm.getHost());
+            velocity.add(velocityAllocation);
         }
         particles.add(new Discrete_Particle(position, velocity));
 
@@ -202,14 +214,6 @@ public class Discrete_PSO_Swarm {
         this.globalIncrement = globalIncrement;
     }
 
-    public double getInertia() {
-        return inertia;
-    }
-
-    public void setInertia(double inertia) {
-        this.inertia = inertia;
-    }
-
     public double getBestFitness() {
         return bestFitness;
     }
@@ -277,4 +281,13 @@ public class Discrete_PSO_Swarm {
     public int getDimension(){
         return cloudlets.size();
     }
+
+    public int getInertia() {
+        return inertia;
+    }
+
+    public void setInertia(int inertia) {
+        this.inertia = inertia;
+    }
+    
 }

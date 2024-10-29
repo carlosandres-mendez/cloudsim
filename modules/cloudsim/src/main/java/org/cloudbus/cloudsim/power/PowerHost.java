@@ -40,6 +40,7 @@ public class PowerHost extends HostDynamicWorkload {
 
 		/** added for tesis Carlos A. Mendez R. */
 		public double powerEstimation; 
+		public double utilizationEstimation; 
 
 	/**
 	 * Instantiates a new PowerHost.
@@ -149,5 +150,12 @@ public class PowerHost extends HostDynamicWorkload {
 		this.powerEstimation = powerEstimation;
 	}
 
+	public double getUtilizationEstimation() {
+		return utilizationEstimation;
+	}
+
+	public void setUtilizationEstimation(double utilizationEstimation) {
+		this.utilizationEstimation = utilizationEstimation;
+	}
 	
 }

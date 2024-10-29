@@ -69,9 +69,9 @@ public class Constants {
 	 * Added for PSO Original and discrete
 	 */
 
-	public final static int NUM_PARTICLES	= 4;
+	public final static int NUM_PARTICLES	= 100;
 
-	public final static int NUM_ITERATIONS	= 4;
+	public final static int NUM_ITERATIONS	= 100;
     
 	//The inertia Weight 
 	/**

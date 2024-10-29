@@ -60,7 +60,7 @@ public class Discrete_ParticleUpdate {
         int g = 0; // *** Global
         while(w < inertiaAllocations.size() || p < personalPossibleCombinations.size() || g < globalPossibleCombinations.size()){
 
-            int numberList = (int)(Math.random() * 3); 
+            int numberList = (int)(Math.random() * 3) + 1; 
 
             if (numberList==1 && w < inertiaAllocations.size()) {
                 nextVelocity.get(inertiaAllocations.get(w).getCloudlet().getCloudletId()).setVm(inertiaAllocations.get(w).getVm());
@@ -175,27 +175,21 @@ public class Discrete_ParticleUpdate {
         for(Allocation allocation : difAllocPositiontions){
             if(changedCloulets.size() < numPossibleCombinations){
                 if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
-                    if(((PowerHost)allocation.getVm().getHost()).getUtilizationMips()
-                        < ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getPowerEstimation() ){
+                    //if the utilization of the host in the best position is not lower than the utilization threshold then it is not going to be changed
+                    if(((PowerHost)allocation.getVm().getHost()).getUtilizationEstimation() > Constants.UTILIZATION_THRESHOLD
+                        && ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getPowerEstimation() < Constants.UTILIZATION_THRESHOLD){
 
+                            //The vm to change the cloudlet is going to be the same used in the best position
+                            PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
 
+                            possibleCombinations.add(
+                                    new Allocation(
+                                            allocation.getCloudlet(),
+                                            vm, 
+                                            (PowerHost)vm.getHost())
+                            );
+                            changedCloulets.add(allocation.getCloudlet().getCloudletId());
                     }
-
-                    for(PowerVm vm : powerVmsOrderByPowerConsumption){
-
-
-                    }
-
-                    PowerVm vm = powerVmsOrderByPowerConsumption.get((int)(Math.random() * ((double)powerVmsOrderByPowerConsumption.size())/(double)2));
-
-
-                    possibleCombinations.add(
-                            new Allocation(
-                                    allocation.getCloudlet(),
-                                    vm, 
-                                    (PowerHost)vm.getHost())
-                    );
-                    changedCloulets.add(allocation.getCloudlet().getCloudletId());
                 }
             }
             else 
@@ -233,34 +227,6 @@ public class Discrete_ParticleUpdate {
         return possibleCombinations;
     }
     
-
-    private List<Allocation> generatePossibleCombinationsInDeveloping1(double randomWeight, double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
-        List<Allocation> possibleCombinations = new ArrayList<Allocation>();
-
-        //buscamos evitar se tengan luego que migrar vms y las vms mas costosas en energia apagarlas lo mas pronto posible, mejor si no le damos tareas
-        //si es una vm muy eficiente en uso energia y muy rapida (muchos mips)
-
-        //detectamos mvs de xPosition cuyo servidor es sobreutilizado
-        //de la lista ordenada de vms vamos buscando la que pueda albergar la vm
-        //bestPosition se puede usar para buscar interseccion y agregarlas a la velocidad
-        //la interseccion puede ser coincidencias en el numero de vm o en la caracteristica (si nuevas vms -con tareas- generan utilizacion similar )
-        for(Allocation allocation : xPosition){
-
-        }
-
-
-        Collections.shuffle(bestPosition);
-
-        //Random generated
-        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * coefficient); 
-        for(int i = 0; i < numPossibleCombinations; i++){
-
-            possibleCombinations.add(
-                        new Allocation(bestPosition.get(i).getCloudlet(), powerVmsOrderByPowerConsumption.get(i), bestPosition.get(i).getHost())
-                    );
-        }
-        return possibleCombinations;
-    }
 
     private List<Allocation> generatePossibleCombinationsInDevelop(double coefficient, List<Allocation> bestPosition, List<Allocation> xPosition){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();

@@ -20,6 +20,9 @@ public class Discrete_Particle {
     List<Allocation> position;
     /** Velocity */
     List<Allocation> velocity;
+    
+    /** Aditional info generated in the evaluation process */
+    double vmTurnAroundTime[]; //execution time for each vm considering the tasks are going to process
 
     //-------------------------------------------------------------------------
     // Constructors
@@ -147,7 +150,15 @@ public class Discrete_Particle {
         this.position = position;
     }
 
+    public double[] getVmTurnAroundTime() {
+        return vmTurnAroundTime;
+    }
 
+	public void copyVmTurnAroundTime(double vmTurnAroundTime[]) {
+        this.vmTurnAroundTime = new double[this.getDimension()];
+		for (int i = 0; i < vmTurnAroundTime.length; i++)
+            this.vmTurnAroundTime[i] = vmTurnAroundTime[i];
+	}
 
     /** Printable string */
     @Override
