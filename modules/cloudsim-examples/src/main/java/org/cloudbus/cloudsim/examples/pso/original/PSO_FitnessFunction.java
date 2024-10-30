@@ -20,7 +20,6 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
     protected double vmTurnAroundTime[]; //execution time for each vm considering the tasks are going to process
     protected double vmUtilization[]; //utilization for each host
-    protected double energy[]; //energy for each task
 
     public PSO_FitnessFunction(List<Cloudlet> clouletList, List<PowerVm> vmList, List<PowerHost> hostList){
         this.clouletList = clouletList;
@@ -29,7 +28,6 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
         vmTurnAroundTime = new double[vmList.size()];
         vmUtilization = new double[vmList.size()]; 
-        energy = new double[clouletList.size()];
 
         setMaximize(true);
     }
@@ -42,15 +40,20 @@ public class PSO_FitnessFunction extends FitnessFunction{
          * It is obtained from the vm, because each vm contains the host 
          */
 
-         int numberOfHosts = 0;
+        int numberOfHosts = 0;
+        int numberOfVms = 0;
         Set<Integer> hostIds = new HashSet<Integer>();
+        Set<Integer> vmIds = new HashSet<Integer>();
         for(int i=0; i<position.length; i++) {
             for(Vm vm : vmList) {
-                if(vm.getId()==position[i])
+                if(vm.getId()==position[i]){
                     hostIds.add(vm.getHost().getId());
+                    vmIds.add(vm.getId());
+                }
             }
         }
         numberOfHosts = hostIds.size();
+        numberOfVms = vmIds.size();
 
 /**
  *      VM TURNAROUND TIME (total execution time of a vm in the simulation considering the cloudlets it has to process)
@@ -63,6 +66,8 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
         //For each vm we are going to calculate the execution time using the cloudlets mips it has to process
         for(PowerVm vm : vmList){
+            //clear
+            vmTurnAroundTime[vm.getId()] = 0.0d;
             //sum all cloudlet the vm has to process
             for(int i=0; i< position.length; i++){
                 if((int)position[i]==vm.getId())
@@ -114,12 +119,10 @@ public class PSO_FitnessFunction extends FitnessFunction{
         }
 
         //normalize: make the value comparable by changing the value from 0 to 1
-        double maxHostPowerConsumption=0.0d;
         double worstDatacenterPowerConsumption = 0.0d;
         for(PowerHost host : hostList){
-            maxHostPowerConsumption = Math.max(maxHostPowerConsumption, host.getPower(1));
+            worstDatacenterPowerConsumption += host.getPower(1);
         }
-        worstDatacenterPowerConsumption = maxHostPowerConsumption * hostList.size();
         totalDatacenterPowerConsumption = totalDatacenterPowerConsumption / worstDatacenterPowerConsumption;
 
 /**
@@ -132,13 +135,16 @@ public class PSO_FitnessFunction extends FitnessFunction{
         }
 
         //normalize: make the value comparable by changing the value from 0 to 1
-        double maxClouletLenght = 0.0d;
+        double totalClouletsMIPS = 0.0d;
         double minVmMips = Double.MAX_VALUE;
-        for(int i=0; i< position.length; i++){ 
-            maxClouletLenght = Math.max(maxClouletLenght, clouletList.get(i).getCloudletLength());
+        for(int i=0; i< clouletList.size(); i++)
+            totalClouletsMIPS += clouletList.get(i).getCloudletLength();
+        
+        for(int i=0; i< vmList.size(); i++) 
             minVmMips = Math.min(minVmMips, vmList.get(i).getMips() * vmList.get(i).getNumberOfPes());
-        }
-        double maxPosibleVmExcecutionTime = maxClouletLenght * (clouletList.size()) / minVmMips; // (clouletList.size() / 5) is a estimated num max tasks in a vm
+
+        //worst case is when the vm with less mips has to process all the cloudlets
+        double maxPosibleVmExcecutionTime = totalClouletsMIPS / minVmMips; 
         makespan = makespan / maxPosibleVmExcecutionTime;
 
 
@@ -149,17 +155,19 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
         //desbalancing degree calculated as the variance of host utilization
         //double desbalancingDegree = calculateVariance(hostUtilization); //vmExecutionTime
-        double balancingDegree = (double)numberOfHosts / hostList.size();
+        double hostBalancingDegree = (double)numberOfHosts / hostList.size();
 
         //desbalancingDegree normalized
         //double maxVariance = maxPosibleVmExcecutionTime*maxPosibleVmExcecutionTime/4;
         //desbalancingDegree = desbalancingDegree/maxVariance;
 
+        double vmsBalancingDegree = (double)numberOfVms / vmList.size();
+        double balancingDegree = hostBalancingDegree * vmsBalancingDegree;
 
         //objetive function
-        double weight1 = 0.6;
+        double weight1 = 0.3;
         double weight2 = 0.1;
-        double weight3 = 0.0;
+        double weight3 = 0.3;
         double weight4 = 0.3;
         double weight5 = 0;
         double functOutput =  1/((weight1 * totalDatacenterPowerConsumption) 

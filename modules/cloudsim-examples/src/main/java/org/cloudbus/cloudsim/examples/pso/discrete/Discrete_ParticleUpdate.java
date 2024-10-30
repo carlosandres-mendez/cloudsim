@@ -177,7 +177,7 @@ public class Discrete_ParticleUpdate {
                 if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
                     //if the utilization of the host in the best position is not lower than the utilization threshold then it is not going to be changed
                     if(((PowerHost)allocation.getVm().getHost()).getUtilizationEstimation() > Constants.UTILIZATION_THRESHOLD
-                        && ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getPowerEstimation() < Constants.UTILIZATION_THRESHOLD){
+                        && ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getUtilizationEstimation() < Constants.UTILIZATION_THRESHOLD){
 
                             //The vm to change the cloudlet is going to be the same used in the best position
                             PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();

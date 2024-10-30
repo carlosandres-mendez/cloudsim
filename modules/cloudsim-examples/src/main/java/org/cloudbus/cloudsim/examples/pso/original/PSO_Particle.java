@@ -8,6 +8,12 @@ import net.sourceforge.jswarm_pso.Particle;
 
 public class PSO_Particle extends Particle{
 
+    public PSO_Particle(int dimention, double[] position, double[] velocity){
+        super(dimention);
+        setPosition(position);
+        setVelocity(velocity);
+    }
+
     public PSO_Particle(int numberCloudlets, int numberVms){
         super(numberCloudlets);
         double[] position = new double[numberCloudlets];

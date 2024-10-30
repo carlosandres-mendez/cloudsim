@@ -371,6 +371,12 @@ public class RandomRunner extends RunnerAbstract {
 
 			broker.bindCloudletToVm(count, p.getId());
 			count++;
+			if(count == 50)
+				break;
+			broker.bindCloudletToVm(count, p.getId());
+			count++;
+			if(count == 50)
+				break;
 			broker.bindCloudletToVm(count, p.getId());
 			count++;
 			if(count == 50)

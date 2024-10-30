@@ -78,48 +78,79 @@ public class Discrete_PSO_Swarm {
         // List<Allocation> xPositionShuffled = new ArrayList<>(bestPosition);
         // Collections.shuffle(xPositionShuffled);
 
-        //Creamos particulas aleatorias
-        for (int i=0; i < Constants.NUM_PARTICLES-1; i++) {
+        for (int i=1; i <= this.powerVms.size(); i++) { //number of different vms in each particle from 1 to N 
+            for (int j=0; j < Constants.NUM_PARTICLES/this.powerVms.size(); j++) { //number of particles we are going to create for each number of different vms
 
-            List<Allocation> position = new ArrayList<>();
-            List<Allocation> velocity = new ArrayList<>();
+                List<Integer> idVmsList = new ArrayList<>();
+                Set<Integer> uniqueIdVms = getUniqueRandomNumbers(i, this.powerVms.size());
+                List<Integer> uniqueIdVmsList = new ArrayList<>(uniqueIdVms);
+                for(Cloudlet cloudlet : this.cloudlets){ 
+                    idVmsList.add(uniqueIdVmsList.get(cloudlet.getCloudletId() % uniqueIdVmsList.size()));
+                }
+                Collections.shuffle(idVmsList);
 
-            for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
-                Random randObj = new Random();
-                Allocation positionAllocation = new Allocation(
-                    cloudlet, 
-                    this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
-                    this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
-                position.add(positionAllocation);
-                Allocation velocityAllocation = new Allocation(
-                    cloudlet, 
-                    this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
-                    this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
-                velocity.add(velocityAllocation);
+                List<Allocation> position = new ArrayList<>();
+                List<Allocation> velocity = new ArrayList<>();
+    
+                for(Cloudlet cloudlet : this.cloudlets){ 
+                    Random randObj = new Random();
+                    Allocation positionAllocation = new Allocation(
+                        cloudlet, 
+                        this.powerVms.get(idVmsList.get(cloudlet.getCloudletId())), 
+                        this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
+                    position.add(positionAllocation);
+                    Allocation velocityAllocation = new Allocation(
+                        cloudlet, 
+                        this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
+                        this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
+                    velocity.add(velocityAllocation);
+                }
+                particles.add(new Discrete_Particle(position, velocity));
             }
-            particles.add(new Discrete_Particle(position, velocity));
         }
+
+        //Creamos particulas aleatorias
+        // for (int i=0; i < Constants.NUM_PARTICLES-1; i++) {
+
+        //     List<Allocation> position = new ArrayList<>();
+        //     List<Allocation> velocity = new ArrayList<>();
+
+        //     for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
+        //         Random randObj = new Random();
+        //         Allocation positionAllocation = new Allocation(
+        //             cloudlet, 
+        //             this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
+        //             this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
+        //         position.add(positionAllocation);
+        //         Allocation velocityAllocation = new Allocation(
+        //             cloudlet, 
+        //             this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
+        //             this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
+        //         velocity.add(velocityAllocation);
+        //     }
+        //     particles.add(new Discrete_Particle(position, velocity));
+        // }
 
         //adding particles that can represent especial situations, such as the real state of a datacenter
-        List<Allocation> position = new ArrayList<>();
-        List<Allocation> velocity = new ArrayList<>();
+        // List<Allocation> position = new ArrayList<>();
+        // List<Allocation> velocity = new ArrayList<>();
 
-        for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
-            PowerVm vm = this.powerVms.get(cloudlet.getCloudletId());
-            Allocation positionAllocation = new Allocation(
-                cloudlet, 
-                vm, 
-                (PowerHost)vm.getHost()); 
-            position.add(positionAllocation);
+        // for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
+        //     PowerVm vm = this.powerVms.get(cloudlet.getCloudletId());
+        //     Allocation positionAllocation = new Allocation(
+        //         cloudlet, 
+        //         vm, 
+        //         (PowerHost)vm.getHost()); 
+        //     position.add(positionAllocation);
 
-            Random randObj = new Random();
-            Allocation velocityAllocation = new Allocation(
-                cloudlet, 
-                this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
-                (PowerHost)vm.getHost());
-            velocity.add(velocityAllocation);
-        }
-        particles.add(new Discrete_Particle(position, velocity));
+        //     Random randObj = new Random();
+        //     Allocation velocityAllocation = new Allocation(
+        //         cloudlet, 
+        //         this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
+        //         (PowerHost)vm.getHost());
+        //     velocity.add(velocityAllocation);
+        // }
+        // particles.add(new Discrete_Particle(position, velocity));
 
     
         System.out.println();
@@ -128,6 +159,17 @@ public class Discrete_PSO_Swarm {
         System.out.println();
 	}
 
+    public static Set<Integer> getUniqueRandomNumbers(int n, int upperBound) {
+        Set<Integer> uniqueNumbers = new HashSet<>();
+        Random random = new Random();
+
+        while (uniqueNumbers.size() < n) {
+            int number = random.nextInt(upperBound); // Genera un número aleatorio entre 0 y upperBound-1
+            uniqueNumbers.add(number);
+        }
+
+        return uniqueNumbers;
+    }
 
     /**
 	 * Evaluate fitness function for every particle 

@@ -2,8 +2,10 @@ package org.cloudbus.cloudsim.examples.pso.original;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.cloudbus.cloudsim.Log;
@@ -12,11 +14,13 @@ import org.cloudbus.cloudsim.VmAllocationPolicy;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
 import org.cloudbus.cloudsim.examples.pso.Helper;
 import org.cloudbus.cloudsim.examples.pso.RandomConstants;
 import org.cloudbus.cloudsim.examples.pso.RandomHelper;
 import org.cloudbus.cloudsim.examples.pso.RunnerAbstract;
+import org.cloudbus.cloudsim.examples.pso.discrete.Discrete_Particle;
 import org.cloudbus.cloudsim.power.PowerDatacenter;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
@@ -122,14 +126,41 @@ public class RandomRunner extends RunnerAbstract {
 		}
 
         //initialize particles
+        // PSO_Particle[] particles = new PSO_Particle[Constants.NUM_PARTICLES];
+        // for(int i=0;i<Constants.NUM_PARTICLES-1;i++) {
+        //     particles[i]= new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size());
+        //     System.out.println(particles[i]);
+        // }
+
+		//initialize particles
         PSO_Particle[] particles = new PSO_Particle[Constants.NUM_PARTICLES];
-        for(int i=0;i<Constants.NUM_PARTICLES-1;i++) {
-            particles[i]= new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size());
-            System.out.println(particles[i]);
+		int cont =0;
+		for (int i=1; i <=  RandomRunner.vmList.size(); i++) { //number of different vms in each particle from 1 to N 
+            for (int j=0; j < Constants.NUM_PARTICLES/ RandomRunner.vmList.size(); j++) { //number of particles we are going to create for each number of different vms
+
+                List<Integer> idVmsList = new ArrayList<>();
+                Set<Integer> uniqueIdVms = getUniqueRandomNumbers(i,  RandomRunner.vmList.size());
+                List<Integer> uniqueIdVmsList = new ArrayList<>(uniqueIdVms);
+                for(Cloudlet cloudlet : RandomRunner.cloudletList){ 
+                    idVmsList.add(uniqueIdVmsList.get(cloudlet.getCloudletId() % uniqueIdVmsList.size()));
+                }
+                Collections.shuffle(idVmsList);
+
+				double[] position = new double[RandomRunner.cloudletList.size()];
+				double[] velocity = new double[RandomRunner.cloudletList.size()];
+
+				for (int h = 0; h < RandomRunner.cloudletList.size(); h++) {
+					position[h] = ((PowerVm)RandomRunner.vmList.get(idVmsList.get(h))).getId();
+					velocity[h] = Math.random()*RandomRunner.vmList.size();
+				}
+                particles[cont++] =new PSO_Particle(RandomRunner.cloudletList.size(), position, velocity);
+				System.out.println(particles[cont-1]);
+            }
         }
 
+
 		//adding particles that can represent especial situations, such as the real state of a datacenter
-		particles[Constants.NUM_PARTICLES-1]= new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size() , 0);
+		//particles[Constants.NUM_PARTICLES-1]= new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size() , 0);
 
         fitnessFunction = new PSO_FitnessFunction(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList);
         swarm = new Swarm(cloudletList.size(), new PSO_Particle(cloudletList.size(), RandomRunner.vmList.size()), fitnessFunction);
@@ -156,6 +187,17 @@ public class RandomRunner extends RunnerAbstract {
         System.out.println(bestparticle.toString());
     }
 
+	public static Set<Integer> getUniqueRandomNumbers(int n, int upperBound) {
+        Set<Integer> uniqueNumbers = new HashSet<>();
+        Random random = new Random();
+
+        while (uniqueNumbers.size() < n) {
+            int number = random.nextInt(upperBound); // Genera un número aleatorio entre 0 y upperBound-1
+            uniqueNumbers.add(number);
+        }
+
+        return uniqueNumbers;
+    }
 
 	/**
 	 * Starts the simulation.
