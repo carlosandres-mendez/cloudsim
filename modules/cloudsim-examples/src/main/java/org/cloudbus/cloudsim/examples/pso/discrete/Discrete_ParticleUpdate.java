@@ -198,32 +198,43 @@ public class Discrete_ParticleUpdate {
 
         //finally, if there are still more changes that need to be generated, then lets make them randomly
         //or if best position is in the the current position (in this case there are no different allocations)
-        // for(int i=0; i < 10; i++){
-        //     if(changedCloulets.size() < numPossibleCombinations){
-        //         if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
+        int cont=0;
+        while(changedCloulets.size() < (int)((double)numPossibleCombinations/(double)2)){
 
-        //             /**
-        //              * independent random number uniquely
-        //              * generated from 0-1 at every update for each individual dimension d = 1 to D
-        //              */
-        //             double random = Math.random(); 
-        //             PowerVm vm;
-        //             if(random<0.5)
-        //                 vm = powerVmsOrderByPowerConsumption.get((int)(Math.random() * ((double)powerVmsOrderByPowerConsumption.size())/(double)2));
-        //             else 
-        //                 vm = swarm.getPowerVms().get((int)(Math.random() * swarm.getDimension()));
+            Random random = new Random();
+            int number = random.nextInt(swarm.getDimension());
 
-        //             possibleCombinations.add(
-        //                     new Allocation(
-        //                             allocation.getCloudlet(),
-        //                             vm, 
-        //                             (PowerHost)vm.getHost())
-        //             );
-        //             changedCloulets.add(allocation.getCloudlet().getCloudletId());
-        //         }
-        //     }
-        // }
+            if(!changedCloulets.contains(number)){
 
+                PowerVm vm = powerVmsOrderByPowerConsumption.get(cont);
+
+                possibleCombinations.add(
+                        new Allocation(
+                                swarm.getCloudlets().get(number),
+                                vm, 
+                                (PowerHost)vm.getHost())
+                );
+                changedCloulets.add(number);
+                cont++;
+            }
+        }
+
+        return possibleCombinations;
+    }
+
+    private List<Allocation> generatePossibleCombinations_random(List<Allocation> bestPosition, List<Allocation> xPosition, Double incrementCoefficient){
+        List<Allocation> possibleCombinations = new ArrayList<Allocation>();
+
+        Collections.shuffle(bestPosition);
+
+        //Random generated
+        int numPossibleCombinations =  (int) Math.floor(((double)bestPosition.size()) * incrementCoefficient); 
+        for(int i = 0; i < numPossibleCombinations; i++){
+
+            possibleCombinations.add(
+                        new Allocation(bestPosition.get(i).getCloudlet(), powerVmsOrderByPowerConsumption.get(i), bestPosition.get(i).getHost())
+                    );
+        }
         return possibleCombinations;
     }
     
