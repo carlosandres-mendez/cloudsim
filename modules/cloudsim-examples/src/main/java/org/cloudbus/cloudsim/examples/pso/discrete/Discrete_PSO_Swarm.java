@@ -79,7 +79,8 @@ public class Discrete_PSO_Swarm {
         // Collections.shuffle(xPositionShuffled);
 
         for (int i=1; i <= this.powerVms.size(); i++) { //number of different vms in each particle from 1 to N 
-            for (int j=0; j < Constants.NUM_PARTICLES/this.powerVms.size(); j++) { //number of particles we are going to create for each number of different vms
+            int subset = (int)((double)Constants.NUM_PARTICLES/(double)this.powerVms.size());
+            for (int j=0; j < subset; j++) { //number of particles we are going to create for each number of different vms
 
                 List<Integer> idVmsList = new ArrayList<>();
                 Set<Integer> uniqueIdVms = getUniqueRandomNumbers(i, this.powerVms.size());

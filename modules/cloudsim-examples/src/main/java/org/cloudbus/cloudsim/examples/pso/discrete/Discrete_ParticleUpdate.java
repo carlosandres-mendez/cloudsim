@@ -109,6 +109,119 @@ public class Discrete_ParticleUpdate {
 
     }
 
+        /**
+     * 
+     * @param bestPosition
+     * @param xPosition
+     * @param numMaxDifferences null or the maximum number of differences between the actual position and the best position to generate
+     * @return
+     */
+    private List<Allocation> generatePossibleCombinationsMakeSpan(List<Allocation> bestPosition, List<Allocation> xPosition, Double incrementCoefficient){
+        List<Allocation> possibleCombinations = new ArrayList<Allocation>();
+
+        //Find different allocations between best position and the current position
+        List<Allocation> difAllocPositiontions = new ArrayList<>(); 
+        Set<Integer> changedCloulets = new HashSet<>();
+        Map<Integer, Allocation> difAllocBestPositionsMap = new HashMap<>();
+        for(int j=0; j< xPosition.size(); j++){
+            for(int k=0; k< bestPosition.size(); k++){
+
+                //if vm not has the same characteristic than the vm in the best position then take the vm from the bestPosition or a vm from the vms ordered list (usign random to decide)
+                if(xPosition.get(j).getCloudlet().getCloudletId()==bestPosition.get(k).getCloudlet().getCloudletId() 
+                    && xPosition.get(j).getVm().getId()!=bestPosition.get(k).getVm().getId()){
+                    difAllocPositiontions.add(xPosition.get(j));
+                    difAllocBestPositionsMap.put(xPosition.get(j).getCloudlet().getCloudletId(), bestPosition.get(k));
+                }
+                    //&& (((PowerHost)xPositionShuffled.get(j).getVm().getHost()).getPowerEstimation() > ((PowerHost)bestPosition.get(j).getVm().getHost()).getPowerEstimation() )
+                        /*|| ((xPositionShuffled.get(j).getVm()).getMips() < (bestPosition.get(j).getVm()).getMips() ) */
+            }
+        }
+
+        //Find a limited number of differences between the actual position and the best position
+        //We are going to generate numPossibleCombinations new combinations acording with the w coefficient
+        int numPossibleCombinations =  (int) Math.floor(((double)xPosition.size()) * incrementCoefficient ); 
+        
+
+        //select random allocations
+        Collections.shuffle(difAllocPositiontions);
+
+        //Apply any heuristic or intelligent process to change allocations that can be considered better options
+        for(Allocation allocation : difAllocPositiontions){
+            if(changedCloulets.size() < numPossibleCombinations){
+                if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
+                    if((((PowerHost)allocation.getVm().getHost()).getTotalMips() * ((PowerHost)allocation.getVm().getHost()).getNumberOfPes())
+                        < (((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getTotalMips() 
+                            * ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getNumberOfPes()) ){
+
+                            //The vm to change the cloudlet is going to be the same used in the best position
+                            PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
+
+                            possibleCombinations.add(
+                                    new Allocation(
+                                            allocation.getCloudlet(),
+                                            vm, 
+                                            (PowerHost)vm.getHost())
+                            );
+                            changedCloulets.add(allocation.getCloudlet().getCloudletId());
+                        
+                    }
+                }
+            }
+            else 
+                break;
+        }
+
+        //Apply a second or all necesary heuristics or intelligent processes if necessary
+        //and complete changes in the different allocations
+        for(Allocation allocation : difAllocPositiontions){
+            if(changedCloulets.size() < numPossibleCombinations){
+                if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
+                    //if the utilization of the host in the best position is not lower than the utilization threshold then it is not going to be changed
+                    if(allocation.getVm().getMips() < (difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm()).getMips()){
+
+                            //The vm to change the cloudlet is going to be the same used in the best position
+                            PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
+
+                            possibleCombinations.add(
+                                    new Allocation(
+                                            allocation.getCloudlet(),
+                                            vm, 
+                                            (PowerHost)vm.getHost())
+                            );
+                            changedCloulets.add(allocation.getCloudlet().getCloudletId());
+                    }
+                }
+            }
+            else 
+                break;
+        }
+
+        //finally, if there are still more changes that need to be generated, then lets make them randomly
+        //or if best position is in the the current position (in this case there are no different allocations)
+        // int cont=0;
+        // while(changedCloulets.size() < (int)((double)numPossibleCombinations/(double)2)){
+
+        //     Random random = new Random();
+        //     int number = random.nextInt(swarm.getDimension());
+
+        //     if(!changedCloulets.contains(number)){
+
+        //         PowerVm vm = powerVmsOrderByPowerConsumption.get(cont);
+
+        //         possibleCombinations.add(
+        //                 new Allocation(
+        //                         swarm.getCloudlets().get(number),
+        //                         vm, 
+        //                         (PowerHost)vm.getHost())
+        //         );
+        //         changedCloulets.add(number);
+        //         cont++;
+        //     }
+        // }
+
+        return possibleCombinations;
+    }
+
     /**
      * 
      * @param bestPosition
@@ -117,6 +230,66 @@ public class Discrete_ParticleUpdate {
      * @return
      */
     private List<Allocation> generatePossibleCombinations(List<Allocation> bestPosition, List<Allocation> xPosition, Double incrementCoefficient){
+        List<Allocation> possibleCombinations = new ArrayList<Allocation>();
+
+        //Find different allocations between best position and the current position
+        List<Allocation> difAllocPositiontions = new ArrayList<>(); 
+        Set<Integer> changedCloulets = new HashSet<>();
+        Map<Integer, Allocation> difAllocBestPositionsMap = new HashMap<>();
+        for(int j=0; j< xPosition.size(); j++){
+            for(int k=0; k< bestPosition.size(); k++){
+
+                //if vm not has the same characteristic than the vm in the best position then take the vm from the bestPosition or a vm from the vms ordered list (usign random to decide)
+                if(xPosition.get(j).getCloudlet().getCloudletId()==bestPosition.get(k).getCloudlet().getCloudletId() 
+                    && xPosition.get(j).getVm().getId()!=bestPosition.get(k).getVm().getId()){
+                    difAllocPositiontions.add(xPosition.get(j));
+                    difAllocBestPositionsMap.put(xPosition.get(j).getCloudlet().getCloudletId(), bestPosition.get(k));
+                }
+                    //&& (((PowerHost)xPositionShuffled.get(j).getVm().getHost()).getPowerEstimation() > ((PowerHost)bestPosition.get(j).getVm().getHost()).getPowerEstimation() )
+                        /*|| ((xPositionShuffled.get(j).getVm()).getMips() < (bestPosition.get(j).getVm()).getMips() ) */
+            }
+        }
+
+        //Find a limited number of differences between the actual position and the best position
+        //We are going to generate numPossibleCombinations new combinations acording with the w coefficient
+        int numPossibleCombinations =  (int) Math.floor(((double)xPosition.size()) * incrementCoefficient ); 
+        
+
+        //select random allocations
+        Collections.shuffle(difAllocPositiontions);
+
+        //Apply any heuristic or intelligent process to change allocations that can be considered better options
+        for(Allocation allocation : difAllocPositiontions){
+            if(changedCloulets.size() < numPossibleCombinations){
+                if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
+
+                        //The vm to change the cloudlet is going to be the same used in the best position
+                        PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
+
+                        possibleCombinations.add(
+                                new Allocation(
+                                        allocation.getCloudlet(),
+                                        vm, 
+                                        (PowerHost)vm.getHost())
+                        );
+                        changedCloulets.add(allocation.getCloudlet().getCloudletId());    
+                }
+            }
+            else 
+                break;
+        }
+
+        return possibleCombinations;
+    }    
+
+    /**
+     * 
+     * @param bestPosition
+     * @param xPosition
+     * @param numMaxDifferences null or the maximum number of differences between the actual position and the best position to generate
+     * @return
+     */
+    private List<Allocation> generatePossibleCombinationsHEURISTIC(List<Allocation> bestPosition, List<Allocation> xPosition, Double incrementCoefficient){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
         //Find different allocations between best position and the current position
@@ -222,7 +395,7 @@ public class Discrete_ParticleUpdate {
         return possibleCombinations;
     }
 
-    private List<Allocation> generatePossibleCombinations_random(List<Allocation> bestPosition, List<Allocation> xPosition, Double incrementCoefficient){
+    private List<Allocation> generatePossibleCombinationsInDevelop0(List<Allocation> bestPosition, List<Allocation> xPosition, Double incrementCoefficient){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
         Collections.shuffle(bestPosition);

@@ -76,9 +76,15 @@ public class PSO_FitnessFunction extends FitnessFunction{
                 if((int)position[i]==vm.getId())
                     hostTurnAroundTime[vm.getHost().getId()]+= clouletList.get(i).getCloudletLength();
             }
-            //consider the host capacity
-            hostTurnAroundTime[vm.getHost().getId()] = hostTurnAroundTime[vm.getHost().getId()] / vm.getHost().getTotalMips();
         } 
+
+        //consider the host capacity
+        for(PowerHost host : hostList)
+            hostTurnAroundTime[host.getId()] = hostTurnAroundTime[host.getId()] / host.getTotalMips();
+
+        //MAX HOST TURNAROUND TIME 
+        double sumAllCloudlets = ((double)Constants.CLOUDLET_LENGTH*(double)clouletList.size());
+        double maxHostTurnAroundTime = sumAllCloudlets /((double)Constants.HOST_MIPS[0]*2.0d); 
 
 /**
  *      VM TURNAROUND TIME (total execution time of a vm in the simulation considering the cloudlets it has to process)
@@ -129,8 +135,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
             }
         }
 
-        double resourceUtilization = hostsUtiliMips/hostsTotalMips;
-
+        double hostResourceUtilization = hostsUtiliMips/hostsTotalMips;
 
 /**
  *      ENERGY
@@ -145,9 +150,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
         //normalize: make the value comparable by changing the value from 0 to 1
         double worstDatacenterPowerConsumption = 0.0d;
-        double temp = ((double)Constants.CLOUDLET_LENGTH*(double)clouletList.size());
-        double maxHostTurnAroundTime = temp /(double)Constants.HOST_MIPS[0]*2.0d; 
-        worstDatacenterPowerConsumption = Math.max(hostList.get(0).getPower(1)*maxHostTurnAroundTime,(double)hostList.size()*(double)Constants.CLOUDLET_LENGTH/(double)Constants.HOST_MIPS[0]*2.0d);
+        double maxHostPower = 0.0d;
+        for(PowerHost host : hostList)
+            maxHostPower = Math.max(maxHostPower, host.getPower(Constants.UTILIZATION_THRESHOLD));
+        //worstDatacenterPowerConsumption is an estimation. what is higher? one host processing all tasks or all hosts processing all the tasks?
+        worstDatacenterPowerConsumption = Math.max(maxHostPower*maxHostTurnAroundTime,(double)hostList.size()*(double)Constants.CLOUDLET_LENGTH/(double)Constants.HOST_MIPS[0]*2.0d);
         totalDatacenterPowerConsumption = totalDatacenterPowerConsumption / worstDatacenterPowerConsumption;
 
 /**
@@ -178,27 +185,34 @@ public class PSO_FitnessFunction extends FitnessFunction{
  *      Estimated by the vm execution time variance
 **/ 
 
-        //desbalancing degree calculated as the variance of host utilization
-        //double desbalancingDegree = calculateVariance(hostUtilization); //vmExecutionTime
-        double hostBalancingDegree = (double)numberOfHosts / hostList.size();
+        //desbalancing degree calculated as the variance of vmTurnAroundTime
+        double desbalancing = calcularDesviacionEstandar(normalizarDatos(hostTurnAroundTime,0,maxHostTurnAroundTime)); //vmExecutionTime
 
         //desbalancingDegree normalized
-        //double maxVariance = maxPosibleVmExcecutionTime*maxPosibleVmExcecutionTime/4;
+        //double maxVariance = maxHostTurnAroundTime*maxHostTurnAroundTime/4;
         //desbalancingDegree = desbalancingDegree/maxVariance;
+        //desbalancingDegree = desbalancingDegree/maxHostTurnAroundTime;
+        
+        //desbalancingDegree normalized
+        // double maxVariance = maxPosibleVmExcecutionTime*maxPosibleVmExcecutionTime/4;
+        // desbalancingDegree = desbalancingDegree/maxVariance;
+        // double balancingDegree = 1 - desbalancingDegree;
 
-        double vmsBalancingDegree = (double)numberOfVms / vmList.size();
-        double balancingDegree = hostBalancingDegree * vmsBalancingDegree;
+        //balancing degree calculated as the variance of host or vms balancing
+        // double hostBalancingDegree = (double)numberOfHosts / hostList.size();
+        // double vmsBalancingDegree = (double)numberOfVms / vmList.size();
+        // double balancingDegree = hostBalancingDegree * vmsBalancingDegree;
 
         //objetive function
-        double weight1 = 0.89;
-        double weight2 = 0.1;
-        double weight3 = 0.0;
-        double weight4 = 0.01;
+        double weight1 = 900;
+        double weight2 = 0;
+        double weight3 = 0;
+        double weight4 = 0.1*5;
         double weight5 = 0;
         double functOutput =  1/((weight1 * totalDatacenterPowerConsumption) 
-            + (weight2 * (1-resourceUtilization)) //this can be read resource sub utilization
+            + (weight2 * (1-hostResourceUtilization)) //this can be read resource sub utilization
             + (weight3 * makespan) 
-            + (weight4 * (1-vmsBalancingDegree)) 
+            + (weight4 * desbalancing) 
             + (weight5 * numberHostOverUtilized==0?0:(numberHostOverUtilized/numberOfHosts)));
 
 /**
@@ -298,6 +312,23 @@ public class PSO_FitnessFunction extends FitnessFunction{
         return sumaDiferenciasCuadradas / numeros.length;
     }
 
+    // Método para calcular la desviación estándar
+    private double calcularDesviacionEstandar(double[] cargas) {
+        double media = calculateMedia(cargas);
+        double sumaCuadrados = 0.0;
+
+        // Calcular la suma de los cuadrados de las diferencias respecto a la media
+        for (double carga : cargas) {
+            sumaCuadrados += Math.pow(carga - media, 2);
+        }
+
+        // Dividir por n - 1 para la varianza muestral
+        double varianza = sumaCuadrados / (cargas.length - 1);
+
+        // Retornar la raíz cuadrada de la varianza para obtener la desviación estándar
+        return Math.sqrt(varianza);
+    }
+
     // Método para calcular la media de un arreglo de doubles
     public double calculateMedia(double[] numeros) {
         double suma = 0.0;
@@ -305,6 +336,18 @@ public class PSO_FitnessFunction extends FitnessFunction{
             suma += num;
         }
         return suma / numeros.length;
+    }
+
+    private static double[] normalizarDatos(double[] cargas, double min, double max) {
+
+        double[] cargasNormalizadas = new double[cargas.length];
+
+        // Aplicar la normalización Min-Max
+        for (int i = 0; i < cargas.length; i++) {
+            cargasNormalizadas[i] = (cargas[i] - min) / (max - min);
+        }
+
+        return cargasNormalizadas;
     }
 
 }
