@@ -204,10 +204,10 @@ public class PSO_FitnessFunction extends FitnessFunction{
         // double balancingDegree = hostBalancingDegree * vmsBalancingDegree;
 
         //objetive function
-        double weight1 = 0.7;
+        double weight1 = 0.1;
         double weight2 = 0.1;
         double weight3 = 0.1;
-        double weight4 = 0.1;
+        double weight4 = 0.7*5;
         double weight5 = 0;
         double functOutput =  1/((weight1 * totalDatacenterPowerConsumption) 
             + (weight2 * (1-hostResourceUtilization)) //this can be read resource sub utilization

@@ -783,4 +783,19 @@ public class Helper {
 		}
 	}
 
+	public static double calculateMAE(double[] array1, double[] array2) {
+        // Verificar que ambos arreglos tengan la misma longitud
+        if (array1.length != array2.length) {
+            throw new IllegalArgumentException("Los arreglos deben tener la misma longitud");
+        }
+
+        // Calcular el Error Absoluto Medio
+        double sum = 0.0;
+        for (int i = 0; i < array1.length; i++) {
+            sum += Math.abs(array1[i] - array2[i]);
+        }
+        
+        return sum / array1.length;
+    }
+
 }

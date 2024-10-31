@@ -6,6 +6,7 @@ import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
+import org.cloudbus.cloudsim.examples.pso.Helper;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
 
@@ -42,6 +43,13 @@ public class Discrete_ParticleUpdate {
     public void update(Discrete_PSO_Swarm swarm, Discrete_Particle particle) {
         this.swarm = swarm;
         this.particle = particle;
+
+        //*** For analysis and stats  ***/
+        double[] positionCopy = new double[particle.getPosition().size()];
+		int i=0;
+        for(Allocation allocation : particle.getPosition()){
+            positionCopy[i++] = allocation.getVm().getId();
+        }
 
         //***** Update velocity  ******/
         List<Allocation> personalPossibleCombinations = generatePossibleCombinations(particle.getBestPosition(), particle.getPosition(), swarm.getParticleIncrement());
@@ -107,10 +115,18 @@ public class Discrete_ParticleUpdate {
             }
         }
 
+
+        //*** For analysis and stats  ***/
+        double[] newPositionCopy = new double[particle.getPosition().size()];
+		int j=0;
+        for(Allocation allocation : particle.getPosition()){
+            newPositionCopy[j++] = allocation.getVm().getId();
+        }
+        particle.mae = Helper.calculateMAE(positionCopy, newPositionCopy);
     }
 
-        /**
-     * 
+    /**
+     * **** CPU intelligent process **** 
      * @param bestPosition
      * @param xPosition
      * @param numMaxDifferences null or the maximum number of differences between the actual position and the best position to generate
@@ -223,7 +239,7 @@ public class Discrete_ParticleUpdate {
     }
 
     /**
-     * 
+     * **** No heuristic or intelligent process ****
      * @param bestPosition
      * @param xPosition
      * @param numMaxDifferences null or the maximum number of differences between the actual position and the best position to generate
@@ -283,7 +299,7 @@ public class Discrete_ParticleUpdate {
     }    
 
     /**
-     * 
+     * **** Energy intelligent process ****
      * @param bestPosition
      * @param xPosition
      * @param numMaxDifferences null or the maximum number of differences between the actual position and the best position to generate

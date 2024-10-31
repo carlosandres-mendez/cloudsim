@@ -27,6 +27,8 @@ import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
 import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThresholdPSO;
 
+import net.sourceforge.jswarm_pso.Particle;
+
 
 /**
  * The example runner for the random workload.
@@ -146,7 +148,8 @@ public class RandomRunner extends RunnerAbstract {
 			System.out.println("Host: "+p.getHost().getId() +" power: "+ ((PowerHost)p.getHost()).getPowerEstimation()  + " mips: " + p.getHost().getTotalMips() + " vm: "+p.getId() + " vm mips:" + p.getMips());
 		}
 
-
+		//For stats and analysis
+		double[] maeIteracion = new double[Constants.NUM_ITERATIONS];
 
         swarm = new Discrete_PSO_Swarm(new Discrete_FitnessFunction(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList), 
 			RandomRunner.hostList, (List<PowerVm>)(Object)(RandomRunner.vmList), cloudletList);
@@ -162,13 +165,28 @@ public class RandomRunner extends RunnerAbstract {
 			if(i%10 == 0) {
 				System.out.println("Global best at iteration "+i+" :"+swarm.getBestFitness());
 			}
-			System.out.println("--------------------Global best------------------");
+
+			double sumMae = 0.0;
+			for(Discrete_Particle particle : swarm.getParticles()){
+				sumMae += particle.mae;
+			}
+			double promedioMae = sumMae / (double)swarm.getParticles().size();
+			maeIteracion[i] = promedioMae;
+
 		}
+
+		System.out.println("--------Global best---------------");
 		if(swarm.getBestPosition()!=null){
 			for(Allocation allocation : swarm.getBestPosition()){
 				System.out.println("host" + allocation.getHost() + "vm" + allocation.getVm()+ "cloudlet"+ allocation.getCloudlet());
 			}
 		}
+
+		System.out.println("********* MAE Stat **************");
+		for(int i=0; i<Constants.NUM_ITERATIONS; i++) { 
+			System.out.print(String.format("%.2f", maeIteracion[i]) +" ");
+		}
+		System.out.println("********* END Discrete PSO **************");
     }
 
 

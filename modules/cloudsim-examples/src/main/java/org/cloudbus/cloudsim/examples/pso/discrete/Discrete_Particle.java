@@ -20,6 +20,8 @@ public class Discrete_Particle {
     List<Allocation> position;
     /** Velocity */
     List<Allocation> velocity;
+
+    public double mae; // for mae stat and analysis
     
     /** Aditional info generated in the evaluation process */
     double vmTurnAroundTime[]; //execution time for each vm considering the tasks are going to process

@@ -1,5 +1,7 @@
 package net.sourceforge.jswarm_pso;
 
+import org.cloudbus.cloudsim.examples.pso.Helper;
+
 /**
  * Particle update strategy
  * 
@@ -52,6 +54,9 @@ public class ParticleUpdateSimple extends ParticleUpdate {
 	/** Update particle's velocity and position */
 	@Override
 	public void update(Swarm swarm, Particle particle) {
+		double cpposition[] = new double[particle.getPosition().length];
+		particle.copyPosition(cpposition);
+
 		double position[] = particle.getPosition();
 		double velocity[] = particle.getVelocity();
 		double globalBestPosition[] = swarm.getBestPosition();
@@ -68,5 +73,7 @@ public class ParticleUpdateSimple extends ParticleUpdate {
 			// Update position
 			position[i] += velocity[i];
 		}
+
+		particle.mae = Helper.calculateMAE(cpposition, position);
 	}
 }

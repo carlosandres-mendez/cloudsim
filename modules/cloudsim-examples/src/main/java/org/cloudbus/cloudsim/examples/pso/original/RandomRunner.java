@@ -26,6 +26,7 @@ import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
 import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThresholdPSO;
 
+import net.sourceforge.jswarm_pso.Particle;
 import net.sourceforge.jswarm_pso.ParticleUpdateSimple;
 import net.sourceforge.jswarm_pso.Swarm;
 
@@ -159,6 +160,8 @@ public class RandomRunner extends RunnerAbstract {
             }
         }
 
+		//For stats and analysis
+		double[] maeIteracion = new double[Constants.NUM_ITERATIONS];
 
 		//adding particles that can represent especial situations, such as the real state of a datacenter
 		//particles[Constants.NUM_PARTICLES-1]= new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size() , 0);
@@ -182,10 +185,23 @@ public class RandomRunner extends RunnerAbstract {
             if(i%10 == 0) {
                 System.out.println("Global best at iteration "+i+" :"+swarm.getBestFitness());
             }
+
+			double sumMae = 0.0;
+			for(Particle particle : particles){
+				sumMae += particle.mae;
+			}
+			double promedioMae = sumMae / (double)particles.length;
+			maeIteracion[i] = promedioMae;
         }
         System.out.println("The best fitness value is "+swarm.getBestFitness());
         PSO_Particle bestparticle = (PSO_Particle)swarm.getBestParticle();
         System.out.println(bestparticle.toString());
+
+		System.out.println("********* MAE Stat **************");
+		for(int i=0; i<Constants.NUM_ITERATIONS; i++) { 
+			System.out.print(String.format("%.2f", maeIteracion[i]) +" ");
+		}
+		System.out.println("***** END Original PSO **********");
     }
 
 	public static Set<Integer> getUniqueRandomNumbers(int n, int upperBound) {
