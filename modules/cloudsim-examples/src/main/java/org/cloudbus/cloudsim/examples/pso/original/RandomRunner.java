@@ -126,39 +126,26 @@ public class RandomRunner extends RunnerAbstract {
 			h1.setPowerEstimation(h1.getPower(Constants.UTILIZATION_THRESHOLD));
 		}
 
-        //initialize particles
-        // PSO_Particle[] particles = new PSO_Particle[Constants.NUM_PARTICLES];
-        // for(int i=0;i<Constants.NUM_PARTICLES-1;i++) {
-        //     particles[i]= new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size());
-        //     System.out.println(particles[i]);
-        // }
-
 		//initialize particles
         PSO_Particle[] particles = new PSO_Particle[Constants.NUM_PARTICLES];
 		int cont =0;
-		for (int i=1; i <=  RandomRunner.vmList.size(); i++) { //number of different vms in each particle from 1 to N 
-			int subset = (int)((double)Constants.NUM_PARTICLES/ (double)RandomRunner.vmList.size());
-            for (int j=0; j < subset; j++) { //number of particles we are going to create for each number of different vms
+		List<List<Allocation>> initPoblation = Helper.createInitPoblation(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList);
 
-                List<Integer> idVmsList = new ArrayList<>();
-                Set<Integer> uniqueIdVms = getUniqueRandomNumbers(i,  RandomRunner.vmList.size());
-                List<Integer> uniqueIdVmsList = new ArrayList<>(uniqueIdVms);
-                for(Cloudlet cloudlet : RandomRunner.cloudletList){ 
-                    idVmsList.add(uniqueIdVmsList.get(cloudlet.getCloudletId() % uniqueIdVmsList.size()));
-                }
-                Collections.shuffle(idVmsList);
+		for(List<Allocation> particle : initPoblation){
 
-				double[] position = new double[RandomRunner.cloudletList.size()];
-				double[] velocity = new double[RandomRunner.cloudletList.size()];
+			double[] position = new double[RandomRunner.cloudletList.size()];
+			double[] velocity = new double[RandomRunner.cloudletList.size()];
+			for(Allocation allocation : particle){
+				position[allocation.getCloudlet().getCloudletId()] = allocation.getVm().getId();
+				velocity[allocation.getCloudlet().getCloudletId()] = (double)(int) (Math.random()* (double)RandomConstants.NUMBER_OF_VMS);
+			}
+			particles[cont++] =new PSO_Particle(RandomRunner.cloudletList.size(), position, velocity);
+		}
 
-				for (int h = 0; h < RandomRunner.cloudletList.size(); h++) {
-					position[h] = ((PowerVm)RandomRunner.vmList.get(idVmsList.get(h))).getId();
-					velocity[h] = Math.random()* (double)RandomRunner.vmList.size();
-				}
-                particles[cont++] =new PSO_Particle(RandomRunner.cloudletList.size(), position, velocity);
-				System.out.println(particles[cont-1]);
-            }
-        }
+		System.out.println();
+        for(PSO_Particle particle : particles)
+            System.out.println(particle);
+        System.out.println();
 
 		//For stats and analysis
 		double[] maeIteracion = new double[Constants.NUM_ITERATIONS];
@@ -228,6 +215,34 @@ public class RandomRunner extends RunnerAbstract {
 
         return uniqueNumbers;
     }
+
+	private PSO_Particle[] createInitPoblation(){
+        PSO_Particle[] particles = new PSO_Particle[Constants.NUM_PARTICLES];
+		int cont =0;
+		for (int i=1; i <=  RandomRunner.vmList.size(); i++) { //number of different vms in each particle from 1 to N 
+			int subset = (int)((double)Constants.NUM_PARTICLES/ (double)RandomRunner.vmList.size());
+            for (int j=0; j < subset; j++) { //number of particles we are going to create for each number of different vms
+
+                List<Integer> idVmsList = new ArrayList<>();
+                Set<Integer> uniqueIdVms = getUniqueRandomNumbers(i,  RandomRunner.vmList.size());
+                List<Integer> uniqueIdVmsList = new ArrayList<>(uniqueIdVms);
+                for(Cloudlet cloudlet : RandomRunner.cloudletList){ 
+                    idVmsList.add(uniqueIdVmsList.get(cloudlet.getCloudletId() % uniqueIdVmsList.size()));
+                }
+                Collections.shuffle(idVmsList);
+
+				double[] position = new double[RandomRunner.cloudletList.size()];
+				double[] velocity = new double[RandomRunner.cloudletList.size()];
+
+				for (int h = 0; h < RandomRunner.cloudletList.size(); h++) {
+					position[h] = ((PowerVm)RandomRunner.vmList.get(idVmsList.get(h))).getId();
+					velocity[h] = Math.random()* (double)RandomRunner.vmList.size();
+				}
+                particles[cont++] =new PSO_Particle(RandomRunner.cloudletList.size(), position, velocity);
+            }
+        }
+		return particles;
+	}
 
 	/**
 	 * Starts the simulation.

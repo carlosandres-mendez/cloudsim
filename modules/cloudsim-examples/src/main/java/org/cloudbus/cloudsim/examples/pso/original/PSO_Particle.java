@@ -42,7 +42,7 @@ public class PSO_Particle extends Particle{
     }
 
     public String toString() {
-        String output = "/n***PARTICLE POSITION***/n";
+        String output = "\n***PARTICLE POSITION***\n";
         for(int i=0;i<RandomConstants.NUMBER_OF_VMS;i++) {
             String tasks = "";
             int number_of_tasks = 0;
@@ -58,7 +58,7 @@ public class PSO_Particle extends Particle{
                 output += number_of_tasks +" Tasks is in VM "+i +" Tasks id = " +tasks +"\n";
         }
 
-        output += "/n***PARTICLE BEST POSITION***/n";
+        output += "\n***PARTICLE BEST POSITION***\n";
         if(getBestPosition()!=null) {
             for(int i=0;i<RandomConstants.NUMBER_OF_VMS;i++) {
                 String tasks = "";

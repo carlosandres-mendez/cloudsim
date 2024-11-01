@@ -148,6 +148,29 @@ public class RandomRunner extends RunnerAbstract {
 			System.out.println("Host: "+p.getHost().getId() +" power: "+ ((PowerHost)p.getHost()).getPowerEstimation()  + " mips: " + p.getHost().getTotalMips() + " vm: "+p.getId() + " vm mips:" + p.getMips());
 		}
 
+
+		//initialize particles
+		ArrayList<Discrete_Particle> particles = new ArrayList<>();
+		List<List<Allocation>> initPoblation = Helper.createInitPoblation(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList);
+
+		for(List<Allocation> particle_position : initPoblation){
+
+			List<Allocation> velocity = new ArrayList<>();
+			for(Allocation allocation : particle_position){
+				Allocation velocityAllocation = new Allocation(
+					allocation.getCloudlet(), 
+					((List<PowerVm>)(Object)(RandomRunner.vmList)).get((int) (Math.random()* (double)RandomConstants.NUMBER_OF_VMS)), 
+					RandomRunner.hostList.get((int)(Math.random()*(double)RandomRunner.hostList.size())));
+				velocity.add(velocityAllocation);
+			}
+			particles.add(new Discrete_Particle(particle_position, velocity));
+		}
+
+		System.out.println();
+        for(Discrete_Particle particle : particles)
+            System.out.println(particle);
+        System.out.println();
+
 		//For stats and analysis
 		double[] maeIteracion = new double[Constants.NUM_ITERATIONS];
 		double[] maeIteracionGobalUpdate = new double[Constants.NUM_ITERATIONS];
@@ -159,7 +182,7 @@ public class RandomRunner extends RunnerAbstract {
 		swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
 		swarm.setInertia(Constants.INERTIA_WEIGHT);
 		swarm.setNumberOfParticles(Constants.NUM_PARTICLES);
-		swarm.init();
+		swarm.setParticles(particles);
 
 		for (int i = 0; i < Constants.NUM_ITERATIONS; i++){
 			swarm.evolve();

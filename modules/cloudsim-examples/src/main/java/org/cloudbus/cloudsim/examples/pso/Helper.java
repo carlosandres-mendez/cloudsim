@@ -6,11 +6,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.CloudletSchedulerDynamicWorkload;
@@ -27,6 +31,7 @@ import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicy;
 import org.cloudbus.cloudsim.VmSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.VmStateHistoryEntry;
+import org.cloudbus.cloudsim.examples.pso.original.PSO_Particle;
 import org.cloudbus.cloudsim.power.PowerDatacenter;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerHostUtilizationHistory;
@@ -796,6 +801,59 @@ public class Helper {
         }
         
         return sum / array1.length;
+    }
+
+	public static List<List<Allocation>> createInitPoblation(List<Cloudlet> cloudletList, List<PowerVm> vmList, List<PowerHost> hostList){
+
+		//Number of subsets of particles, ej. {idX}, {idY,idZ}, ..., {idX..N}
+		int numSubsetParticles = (int)((double)Constants.NUM_PARTICLES/ (double)RandomConstants.NUMBER_OF_VMS);
+
+		List<List<Allocation>> poblation = new ArrayList<>();
+		for (int i=1; i <= RandomConstants.NUMBER_OF_VMS ; i++) { //number of different vms in each particle from 1 to N 
+			
+			Set<Integer> lastNumbers = new HashSet<>();
+            for (int j=0; j < numSubsetParticles; j++) { //number of particles we are going to create for each number of different vms
+
+				List<Integer> idVmsList = new ArrayList<>();
+				Set<Integer> uniqueIdVms = getUniqueRandomNumbers(i,  RandomConstants.NUMBER_OF_VMS, lastNumbers, i-1);
+				lastNumbers.addAll(uniqueIdVms);
+				List<Integer> uniqueIdVmsList = new ArrayList<>(uniqueIdVms);
+
+                for(Cloudlet cloudlet : cloudletList){ 
+                    idVmsList.add(uniqueIdVmsList.get(cloudlet.getCloudletId() % uniqueIdVmsList.size()));
+                }
+                Collections.shuffle(idVmsList);
+
+				List<Allocation> particle = new ArrayList<>();
+                for(Cloudlet cloudlet : cloudletList){ 
+                    Allocation positionAllocation = new Allocation(
+                        cloudlet, 
+                        vmList.get(idVmsList.get(cloudlet.getCloudletId())), 
+                        hostList.get((int)(Math.random()*(double)hostList.size())));
+						particle.add(positionAllocation);
+                }
+				poblation.add(particle);
+            }
+        }
+		return poblation;
+	}
+
+	public static Set<Integer> getUniqueRandomNumbers(int n, int upperBound, Set<Integer> excludedSet, int repetitionsAllowed) {
+        Set<Integer> uniqueNumbers = new HashSet<>();
+        Random random = new Random();
+
+		// Map to keep track of how many times each number has been added
+		int[] frequency = new int[upperBound];
+
+        while (uniqueNumbers.size() < n) {
+			int number = random.nextInt(upperBound); // Genera un número aleatorio entre 0 y upperBound-1
+			if(!excludedSet.contains(number) || frequency[number] < repetitionsAllowed){
+            	uniqueNumbers.add(number);
+				frequency[number]++;
+			}
+        }
+
+        return uniqueNumbers;
     }
 
 }

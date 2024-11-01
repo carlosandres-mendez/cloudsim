@@ -1,5 +1,7 @@
 package org.cloudbus.cloudsim.examples.pso;
 
+import java.util.Arrays;
+
 import org.cloudbus.cloudsim.power.models.PowerModel;
 import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G4Xeon3040;
 import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G5Xeon3075;
@@ -17,6 +19,74 @@ import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G5Xe
  * @since Jan 6, 2012
  */
 public class Constants {
+
+	public static void main(String[] args) {
+        double[] data = {0.99d,1.00d,0.98d,0.99d,1.00d};
+
+        // Normalizar los datos
+        double[] normalizedData = normalize(data);
+        
+        // Calcular la desviación estándar
+        double stdDev = calculateStandardDeviation(normalizedData);
+        
+        System.out.println("Normalized Data: " + Arrays.toString(normalizedData));
+        System.out.println("Standard Deviation: " + stdDev);
+    }
+
+    public static double[] normalize(double[] data) {
+        double min = Arrays.stream(data).min().orElse(Double.NaN);
+        double max = Arrays.stream(data).max().orElse(Double.NaN);
+
+        double[] normalized = new double[data.length];
+        for (int i = 0; i < data.length; i++) {
+            normalized[i] = (data[i] - min) / (max - min);
+        }
+        return normalized;
+    }
+
+    public static double calculateStandardDeviation(double[] datos) {
+        double suma = 0.0;
+        double media;
+        double sumaDesviacionCuadrada = 0.0;
+
+        // Calcular la suma
+        for (double num : datos) {
+            suma += num;
+        }
+
+        // Calcular la media
+        media = suma / datos.length;
+
+        // Calcular la suma de las desviaciones al cuadrado
+        for (double num : datos) {
+            sumaDesviacionCuadrada += Math.pow(num - media, 2);
+        }
+
+        // Calcular la desviación estándar
+        return Math.sqrt(sumaDesviacionCuadrada / datos.length);
+    }
+
+	    // Método para calcular la varianza de un arreglo de doubles
+		public static double calculateVariance(double[] numeros) {
+			double media = calculateMedia(numeros);
+			double sumaDiferenciasCuadradas = 0.0;
+	
+			for (double num : numeros) {
+				//sumaDiferenciasCuadradas += Math.pow((num - media)/media, 2);
+				sumaDiferenciasCuadradas += Math.pow((num - media), 2);
+			}
+	
+			return sumaDiferenciasCuadradas / numeros.length;
+		}
+
+		    // Método para calcular la media de un arreglo de doubles
+			public static double calculateMedia(double[] numeros) {
+				double suma = 0.0;
+				for (double num : numeros) {
+					suma += num;
+				}
+				return suma / numeros.length;
+			}
 
 	public final static boolean ENABLE_OUTPUT = true;
 	public final static boolean OUTPUT_CSV    = true;
@@ -40,9 +110,9 @@ public class Constants {
 	 *
 	 */
 	public final static int VM_TYPES	= 4;
-	public final static int[] VM_MIPS	= { 500, 500, 500, 500 };
+	public final static int[] VM_MIPS	= { 2500, 2000, 1000, 500 };
 	public final static int[] VM_PES	= { 1, 1, 1, 1 };
-	public final static int[] VM_RAM	= { 613,  613, 613, 613 };
+	public final static int[] VM_RAM	= { 870,  1740, 1740, 613 };
 	public final static int VM_BW		= 100000; // 100 Mbit/s
 	public final static int VM_SIZE		= 2500; // 2.5 GB
 
@@ -53,7 +123,7 @@ public class Constants {
 	 *   We increase the memory size to enable over-subscription (x4)
 	 */
 	public final static int HOST_TYPES	 = 2;
-	public final static int[] HOST_MIPS	 = { 1860, 1860 };
+	public final static int[] HOST_MIPS	 = { 1860, 2660 };
 	public final static int[] HOST_PES	 = { 2, 2 };
 	public final static int[] HOST_RAM	 = { 4096, 4096 };
 	public final static int HOST_BW		 = 1000000; // 1 Gbit/s
@@ -69,9 +139,9 @@ public class Constants {
 	 * Added for PSO Original and discrete
 	 */
 
-	public final static int NUM_PARTICLES	= 2500;
+	public final static int NUM_PARTICLES	= 100; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java and pso.RandomConstants.java
 
-	public final static int NUM_ITERATIONS	= 10;
+	public final static int NUM_ITERATIONS	= 100;
     
 	//The inertia Weight 
 	/**
@@ -84,12 +154,12 @@ public class Constants {
 		James Kennedy && Daniel Bratton, 2007. Defining a Standard for Particle Swarm Optimization 
 		
 		In this discrete PSO, inertia weight should be from 0 to D (dimension size), indicating the number of the current velocity is going to remain in the next velocity */
-    public final static int INERTIA_WEIGHT = 10;
+    public final static int INERTIA_WEIGHT = 50;
 
     //The cognitive acceleration coefficient c1.
-    public final static double COGNIT_COEFFICIENT = 0.7d;
+    public final static double COGNIT_COEFFICIENT = 0.3d;
 
     //The social coefficient
-    public final static double SOCIAL_COEFFICIENT = 0.7d;
+    public final static double SOCIAL_COEFFICIENT = 0.3d;
 
 }

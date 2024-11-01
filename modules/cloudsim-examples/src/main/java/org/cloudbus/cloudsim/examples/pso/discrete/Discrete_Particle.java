@@ -197,7 +197,7 @@ public class Discrete_Particle {
 
     @Override
     public String toString() {
-        String output = "/n***PARTICLE POSITION***/n";
+        String output = "\n***PARTICLE POSITION***\n";
 
         for(int i=0;i<RandomConstants.NUMBER_OF_VMS;i++) {
             String tasks = "";
@@ -214,7 +214,7 @@ public class Discrete_Particle {
                 output += number_of_tasks +" Tasks is in VM "+i +" Tasks id = " +tasks +"\n";
         }
 
-        output += "/n***PARTICLE BEST POSITION***/n";
+        output += "\n***PARTICLE BEST POSITION***\n";
         if(getBestPosition()!=null) {
             for(int i=0;i<RandomConstants.NUMBER_OF_VMS;i++) {
                 String tasks = "";

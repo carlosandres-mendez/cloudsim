@@ -82,44 +82,6 @@ public class Discrete_PSO_Swarm {
 
 		particles = new ArrayList<>();
 
-        // List<Allocation> xPositionShuffled = new ArrayList<>(bestPosition);
-        // Collections.shuffle(xPositionShuffled);
-
-        for (int i=1; i <= this.powerVms.size(); i++) { //number of different vms in each particle from 1 to N 
-            int subset = (int)((double)Constants.NUM_PARTICLES/(double)this.powerVms.size());
-            for (int j=0; j < subset; j++) { //number of particles we are going to create for each number of different vms
-
-                List<Integer> idVmsList = new ArrayList<>();
-                Set<Integer> uniqueIdVms = getUniqueRandomNumbers(i, this.powerVms.size());
-                List<Integer> uniqueIdVmsList = new ArrayList<>(uniqueIdVms);
-                for(Cloudlet cloudlet : this.cloudlets){ 
-                    idVmsList.add(uniqueIdVmsList.get(cloudlet.getCloudletId() % uniqueIdVmsList.size()));
-                }
-                Collections.shuffle(idVmsList);
-
-                List<Allocation> position = new ArrayList<>();
-                List<Allocation> velocity = new ArrayList<>();
-    
-                for(Cloudlet cloudlet : this.cloudlets){ 
-                    Allocation positionAllocation = new Allocation(
-                        cloudlet, 
-                        this.powerVms.get(idVmsList.get(cloudlet.getCloudletId())), 
-                        this.powerHosts.get((int)(Math.random()*(double)this.powerHosts.size())));
-                    position.add(positionAllocation);
-                    Allocation velocityAllocation = new Allocation(
-                        cloudlet, 
-                        this.powerVms.get((int)(Math.random()*(double)this.powerVms.size())), 
-                        this.powerHosts.get((int)(Math.random()*(double)this.powerHosts.size())));
-                    velocity.add(velocityAllocation);
-                }
-                particles.add(new Discrete_Particle(position, velocity));
-            }
-        }
-    
-        System.out.println();
-        for(Discrete_Particle particle : particles)
-            System.out.println(particle);
-        System.out.println();
 	}
 
     public static Set<Integer> getUniqueRandomNumbers(int n, int upperBound) {

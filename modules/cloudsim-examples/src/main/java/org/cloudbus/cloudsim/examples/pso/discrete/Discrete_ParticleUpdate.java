@@ -56,9 +56,9 @@ public class Discrete_ParticleUpdate {
         List<Allocation> globalPossibleCombinations = generatePossibleCombinations(swarm.getBestPosition(), particle.getPosition(), swarm.getGlobalIncrement());
 
         //Inertia allocations
-        List<Allocation> copyVelocity = new ArrayList<>(particle.getVelocity());
-        Collections.shuffle(copyVelocity);
-        ArrayList<Allocation> inertiaAllocations = new ArrayList<>(copyVelocity.subList(0, Constants.INERTIA_WEIGHT));
+        List<Allocation> currentVelocity = new ArrayList<>(particle.getVelocity()); //copy from particle velocity
+        Collections.shuffle(currentVelocity);
+        currentVelocity = new ArrayList<>(currentVelocity.subList(0, Constants.INERTIA_WEIGHT)); //according to inertia, create a subset 
 
         List<Allocation> nextVelocity = new ArrayList<>(particle.getVelocity());
  
@@ -66,12 +66,14 @@ public class Discrete_ParticleUpdate {
         int w = 0; // *** Weight
         int p = 0; // *** Personal
         int g = 0; // *** Global
-        while(w < inertiaAllocations.size() || p < personalPossibleCombinations.size() || g < globalPossibleCombinations.size()){
+        while(w < currentVelocity.size() || p < personalPossibleCombinations.size() || g < globalPossibleCombinations.size()){
 
             int numberList = (int)(Math.random() * 3) + 1; 
 
-            if (numberList==1 && w < inertiaAllocations.size()) {
-                nextVelocity.get(inertiaAllocations.get(w).getCloudlet().getCloudletId()).setVm(inertiaAllocations.get(w).getVm());
+            if (numberList==1 && w < currentVelocity.size()) {
+                
+                PowerVm vm = currentVelocity.get(w).getVm();
+                nextVelocity.get(currentVelocity.get(w).getCloudlet().getCloudletId()).setVm(vm);
                 w++;
             }
             else if (numberList==2 && p < personalPossibleCombinations.size()) {
@@ -82,9 +84,9 @@ public class Discrete_ParticleUpdate {
                  */
                 PowerVm vm = personalPossibleCombinations.get(p).getVm();
                 if(Math.random()<0.5)
-                    vm = swarm.getPowerVms().get((int)(Math.random() * (double)swarm.getDimension()));
+                    nextVelocity.get(personalPossibleCombinations.get(p).getCloudlet().getCloudletId()).setVm(vm);
+                    //vm = swarm.getPowerVms().get((int)(Math.random() * (double)swarm.getDimension()));
                 
-                nextVelocity.get(personalPossibleCombinations.get(p).getCloudlet().getCloudletId()).setVm(vm);
                 p++;
             } else if (numberList==3 && g < globalPossibleCombinations.size()) {
 
@@ -94,9 +96,9 @@ public class Discrete_ParticleUpdate {
                  */
                 PowerVm vm = globalPossibleCombinations.get(g).getVm();
                 if(Math.random()<0.5)
-                    vm = swarm.getPowerVms().get((int)(Math.random() * (double)swarm.getDimension()));
-
-                nextVelocity.get(globalPossibleCombinations.get(g).getCloudlet().getCloudletId()).setVm(vm);
+                    nextVelocity.get(globalPossibleCombinations.get(g).getCloudlet().getCloudletId()).setVm(vm);
+                    //vm = swarm.getPowerVms().get((int)(Math.random() * (double)swarm.getDimension()));
+                    
                 g++;
             }
         }

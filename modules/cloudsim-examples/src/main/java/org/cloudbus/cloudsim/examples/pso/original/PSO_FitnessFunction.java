@@ -48,7 +48,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         Set<Integer> vmIds = new HashSet<Integer>();
         for(int i=0; i<position.length; i++) {
             for(Vm vm : vmList) {
-                if(vm.getId()==position[i]){
+                if(vm.getId()==(int)position[i]){
                     hostIds.add(vm.getHost().getId());
                     vmIds.add(vm.getId());
                 }
@@ -221,11 +221,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
         // double balancingDegree = hostBalancingDegree * vmsBalancingDegree;
 
         //objetive function
-        double weight1 = 0.7d;
-        double weight2 = 0.05d;
-        double weight3 = 0.0d;
-        double weight4 = 0.2d * 5.0d;
-        double weight5 = 0.05d;
+        double weight1 = 0.2d;
+        double weight2 = 0.2d;
+        double weight3 = 0.2d;
+        double weight4 = 0.2d + 0.5d; // desviacion estandar goes from 0 to 0.5
+        double weight5 = 0.2d;
         double functOutput =  1.0d/((weight1 * totalDatacenterPowerConsumption) 
             + (weight2 * (1.0d-hostResourceUtilization)) //this can be read resource sub utilization
             + (weight3 * makespan) 
@@ -339,8 +339,8 @@ public class PSO_FitnessFunction extends FitnessFunction{
             sumaCuadrados += Math.pow(carga - media, 2);
         }
 
-        // Dividir por n - 1 para la varianza muestral
-        double varianza = sumaCuadrados / (cargas.length - 1);
+        // Dividir por n para la varianza muestral
+        double varianza = sumaCuadrados / cargas.length;
 
         // Retornar la raíz cuadrada de la varianza para obtener la desviación estándar
         return Math.sqrt(varianza);
