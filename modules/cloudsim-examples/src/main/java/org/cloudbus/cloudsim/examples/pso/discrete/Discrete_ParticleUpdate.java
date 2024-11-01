@@ -82,7 +82,7 @@ public class Discrete_ParticleUpdate {
                  */
                 PowerVm vm = personalPossibleCombinations.get(p).getVm();
                 if(Math.random()<0.5)
-                    vm = swarm.getPowerVms().get((int)(Math.random() * swarm.getDimension()));
+                    vm = swarm.getPowerVms().get((int)(Math.random() * (double)swarm.getDimension()));
                 
                 nextVelocity.get(personalPossibleCombinations.get(p).getCloudlet().getCloudletId()).setVm(vm);
                 p++;
@@ -94,12 +94,13 @@ public class Discrete_ParticleUpdate {
                  */
                 PowerVm vm = globalPossibleCombinations.get(g).getVm();
                 if(Math.random()<0.5)
-                    vm = swarm.getPowerVms().get((int)(Math.random() * swarm.getDimension()));
+                    vm = swarm.getPowerVms().get((int)(Math.random() * (double)swarm.getDimension()));
 
                 nextVelocity.get(globalPossibleCombinations.get(g).getCloudlet().getCloudletId()).setVm(vm);
                 g++;
             }
         }
+
         particle.setVelocity(nextVelocity);
 
         //***** Update position  ******/

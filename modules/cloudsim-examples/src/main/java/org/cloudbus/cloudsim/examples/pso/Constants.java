@@ -40,9 +40,9 @@ public class Constants {
 	 *
 	 */
 	public final static int VM_TYPES	= 4;
-	public final static int[] VM_MIPS	= { 2500, 2000, 1000, 500 };
+	public final static int[] VM_MIPS	= { 500, 500, 500, 500 };
 	public final static int[] VM_PES	= { 1, 1, 1, 1 };
-	public final static int[] VM_RAM	= { 870,  1740, 1740, 613 };
+	public final static int[] VM_RAM	= { 613,  613, 613, 613 };
 	public final static int VM_BW		= 100000; // 100 Mbit/s
 	public final static int VM_SIZE		= 2500; // 2.5 GB
 
@@ -53,7 +53,7 @@ public class Constants {
 	 *   We increase the memory size to enable over-subscription (x4)
 	 */
 	public final static int HOST_TYPES	 = 2;
-	public final static int[] HOST_MIPS	 = { 1860, 2660 };
+	public final static int[] HOST_MIPS	 = { 1860, 1860 };
 	public final static int[] HOST_PES	 = { 2, 2 };
 	public final static int[] HOST_RAM	 = { 4096, 4096 };
 	public final static int HOST_BW		 = 1000000; // 1 Gbit/s
@@ -69,9 +69,9 @@ public class Constants {
 	 * Added for PSO Original and discrete
 	 */
 
-	public final static int NUM_PARTICLES	= 300;
+	public final static int NUM_PARTICLES	= 2500;
 
-	public final static int NUM_ITERATIONS	= 100;
+	public final static int NUM_ITERATIONS	= 10;
     
 	//The inertia Weight 
 	/**
@@ -84,12 +84,12 @@ public class Constants {
 		James Kennedy && Daniel Bratton, 2007. Defining a Standard for Particle Swarm Optimization 
 		
 		In this discrete PSO, inertia weight should be from 0 to D (dimension size), indicating the number of the current velocity is going to remain in the next velocity */
-    public final static int INERTIA_WEIGHT = 5;
+    public final static int INERTIA_WEIGHT = 10;
 
     //The cognitive acceleration coefficient c1.
-    public final static double COGNIT_COEFFICIENT = 0.3d;
+    public final static double COGNIT_COEFFICIENT = 0.7d;
 
     //The social coefficient
-    public final static double SOCIAL_COEFFICIENT = 0.3d;
+    public final static double SOCIAL_COEFFICIENT = 0.7d;
 
 }

@@ -22,6 +22,7 @@ public abstract class Particle {
 	double velocity[];
 
 	public double mae;
+	public double maeGlobalUpdate; // for mae stat and analysis
 
 	//-------------------------------------------------------------------------
 	// Constructors
@@ -77,45 +78,60 @@ public abstract class Particle {
 		//---
 		// Every constraint is set? (do all of them it one loop)
 		//---
-		if ((minPosition != null) && (maxPosition != null) && (minVelocity != null) && (maxVelocity != null)) for (int i = 0; i < position.length; i++) {
-			if (!Double.isNaN(minPosition[i])) position[i] = (minPosition[i] > position[i] ? minPosition[i] : position[i]);
-			if (!Double.isNaN(maxPosition[i])) position[i] = (maxPosition[i] < position[i] ? maxPosition[i] : position[i]);
-			if (!Double.isNaN(minVelocity[i])) velocity[i] = (minVelocity[i] > velocity[i] ? minVelocity[i] : velocity[i]);
-			if (!Double.isNaN(maxVelocity[i])) velocity[i] = (maxVelocity[i] < velocity[i] ? maxVelocity[i] : velocity[i]);
-		}
+		if ((minPosition != null) && (maxPosition != null) && (minVelocity != null) && (maxVelocity != null)) 
+			for (int i = 0; i < position.length; i++) {
+				if (!Double.isNaN(minPosition[i])) 
+					position[i] = (minPosition[i] > position[i] ? minPosition[i] : position[i]);
+				if (!Double.isNaN(maxPosition[i])) 
+					position[i] = (maxPosition[i] < position[i] ? maxPosition[i] : position[i]);
+				if (!Double.isNaN(minVelocity[i])) 
+					velocity[i] = (minVelocity[i] > velocity[i] ? minVelocity[i] : velocity[i]);
+				if (!Double.isNaN(maxVelocity[i])) 
+					velocity[i] = (maxVelocity[i] < velocity[i] ? maxVelocity[i] : velocity[i]);
+			}
 		else {
 			//---
 			// Position constraints are set? (do both of them in the same loop)
 			//---
-			if ((minPosition != null) && (maxPosition != null)) for (int i = 0; i < position.length; i++) {
-				if (!Double.isNaN(minPosition[i])) position[i] = (minPosition[i] > position[i] ? minPosition[i] : position[i]);
-				if (!Double.isNaN(maxPosition[i])) position[i] = (maxPosition[i] < position[i] ? maxPosition[i] : position[i]);
-			}
+			if ((minPosition != null) && (maxPosition != null)) 
+				for (int i = 0; i < position.length; i++) {
+					if (!Double.isNaN(minPosition[i])) 
+						position[i] = (minPosition[i] > position[i] ? minPosition[i] : position[i]);
+					if (!Double.isNaN(maxPosition[i])) 
+						position[i] = (maxPosition[i] < position[i] ? maxPosition[i] : position[i]);
+				}
 			else {
 				//---
 				// Do it individually
 				//---
 				if (minPosition != null) for (int i = 0; i < position.length; i++)
-					if (!Double.isNaN(minPosition[i])) position[i] = (minPosition[i] > position[i] ? minPosition[i] : position[i]);
+					if (!Double.isNaN(minPosition[i])) 
+						position[i] = (minPosition[i] > position[i] ? minPosition[i] : position[i]);
 				if (maxPosition != null) for (int i = 0; i < position.length; i++)
-					if (!Double.isNaN(maxPosition[i])) position[i] = (maxPosition[i] < position[i] ? maxPosition[i] : position[i]);
+					if (!Double.isNaN(maxPosition[i])) 
+						position[i] = (maxPosition[i] < position[i] ? maxPosition[i] : position[i]);
 			}
 
 			//---
 			// Velocity constraints are set? (do both of them in the same loop)
 			//---
-			if ((minVelocity != null) && (maxVelocity != null)) for (int i = 0; i < velocity.length; i++) {
-				if (!Double.isNaN(minVelocity[i])) velocity[i] = (minVelocity[i] > velocity[i] ? minVelocity[i] : velocity[i]);
-				if (!Double.isNaN(maxVelocity[i])) velocity[i] = (maxVelocity[i] < velocity[i] ? maxVelocity[i] : velocity[i]);
-			}
+			if ((minVelocity != null) && (maxVelocity != null)) 
+				for (int i = 0; i < velocity.length; i++) {
+					if (!Double.isNaN(minVelocity[i])) 
+						velocity[i] = (minVelocity[i] > velocity[i] ? minVelocity[i] : velocity[i]);
+					if (!Double.isNaN(maxVelocity[i])) 
+						velocity[i] = (maxVelocity[i] < velocity[i] ? maxVelocity[i] : velocity[i]);
+				}
 			else {
 				//---
 				// Do it individually
 				//---
 				if (minVelocity != null) for (int i = 0; i < velocity.length; i++)
-					if (!Double.isNaN(minVelocity[i])) velocity[i] = (minVelocity[i] > velocity[i] ? minVelocity[i] : velocity[i]);
+					if (!Double.isNaN(minVelocity[i])) 
+						velocity[i] = (minVelocity[i] > velocity[i] ? minVelocity[i] : velocity[i]);
 				if (maxVelocity != null) for (int i = 0; i < velocity.length; i++)
-					if (!Double.isNaN(maxVelocity[i])) velocity[i] = (maxVelocity[i] < velocity[i] ? maxVelocity[i] : velocity[i]);
+					if (!Double.isNaN(maxVelocity[i])) 
+						velocity[i] = (maxVelocity[i] < velocity[i] ? maxVelocity[i] : velocity[i]);
 			}
 		}
 	}

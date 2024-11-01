@@ -105,7 +105,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
                     vmTurnAroundTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
             }
             //consider the vm capacity
-            vmTurnAroundTime[vm.getId()] = vmTurnAroundTime[vm.getId()] / vm.getMips() * vm.getNumberOfPes();
+            vmTurnAroundTime[vm.getId()] = vmTurnAroundTime[vm.getId()] / vm.getMips() * (double)vm.getNumberOfPes();
         } 
    
 /**
@@ -130,7 +130,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         double hostsTotalMips = 0.0d;
         for(PowerHost host : hostList){
             if(hostIds.contains(host.getId())){ //considering only hosts in the this especific solucion/allocation (particle position)
-                hostsUtiliMips += host.getUtilizationEstimation()*host.getTotalMips();
+                hostsUtiliMips += host.getUtilizationEstimation()*(double)host.getTotalMips();
                 hostsTotalMips += host.getTotalMips();
             }
         }
@@ -154,7 +154,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         for(PowerHost host : hostList)
             maxHostPower = Math.max(maxHostPower, host.getPower(Constants.UTILIZATION_THRESHOLD));
         //worstDatacenterPowerConsumption is an estimation. what is higher? one host processing all tasks or all hosts processing all the tasks?
-        worstDatacenterPowerConsumption = Math.max(maxHostPower*maxHostTurnAroundTime,(double)hostList.size()*(double)Constants.CLOUDLET_LENGTH/(double)Constants.HOST_MIPS[0]*2.0d);
+        worstDatacenterPowerConsumption = Math.max(maxHostPower*maxHostTurnAroundTime,(double)hostList.size()*((double)Constants.CLOUDLET_LENGTH)/((double)Constants.HOST_MIPS[0])*2.0d);
         totalDatacenterPowerConsumption = totalDatacenterPowerConsumption / worstDatacenterPowerConsumption;
 
 /**
@@ -173,11 +173,28 @@ public class PSO_FitnessFunction extends FitnessFunction{
             totalClouletsMIPS += clouletList.get(i).getCloudletLength();
         
         for(int i=0; i< vmList.size(); i++) 
-            minVmMips = Math.min(minVmMips, vmList.get(i).getMips() * vmList.get(i).getNumberOfPes());
+            minVmMips = Math.min(minVmMips, vmList.get(i).getMips() * (double)vmList.get(i).getNumberOfPes());
 
         //worst case is when the vm with less mips has to process all the cloudlets
         double maxPosibleVmExcecutionTime = totalClouletsMIPS / minVmMips; 
         makespan = makespan / maxPosibleVmExcecutionTime;
+
+/**
+ *      MIGRATION COST
+ *      Estimated by the ram usage for each vm
+**/ 
+        //For each vm in the solution we are going to sum ram
+        double ram = 0.0d;
+        for(PowerVm vm : vmList){
+            if(vmIds.contains(vm.getId())){
+                ram += vm.getRam();
+            }
+        } 
+
+        //normalize: make the value comparable by changing the value from 0 to 1
+        double migrationCost = ram;
+        double maxMigrationCost = Constants.VM_RAM[1] * (double)vmList.size();
+        migrationCost = migrationCost / maxMigrationCost;
 
 
 /**
@@ -204,16 +221,16 @@ public class PSO_FitnessFunction extends FitnessFunction{
         // double balancingDegree = hostBalancingDegree * vmsBalancingDegree;
 
         //objetive function
-        double weight1 = 0.1;
-        double weight2 = 0.1;
-        double weight3 = 0.1;
-        double weight4 = 0.7*5;
-        double weight5 = 0;
-        double functOutput =  1/((weight1 * totalDatacenterPowerConsumption) 
-            + (weight2 * (1-hostResourceUtilization)) //this can be read resource sub utilization
+        double weight1 = 0.7d;
+        double weight2 = 0.05d;
+        double weight3 = 0.0d;
+        double weight4 = 0.2d * 5.0d;
+        double weight5 = 0.05d;
+        double functOutput =  1.0d/((weight1 * totalDatacenterPowerConsumption) 
+            + (weight2 * (1.0d-hostResourceUtilization)) //this can be read resource sub utilization
             + (weight3 * makespan) 
             + (weight4 * desbalancing) 
-            + (weight5 * numberHostOverUtilized==0?0:(numberHostOverUtilized/numberOfHosts)));
+            + (weight5 * migrationCost));
 
 /**
  *      This is when we need to validate, for example in containers

@@ -22,12 +22,12 @@ import org.cloudbus.cloudsim.examples.pso.RandomConstants;
 import org.cloudbus.cloudsim.examples.pso.RandomHelper;
 import org.cloudbus.cloudsim.examples.pso.RunnerAbstract;
 import org.cloudbus.cloudsim.examples.pso.original.PSO_FitnessFunction;
+import org.cloudbus.cloudsim.examples.pso.original.PSO_Particle;
 import org.cloudbus.cloudsim.power.PowerDatacenter;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
 import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThresholdPSO;
 
-import net.sourceforge.jswarm_pso.Particle;
 
 
 /**
@@ -120,20 +120,20 @@ public class RandomRunner extends RunnerAbstract {
 			host.setUtilizationEstimation(vmsMIPS/(double)host.getTotalMips());
 		}
 
-
+		//*** Estimate power consumption from all hosts ***
 		List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(RandomRunner.hostList); //asc, estimated by the host utilization fixed in Constants.UTILIZATION_THRESHOLD
-		List<PowerVm> powerVmsOrderByPowerConsumption = new ArrayList<>((List<PowerVm>)(Object)(RandomRunner.vmList)); //asc, according with the hosts power consumption and the initial policy allocation
-
 		//host doest have power as an attribute -only the method-, but added for power consumption estimation
 		for(PowerHost h1 : powerHostsOrderByPowerConsumption){
 			h1.setPowerEstimation(h1.getPower(Constants.UTILIZATION_THRESHOLD));
 		}
 
+		//*** Estimate power consumption from all hosts ***
 		powerHostsOrderByPowerConsumption.sort(Comparator.comparingDouble((PowerHost p) -> p.getTotalMips()));
 
 		// powerVmsOrderByPowerConsumption.sort(Comparator.comparingDouble((PowerVm p) -> p.getMips()).reversed()
         //                         .thenComparing((PowerVm p) -> ((PowerHost)p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD)  ));
 
+		List<PowerVm> powerVmsOrderByPowerConsumption = new ArrayList<>((List<PowerVm>)(Object)(RandomRunner.vmList)); //asc, according with the hosts power consumption and the initial policy allocation
 		powerVmsOrderByPowerConsumption.sort(
 			Comparator.comparingDouble((PowerVm p) -> ((PowerHost) p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD))
 						.thenComparing(Comparator.comparingDouble(PowerVm::getMips).reversed())
@@ -150,6 +150,7 @@ public class RandomRunner extends RunnerAbstract {
 
 		//For stats and analysis
 		double[] maeIteracion = new double[Constants.NUM_ITERATIONS];
+		double[] maeIteracionGobalUpdate = new double[Constants.NUM_ITERATIONS];
 
         swarm = new Discrete_PSO_Swarm(new Discrete_FitnessFunction(cloudletList, (List<PowerVm>)(Object)(RandomRunner.vmList), RandomRunner.hostList), 
 			RandomRunner.hostList, (List<PowerVm>)(Object)(RandomRunner.vmList), cloudletList);
@@ -167,25 +168,41 @@ public class RandomRunner extends RunnerAbstract {
 			}
 
 			double sumMae = 0.0;
+			double sumMaeGlobalUpdate = 0.0;
 			for(Discrete_Particle particle : swarm.getParticles()){
 				sumMae += particle.mae;
+				sumMaeGlobalUpdate += particle.maeGlobalUpdate;
 			}
 			double promedioMae = sumMae / (double)swarm.getParticles().size();
+			double promedioMaeGlobalUpdate = sumMaeGlobalUpdate / (double)swarm.getParticles().size();
 			maeIteracion[i] = promedioMae;
-
+			maeIteracionGobalUpdate[i] = promedioMaeGlobalUpdate;
 		}
 
-		System.out.println("--------Global best---------------");
-		if(swarm.getBestPosition()!=null){
-			for(Allocation allocation : swarm.getBestPosition()){
-				System.out.println("host" + allocation.getHost() + "vm" + allocation.getVm()+ "cloudlet"+ allocation.getCloudlet());
-			}
-		}
+		System.out.println("DISCRETE PSO The best fitness value is "+swarm.getBestFitness());
+        Discrete_Particle bestparticle = (Discrete_Particle)swarm.getBestParticle();
+        System.out.println(bestparticle.toString());
 
-		System.out.println("********* MAE Stat **************");
+		// System.out.println("--------Global best---------------");
+		// if(swarm.getBestPosition()!=null){
+		// 	for(Allocation allocation : swarm.getBestPosition()){
+		// 		System.out.println("host" + allocation.getHost() + "vm" + allocation.getVm()+ "cloudlet"+ allocation.getCloudlet());
+		// 	}
+		// }
+
+		System.out.println("********* MAE stat **************");
 		for(int i=0; i<Constants.NUM_ITERATIONS; i++) { 
 			System.out.print(String.format("%.2f", maeIteracion[i]) +" ");
 		}
+		System.out.println("********* MAE stat Global update **************");
+		int cont = 0;
+		for(int i=0; i<Constants.NUM_ITERATIONS; i++) { 
+			if(maeIteracionGobalUpdate[i]!=0)
+				cont++;
+			System.out.print(String.format("%.5f", maeIteracionGobalUpdate[i]) +" ");
+		}
+		System.out.println("\nTotal global changes: " + cont);
+
 		System.out.println("********* END Discrete PSO **************");
     }
 
@@ -283,23 +300,23 @@ public class RandomRunner extends RunnerAbstract {
 			}
 
 
-			CloudSim.terminateSimulation(Constants.SIMULATION_LIMIT);
-			double lastClock = CloudSim.startSimulation();
+			// CloudSim.terminateSimulation(Constants.SIMULATION_LIMIT);
+			// double lastClock = CloudSim.startSimulation();
 
-			List<Cloudlet> newList = broker.getCloudletReceivedList();
-			Log.printLine("Received " + newList.size() + " cloudlets");
+			// List<Cloudlet> newList = broker.getCloudletReceivedList();
+			// Log.printLine("Received " + newList.size() + " cloudlets");
 
-			CloudSim.stopSimulation();
+			// CloudSim.stopSimulation();
 
-			Helper.printResults(
-					datacenter,
-					vmList,
-					lastClock,
-					experimentName,
-					Constants.OUTPUT_CSV,
-					outputFolder);
+			// Helper.printResults(
+			// 		datacenter,
+			// 		vmList,
+			// 		lastClock,
+			// 		experimentName,
+			// 		Constants.OUTPUT_CSV,
+			// 		outputFolder);
 
-			Helper.printCloudletList(cloudletList);
+			// Helper.printCloudletList(cloudletList);
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage());

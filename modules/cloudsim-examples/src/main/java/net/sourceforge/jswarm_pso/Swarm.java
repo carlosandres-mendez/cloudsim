@@ -5,6 +5,8 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.cloudbus.cloudsim.examples.pso.Helper;
+
 /**
  * A swarm of particles
  * @author Pablo Cingolani <pcingola@users.sourceforge.net>
@@ -120,10 +122,16 @@ public class Swarm implements Iterable<Particle> {
 			// Evaluate particle
 			double fit = fitnessFunction.evaluate(particles[i]);
 
+			particles[i].maeGlobalUpdate = 0.0d;
+
 			numberOfEvaliations++; // Update counter
 
 			// Update 'best global' position
 			if (fitnessFunction.isBetterThan(bestFitness, fit)) {
+				//*** For analysis and stats  ***/
+				if (bestPosition != null)
+					particles[i].maeGlobalUpdate = Helper.calculateMAE(particles[i].position, bestPosition);
+
 				bestFitness = fit; // Copy best fitness, index, and position vector
 				bestParticleIndex = i;
 				if (bestPosition == null) bestPosition = new double[sampleParticle.getDimension()];

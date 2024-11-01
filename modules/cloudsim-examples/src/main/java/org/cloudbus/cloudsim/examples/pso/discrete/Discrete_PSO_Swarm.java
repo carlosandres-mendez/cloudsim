@@ -5,8 +5,12 @@ import java.util.*;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
+
+import net.sourceforge.jswarm_pso.Particle;
+
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
+import org.cloudbus.cloudsim.examples.pso.Helper;
 
 /**
  * 
@@ -30,6 +34,8 @@ public class Discrete_PSO_Swarm {
 
     /** Best fitness so far (global best) */
     double bestFitness;
+	/** Index of best particle so far */
+	int bestParticleIndex;
     /** Best position so far (global best) */
     List<Allocation> bestPosition;
     /** Fitness function for this swarm */
@@ -65,6 +71,7 @@ public class Discrete_PSO_Swarm {
 
         // Set up particle update strategy (default: ParticleUpdateSimple) 
 		particleUpdate = new Discrete_ParticleUpdate(); //default update dehaviour
+        bestParticleIndex = -1;
     }
 
 	/**
@@ -94,65 +101,20 @@ public class Discrete_PSO_Swarm {
                 List<Allocation> velocity = new ArrayList<>();
     
                 for(Cloudlet cloudlet : this.cloudlets){ 
-                    Random randObj = new Random();
                     Allocation positionAllocation = new Allocation(
                         cloudlet, 
                         this.powerVms.get(idVmsList.get(cloudlet.getCloudletId())), 
-                        this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
+                        this.powerHosts.get((int)(Math.random()*(double)this.powerHosts.size())));
                     position.add(positionAllocation);
                     Allocation velocityAllocation = new Allocation(
                         cloudlet, 
-                        this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
-                        this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
+                        this.powerVms.get((int)(Math.random()*(double)this.powerVms.size())), 
+                        this.powerHosts.get((int)(Math.random()*(double)this.powerHosts.size())));
                     velocity.add(velocityAllocation);
                 }
                 particles.add(new Discrete_Particle(position, velocity));
             }
         }
-
-        //Creamos particulas aleatorias
-        // for (int i=0; i < Constants.NUM_PARTICLES-1; i++) {
-
-        //     List<Allocation> position = new ArrayList<>();
-        //     List<Allocation> velocity = new ArrayList<>();
-
-        //     for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
-        //         Random randObj = new Random();
-        //         Allocation positionAllocation = new Allocation(
-        //             cloudlet, 
-        //             this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
-        //             this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
-        //         position.add(positionAllocation);
-        //         Allocation velocityAllocation = new Allocation(
-        //             cloudlet, 
-        //             this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
-        //             this.powerHosts.get((int)Math.random()*this.powerHosts.size()));
-        //         velocity.add(velocityAllocation);
-        //     }
-        //     particles.add(new Discrete_Particle(position, velocity));
-        // }
-
-        //adding particles that can represent especial situations, such as the real state of a datacenter
-        // List<Allocation> position = new ArrayList<>();
-        // List<Allocation> velocity = new ArrayList<>();
-
-        // for(Cloudlet cloudlet : this.cloudlets){ //Para cada tarea buscamos aleatoriamente un host y una vm
-        //     PowerVm vm = this.powerVms.get(cloudlet.getCloudletId());
-        //     Allocation positionAllocation = new Allocation(
-        //         cloudlet, 
-        //         vm, 
-        //         (PowerHost)vm.getHost()); 
-        //     position.add(positionAllocation);
-
-        //     Random randObj = new Random();
-        //     Allocation velocityAllocation = new Allocation(
-        //         cloudlet, 
-        //         this.powerVms.get(randObj.nextInt(this.powerVms.size())), 
-        //         (PowerHost)vm.getHost());
-        //     velocity.add(velocityAllocation);
-        // }
-        // particles.add(new Discrete_Particle(position, velocity));
-
     
         System.out.println();
         for(Discrete_Particle particle : particles)
@@ -184,23 +146,46 @@ public class Discrete_PSO_Swarm {
 		if (Double.isNaN(bestFitness)) {
 			bestFitness = (fitnessFunction.isMaximize() ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY);
 			bestPosition = null;
+            bestParticleIndex = -1;
 		}
 
 		//---
 		// Evaluate each particle (and find the 'best' one)
 		//---
+        int cont=0;
 		for (Discrete_Particle particle : particles) {
 
 			// Evaluate particle
 			double fit = fitnessFunction.evaluate(particle);
 
+            // For analysis and stats
+            particle.maeGlobalUpdate = 0.0d;
+
 			// Update 'best global' position
 			if (fitnessFunction.isBetterThan(bestFitness, fit)) {
-				bestFitness = fit; // Copy best fitness, index, and position vector
+
+                //*** For analysis and stats  ***/
+                if(bestPosition!=null){
+                    double[] particlePositionToArray = new double[particle.getPosition().size()];
+                    int j=0;
+                    for(Allocation allocation : particle.getPosition()){
+                        particlePositionToArray[j++] = allocation.getVm().getId();
+                    }
+                    double[] bestGlobalPositionToArray = new double[particle.getPosition().size()];
+                    j=0;
+                    for(Allocation allocation : bestPosition){
+                        bestGlobalPositionToArray[j++] = allocation.getVm().getId();
+                    }
+                    particle.maeGlobalUpdate = Helper.calculateMAE(particlePositionToArray, bestGlobalPositionToArray);
+                }
+
+                //*** Copy best fitness, index, and position vector  ***/ 
+                bestParticleIndex = cont;
+				bestFitness = fit; 
 				if (bestPosition == null) bestPosition = new ArrayList<>();
 				particle.copyPosition(bestPosition);
 			}
-
+            cont++;
 		}
 	}
 
@@ -332,5 +317,9 @@ public class Discrete_PSO_Swarm {
     public void setInertia(int inertia) {
         this.inertia = inertia;
     }
+
+    public Discrete_Particle getBestParticle() {
+		return particles.get(bestParticleIndex);
+	}
     
 }

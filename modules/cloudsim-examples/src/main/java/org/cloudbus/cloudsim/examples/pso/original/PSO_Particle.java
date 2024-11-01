@@ -22,7 +22,7 @@ public class PSO_Particle extends Particle{
         for (int i = 0; i < numberCloudlets; i++) {
             Random randObj = new Random();
             position[i] = randObj.nextInt(numberVms);
-            velocity[i] = Math.random()*numberVms;
+            velocity[i] = Math.random()*(double)numberVms;
         }
         setPosition(position);
         setVelocity(velocity);
@@ -42,7 +42,7 @@ public class PSO_Particle extends Particle{
     }
 
     public String toString() {
-        String output = "";
+        String output = "/n***PARTICLE POSITION***/n";
         for(int i=0;i<RandomConstants.NUMBER_OF_VMS;i++) {
             String tasks = "";
             int number_of_tasks = 0;
@@ -57,6 +57,25 @@ public class PSO_Particle extends Particle{
             else
                 output += number_of_tasks +" Tasks is in VM "+i +" Tasks id = " +tasks +"\n";
         }
+
+        output += "/n***PARTICLE BEST POSITION***/n";
+        if(getBestPosition()!=null) {
+            for(int i=0;i<RandomConstants.NUMBER_OF_VMS;i++) {
+                String tasks = "";
+                int number_of_tasks = 0;
+                for(int j=0;j<getBestPosition().length;j++) {
+                    if( i== (int)getBestPosition()[j]) {
+                        tasks +=(tasks.isEmpty() ? " " : " " ) + j;
+                        ++number_of_tasks;
+                    }
+                }
+                if(tasks.isEmpty())
+                    output += "NO Tasks is in VM "+ i+"\n";
+                else
+                    output += number_of_tasks +" Tasks is in VM "+i +" Tasks id = " +tasks +"\n";
+            }
+        }
+
 	    return output;
     }
 }

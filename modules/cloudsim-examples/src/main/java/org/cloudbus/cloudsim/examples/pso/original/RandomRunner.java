@@ -153,7 +153,7 @@ public class RandomRunner extends RunnerAbstract {
 
 				for (int h = 0; h < RandomRunner.cloudletList.size(); h++) {
 					position[h] = ((PowerVm)RandomRunner.vmList.get(idVmsList.get(h))).getId();
-					velocity[h] = Math.random()*RandomRunner.vmList.size();
+					velocity[h] = Math.random()* (double)RandomRunner.vmList.size();
 				}
                 particles[cont++] =new PSO_Particle(RandomRunner.cloudletList.size(), position, velocity);
 				System.out.println(particles[cont-1]);
@@ -162,6 +162,7 @@ public class RandomRunner extends RunnerAbstract {
 
 		//For stats and analysis
 		double[] maeIteracion = new double[Constants.NUM_ITERATIONS];
+		double[] maeIteracionGobalUpdate = new double[Constants.NUM_ITERATIONS];
 
 		//adding particles that can represent especial situations, such as the real state of a datacenter
 		//particles[Constants.NUM_PARTICLES-1]= new PSO_Particle(cloudletList.size(),  RandomRunner.vmList.size() , 0);
@@ -187,13 +188,17 @@ public class RandomRunner extends RunnerAbstract {
             }
 
 			double sumMae = 0.0;
+			double sumMaeGlobalUpdate = 0.0;
 			for(Particle particle : particles){
 				sumMae += particle.mae;
+				sumMaeGlobalUpdate += particle.maeGlobalUpdate;
 			}
 			double promedioMae = sumMae / (double)particles.length;
+			double promedioMaeGlobalUpdate = sumMaeGlobalUpdate / (double)particles.length;
 			maeIteracion[i] = promedioMae;
+			maeIteracionGobalUpdate[i] = promedioMaeGlobalUpdate;
         }
-        System.out.println("The best fitness value is "+swarm.getBestFitness());
+        System.out.println("ORIGINAL PSO The best fitness value is "+swarm.getBestFitness());
         PSO_Particle bestparticle = (PSO_Particle)swarm.getBestParticle();
         System.out.println(bestparticle.toString());
 
@@ -201,6 +206,14 @@ public class RandomRunner extends RunnerAbstract {
 		for(int i=0; i<Constants.NUM_ITERATIONS; i++) { 
 			System.out.print(String.format("%.2f", maeIteracion[i]) +" ");
 		}
+		System.out.println("********* MAE stat Global update **************");
+		int cont2 = 0;
+		for(int i=0; i<Constants.NUM_ITERATIONS; i++) { 
+			if(maeIteracionGobalUpdate[i]!=0)
+				cont2++;
+			System.out.print(String.format("%.5f", maeIteracionGobalUpdate[i]) +" ");
+		}
+		System.out.println("\nTotal global changes: " + cont2);
 		System.out.println("***** END Original PSO **********");
     }
 
@@ -288,23 +301,23 @@ public class RandomRunner extends RunnerAbstract {
 			}
 
 
-			CloudSim.terminateSimulation(Constants.SIMULATION_LIMIT);
-			double lastClock = CloudSim.startSimulation();
+			// CloudSim.terminateSimulation(Constants.SIMULATION_LIMIT);
+			// double lastClock = CloudSim.startSimulation();
 
-			List<Cloudlet> newList = broker.getCloudletReceivedList();
-			Log.printLine("Received " + newList.size() + " cloudlets");
+			// List<Cloudlet> newList = broker.getCloudletReceivedList();
+			// Log.printLine("Received " + newList.size() + " cloudlets");
 
-			CloudSim.stopSimulation();
+			// CloudSim.stopSimulation();
 
-			Helper.printResults(
-					datacenter,
-					vmList,
-					lastClock,
-					experimentName,
-					Constants.OUTPUT_CSV,
-					outputFolder);
+			// Helper.printResults(
+			// 		datacenter,
+			// 		vmList,
+			// 		lastClock,
+			// 		experimentName,
+			// 		Constants.OUTPUT_CSV,
+			// 		outputFolder);
 
-			Helper.printCloudletList(cloudletList);
+			// Helper.printCloudletList(cloudletList);
 
 		} catch (Exception e) {
 			e.printStackTrace();
