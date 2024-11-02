@@ -2,7 +2,7 @@ package org.cloudbus.cloudsim.examples.pso.original;
 
 import java.util.Random;
 
-import org.cloudbus.cloudsim.examples.pso.RandomConstants;
+import org.cloudbus.cloudsim.examples.power.random.RandomConstants;
 
 import net.sourceforge.jswarm_pso.Particle;
 

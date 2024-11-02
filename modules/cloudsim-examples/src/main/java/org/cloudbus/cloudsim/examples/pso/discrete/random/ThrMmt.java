@@ -1,4 +1,4 @@
-package org.cloudbus.cloudsim.examples.pso.discrete;
+package org.cloudbus.cloudsim.examples.pso.discrete.random;
 
 import java.io.IOException;
 
@@ -33,13 +33,13 @@ public class ThrMmt {
 		boolean enableOutput = true;
 		boolean outputToFile = true;
 		String inputFolder = "";
-		String outputFolder = "C:\\Users\\Carlos\\Documents\\Fuentes\\cloudsim\\mifolder";
+		String outputFolder = "output";
 		String workload = "random"; // Random workload
 		String vmAllocationPolicy = "thr"; // Static Threshold (THR) VM allocation policy
 		String vmSelectionPolicy = "mmt"; // Minimum Migration Time (MMT) VM selection policy
 		String parameter = String.valueOf(Constants.UTILIZATION_THRESHOLD); // the static utilization threshold
 
-		new RandomRunner(
+		new Scheduler(
 				enableOutput,
 				outputToFile,
 				inputFolder,

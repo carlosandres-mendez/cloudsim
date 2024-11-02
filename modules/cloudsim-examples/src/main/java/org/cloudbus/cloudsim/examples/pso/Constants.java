@@ -1,10 +1,5 @@
 package org.cloudbus.cloudsim.examples.pso;
 
-import java.util.Arrays;
-
-import org.cloudbus.cloudsim.power.models.PowerModel;
-import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G4Xeon3040;
-import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G5Xeon3075;
 
 /**
  * If you are using any algorithms, policies or workload included in the power package, please cite
@@ -18,121 +13,8 @@ import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G5Xe
  * @author Anton Beloglazov
  * @since Jan 6, 2012
  */
-public class Constants {
+public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 
-	public static void main(String[] args) {
-        double[] data = {0.99d,1.00d,0.98d,0.99d,1.00d};
-
-        // Normalizar los datos
-        double[] normalizedData = normalize(data);
-        
-        // Calcular la desviación estándar
-        double stdDev = calculateStandardDeviation(normalizedData);
-        
-        System.out.println("Normalized Data: " + Arrays.toString(normalizedData));
-        System.out.println("Standard Deviation: " + stdDev);
-    }
-
-    public static double[] normalize(double[] data) {
-        double min = Arrays.stream(data).min().orElse(Double.NaN);
-        double max = Arrays.stream(data).max().orElse(Double.NaN);
-
-        double[] normalized = new double[data.length];
-        for (int i = 0; i < data.length; i++) {
-            normalized[i] = (data[i] - min) / (max - min);
-        }
-        return normalized;
-    }
-
-    public static double calculateStandardDeviation(double[] datos) {
-        double suma = 0.0;
-        double media;
-        double sumaDesviacionCuadrada = 0.0;
-
-        // Calcular la suma
-        for (double num : datos) {
-            suma += num;
-        }
-
-        // Calcular la media
-        media = suma / datos.length;
-
-        // Calcular la suma de las desviaciones al cuadrado
-        for (double num : datos) {
-            sumaDesviacionCuadrada += Math.pow(num - media, 2);
-        }
-
-        // Calcular la desviación estándar
-        return Math.sqrt(sumaDesviacionCuadrada / datos.length);
-    }
-
-	    // Método para calcular la varianza de un arreglo de doubles
-		public static double calculateVariance(double[] numeros) {
-			double media = calculateMedia(numeros);
-			double sumaDiferenciasCuadradas = 0.0;
-	
-			for (double num : numeros) {
-				//sumaDiferenciasCuadradas += Math.pow((num - media)/media, 2);
-				sumaDiferenciasCuadradas += Math.pow((num - media), 2);
-			}
-	
-			return sumaDiferenciasCuadradas / numeros.length;
-		}
-
-		    // Método para calcular la media de un arreglo de doubles
-			public static double calculateMedia(double[] numeros) {
-				double suma = 0.0;
-				for (double num : numeros) {
-					suma += num;
-				}
-				return suma / numeros.length;
-			}
-
-	public final static boolean ENABLE_OUTPUT = true;
-	public final static boolean OUTPUT_CSV    = true;
-
-	public final static double SCHEDULING_INTERVAL = 300;
-	public final static double SIMULATION_LIMIT = 24 * 60 * 60;
-
-	public final static int CLOUDLET_LENGTH	= 2500 * (int) 24 * 60 * 60;
-	public final static int CLOUDLET_PES	= 1;
-
-	public final static double UTILIZATION_THRESHOLD = 0.8;
-
-	/*
-	 * VM instance types:
-	 *   High-Memory Extra Large Instance: 3.25 EC2 Compute Units, 8.55 GB // too much MIPS
-	 *   High-CPU Medium Instance: 2.5 EC2 Compute Units, 0.85 GB
-	 *   Extra Large Instance: 2 EC2 Compute Units, 3.75 GB
-	 *   Small Instance: 1 EC2 Compute Unit, 1.7 GB
-	 *   Micro Instance: 0.5 EC2 Compute Unit, 0.633 GB
-	 *   We decrease the memory size two times to enable oversubscription
-	 *
-	 */
-	public final static int VM_TYPES	= 4;
-	public final static int[] VM_MIPS	= { 2500, 2000, 1000, 500 };
-	public final static int[] VM_PES	= { 1, 1, 1, 1 };
-	public final static int[] VM_RAM	= { 870,  1740, 1740, 613 };
-	public final static int VM_BW		= 100000; // 100 Mbit/s
-	public final static int VM_SIZE		= 2500; // 2.5 GB
-
-	/*
-	 * Host types:
-	 *   HP ProLiant ML110 G4 (1 x [Xeon 3040 1860 MHz, 2 cores], 4GB)
-	 *   HP ProLiant ML110 G5 (1 x [Xeon 3075 2660 MHz, 2 cores], 4GB)
-	 *   We increase the memory size to enable over-subscription (x4)
-	 */
-	public final static int HOST_TYPES	 = 2;
-	public final static int[] HOST_MIPS	 = { 1860, 2660 };
-	public final static int[] HOST_PES	 = { 2, 2 };
-	public final static int[] HOST_RAM	 = { 4096, 4096 };
-	public final static int HOST_BW		 = 1000000; // 1 Gbit/s
-	public final static int HOST_STORAGE = 1000000; // 1 GB
-
-	public final static PowerModel[] HOST_POWER = {
-		new PowerModelSpecPowerHpProLiantMl110G4Xeon3040(),
-		new PowerModelSpecPowerHpProLiantMl110G5Xeon3075()
-	};
 
 	/*
 	 * 2024 Carlos A. Mendez Rodriguez
@@ -141,7 +23,7 @@ public class Constants {
 
 	public final static int NUM_PARTICLES	= 100; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java and pso.RandomConstants.java
 
-	public final static int NUM_ITERATIONS	= 100;
+	public final static int NUM_ITERATIONS	= 25;
     
 	//The inertia Weight 
 	/**

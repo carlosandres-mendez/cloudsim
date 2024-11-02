@@ -224,8 +224,10 @@ public class PSO_FitnessFunction extends FitnessFunction{
         double weight1 = 0.2d;
         double weight2 = 0.2d;
         double weight3 = 0.2d;
-        double weight4 = 0.2d + 0.5d; // desviacion estandar goes from 0 to 0.5
+        double weight4 = 0.2d; 
         double weight5 = 0.2d;
+
+        weight4 *= 2; // desviacion estandar goes from 0 to 0.5
         double functOutput =  1.0d/((weight1 * totalDatacenterPowerConsumption) 
             + (weight2 * (1.0d-hostResourceUtilization)) //this can be read resource sub utilization
             + (weight3 * makespan) 

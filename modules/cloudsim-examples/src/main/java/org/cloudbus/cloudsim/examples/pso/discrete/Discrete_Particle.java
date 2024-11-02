@@ -2,8 +2,8 @@ package org.cloudbus.cloudsim.examples.pso.discrete;
 
 import java.util.*;
 
+import org.cloudbus.cloudsim.examples.power.random.RandomConstants;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
-import org.cloudbus.cloudsim.examples.pso.RandomConstants;
 
 /**
  * 
