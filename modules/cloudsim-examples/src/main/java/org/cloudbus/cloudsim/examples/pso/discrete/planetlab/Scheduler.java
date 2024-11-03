@@ -12,7 +12,6 @@ import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicy;
 import org.cloudbus.cloudsim.core.CloudSim;
-import org.cloudbus.cloudsim.examples.power.random.RandomConstants;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
 import org.cloudbus.cloudsim.examples.pso.Helper;
@@ -142,7 +141,7 @@ public class Scheduler extends PlanetLabRunner {
                 Allocation velocityAllocation = new Allocation(
                         allocation.getCloudlet(),
                         ((List<PowerVm>) (Object) (PlanetLabRunner.vmList))
-                                .get((int) (Math.random() * (double) RandomConstants.NUMBER_OF_VMS)),
+                                .get((int) (Math.random() * (double) PlanetLabRunner.NUMBER_OF_VMS)),
                         PlanetLabRunner.hostList.get((int) (Math.random() * (double) PlanetLabRunner.hostList.size())));
                 velocity.add(velocityAllocation);
             }
@@ -188,17 +187,10 @@ public class Scheduler extends PlanetLabRunner {
             maeIteracionGobalUpdate[i] = promedioMaeGlobalUpdate;
         }
 
-        System.out.println("DISCRETE PSO The best fitness value is " + swarm.getBestFitness());
+        
         Discrete_Particle bestparticle = (Discrete_Particle) swarm.getBestParticle();
         System.out.println(bestparticle.toString());
-
-        // System.out.println("--------Global best---------------");
-        // if(swarm.getBestPosition()!=null){
-        // for(Allocation allocation : swarm.getBestPosition()){
-        // System.out.println("host" + allocation.getHost() + "vm" + allocation.getVm()+
-        // "cloudlet"+ allocation.getCloudlet());
-        // }
-        // }
+        System.out.println("DISCRETE PSO The best fitness value is " + swarm.getBestFitness());
 
         System.out.println("********* MAE stat **************");
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
@@ -212,7 +204,6 @@ public class Scheduler extends PlanetLabRunner {
             System.out.print(String.format("%.5f", maeIteracionGobalUpdate[i]) + " ");
         }
         System.out.println("\nTotal global changes: " + cont);
-
         System.out.println("********* END Discrete PSO **************");
     }
 

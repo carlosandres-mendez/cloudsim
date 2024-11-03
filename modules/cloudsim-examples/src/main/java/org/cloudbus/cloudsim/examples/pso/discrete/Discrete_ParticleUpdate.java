@@ -61,45 +61,67 @@ public class Discrete_ParticleUpdate {
         currentVelocity = new ArrayList<>(currentVelocity.subList(0, Constants.INERTIA_WEIGHT)); //according to inertia, create a subset 
 
         List<Allocation> nextVelocity = new ArrayList<>(particle.getVelocity());
- 
+
         //***** Next Velocity V(t+1) ******/
-        int w = 0; // *** Weight
-        int p = 0; // *** Personal
-        int g = 0; // *** Global
-        while(w < currentVelocity.size() || p < personalPossibleCombinations.size() || g < globalPossibleCombinations.size()){
 
-            int numberList = (int)(Math.random() * 3) + 1; 
+        // *** Weight
+        Map<Integer, Allocation> velocityInertiaMap = new HashMap<Integer, Allocation>();
+        // *** Personal
+        Map<Integer, Allocation> velocityBestPersonalMap = new HashMap<Integer, Allocation>();
+        // *** Global
+        Map<Integer, Allocation> velocityBestGlobalMap = new HashMap<Integer, Allocation>();
 
-            if (numberList==1 && w < currentVelocity.size()) {
-                
-                PowerVm vm = currentVelocity.get(w).getVm();
-                nextVelocity.get(currentVelocity.get(w).getCloudlet().getCloudletId()).setVm(vm);
-                w++;
+        for(Allocation allocation : currentVelocity)
+            velocityInertiaMap.put(allocation.getCloudlet().getCloudletId(), allocation);
+        
+        for(Allocation allocation : personalPossibleCombinations)
+            velocityBestPersonalMap.put(allocation.getCloudlet().getCloudletId(), allocation);
+        
+        for(Allocation allocation : globalPossibleCombinations)
+            velocityBestGlobalMap.put(allocation.getCloudlet().getCloudletId(), allocation);
+        
+        for(Cloudlet cloudlet : cloudlets){
+            int numberList = 0;
+            if(velocityInertiaMap.containsKey(cloudlet.getCloudletId()) && velocityBestPersonalMap.containsKey(cloudlet.getCloudletId()) 
+                && velocityBestPersonalMap.containsKey(cloudlet.getCloudletId())){
+                    numberList = (int)(Math.random() * 3) + 1; 
+                }
+            else if(velocityInertiaMap.containsKey(cloudlet.getCloudletId()) && velocityBestPersonalMap.containsKey(cloudlet.getCloudletId())){
+                numberList = (int)(Math.random() * 2) + 1; 
             }
-            else if (numberList==2 && p < personalPossibleCombinations.size()) {
+            else if(velocityBestPersonalMap.containsKey(cloudlet.getCloudletId()) && velocityBestPersonalMap.containsKey(cloudlet.getCloudletId())){
+                numberList = (int)(Math.random() * 2) + 1; 
+                numberList++;
+            }
+            else if(velocityInertiaMap.containsKey(cloudlet.getCloudletId()))
+                numberList=1;
 
-                /**
-                 * R1 independent random number uniquely
-                 * generated from 0-1 at every update for each individual dimension d = 1 to D
-                 */
-                PowerVm vm = personalPossibleCombinations.get(p).getVm();
-                if(Math.random()<0.5)
-                    nextVelocity.get(personalPossibleCombinations.get(p).getCloudlet().getCloudletId()).setVm(vm);
-                    //vm = swarm.getPowerVms().get((int)(Math.random() * (double)swarm.getDimension()));
-                
-                p++;
-            } else if (numberList==3 && g < globalPossibleCombinations.size()) {
+            else if(velocityBestPersonalMap.containsKey(cloudlet.getCloudletId()))
+                numberList=2;
 
-                /**
-                 * R2 independent random number uniquely
-                 * generated from 0-1 at every update for each individual dimension d = 1 to D
-                 */
-                PowerVm vm = globalPossibleCombinations.get(g).getVm();
-                if(Math.random()<0.5)
-                    nextVelocity.get(globalPossibleCombinations.get(g).getCloudlet().getCloudletId()).setVm(vm);
-                    //vm = swarm.getPowerVms().get((int)(Math.random() * (double)swarm.getDimension()));
+            else 
+                numberList=3;
+
+            switch(numberList){
+                case 1:
+                    nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityInertiaMap.get(cloudlet.getCloudletId()).getVm());
+                    break;
+                case 2:
+                     /**
+                     * R1 independent random number uniquely
+                     * generated from 0-1 at every update for each individual dimension d = 1 to D
+                     */
+                    if(Math.random()<0.5)
+                        nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityBestPersonalMap.get(cloudlet.getCloudletId()).getVm());
+                    break;
+                case 3:
+                    /**
+                     * R2 independent random number uniquely
+                     * generated from 0-1 at every update for each individual dimension d = 1 to D
+                     */
+                    if(Math.random()<0.5)
+                        nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityBestGlobalMap.get(cloudlet.getCloudletId()).getVm());
                     
-                g++;
             }
         }
 

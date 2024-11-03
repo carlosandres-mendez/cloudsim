@@ -11,7 +11,6 @@ import java.util.Set;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.DatacenterBroker;
 import org.cloudbus.cloudsim.Log;
-import org.cloudbus.cloudsim.examples.power.random.RandomConstants;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
 import org.cloudbus.cloudsim.pso.PSODatacenterBroker;
@@ -93,10 +92,10 @@ public class Helper extends org.cloudbus.cloudsim.examples.power.Helper {
 			List<PowerHost> hostList) {
 
 		// Number of subsets of particles, ej. {idX}, {idY,idZ}, ..., {idX..N}
-		int numSubsetParticles = (int) ((double) Constants.NUM_PARTICLES / (double) RandomConstants.NUMBER_OF_VMS);
+		int numSubsetParticles = (int) ((double) Constants.NUM_PARTICLES / (double) vmList.size());
 
 		List<List<Allocation>> poblation = new ArrayList<>();
-		for (int i = 1; i <= RandomConstants.NUMBER_OF_VMS; i++) { // number of different vms in each particle from 1 to
+		for (int i = 1; i <= vmList.size(); i++) { // number of different vms in each particle from 1 to
 																	// N
 
 			Set<Integer> lastNumbers = new HashSet<>();
@@ -104,7 +103,7 @@ public class Helper extends org.cloudbus.cloudsim.examples.power.Helper {
 															// of different vms
 
 				List<Integer> idVmsList = new ArrayList<>();
-				Set<Integer> uniqueIdVms = getUniqueRandomNumbers(i, RandomConstants.NUMBER_OF_VMS, lastNumbers, i - 1);
+				Set<Integer> uniqueIdVms = getUniqueRandomNumbers(i, vmList.size(), lastNumbers, i - 1);
 				lastNumbers.addAll(uniqueIdVms);
 				List<Integer> uniqueIdVmsList = new ArrayList<>(uniqueIdVms);
 

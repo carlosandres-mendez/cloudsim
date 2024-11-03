@@ -108,7 +108,7 @@ public class Scheduler extends PlanetLabRunner {
             for (Allocation allocation : particle) {
                 position[allocation.getCloudlet().getCloudletId()] = allocation.getVm().getId();
                 velocity[allocation.getCloudlet()
-                        .getCloudletId()] = (double) (int) (Math.random() * (double) RandomConstants.NUMBER_OF_VMS);
+                        .getCloudletId()] = (double) (int) (Math.random() * (double) PlanetLabRunner.NUMBER_OF_VMS);
             }
             particles[cont++] = new PSO_Particle(PlanetLabRunner.cloudletList.size(), position, velocity);
         }
@@ -161,9 +161,9 @@ public class Scheduler extends PlanetLabRunner {
             maeIteracion[i] = promedioMae;
             maeIteracionGobalUpdate[i] = promedioMaeGlobalUpdate;
         }
-        System.out.println("ORIGINAL PSO The best fitness value is " + swarm.getBestFitness());
         PSO_Particle bestparticle = (PSO_Particle) swarm.getBestParticle();
         System.out.println(bestparticle.toString());
+        System.out.println("ORIGINAL PSO The best fitness value is " + swarm.getBestFitness());
 
         System.out.println("********* MAE Stat **************");
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {

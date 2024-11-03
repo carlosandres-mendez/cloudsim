@@ -4,12 +4,16 @@ import java.util.*;
 
 import org.cloudbus.cloudsim.examples.power.random.RandomConstants;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
+import org.cloudbus.cloudsim.examples.pso.PlanetLabRunner;
 
 /**
  * 
  * @author carlosandres.mendez
  */
 public class Discrete_Particle {
+
+        //int NUMBER_OF_VMS = RandomConstants.NUMBER_OF_VMS;
+    int NUMBER_OF_VMS = PlanetLabRunner.NUMBER_OF_VMS;
 
     /** Best fitness function so far */
     double bestFitness;
@@ -199,7 +203,7 @@ public class Discrete_Particle {
     public String toString() {
         String output = "\n***PARTICLE POSITION***\n";
 
-        for(int i=0;i<RandomConstants.NUMBER_OF_VMS;i++) {
+        for(int i=0;i<NUMBER_OF_VMS;i++) {
             String tasks = "";
             int number_of_tasks = 0;
             for(int j=0;j<getPosition().size();j++) {
@@ -208,15 +212,16 @@ public class Discrete_Particle {
                     ++number_of_tasks;
                 }
             }
-            if(tasks.isEmpty())
-                output += "NO Tasks is in VM "+ i+"\n";
-            else
+            // if(tasks.isEmpty())
+            //     output += "NO Tasks is in VM "+ i+"\n";
+            // else
+            if(!tasks.isEmpty())
                 output += number_of_tasks +" Tasks is in VM "+i +" Tasks id = " +tasks +"\n";
         }
 
         output += "\n***PARTICLE BEST POSITION***\n";
         if(getBestPosition()!=null) {
-            for(int i=0;i<RandomConstants.NUMBER_OF_VMS;i++) {
+            for(int i=0;i<NUMBER_OF_VMS;i++) {
                 String tasks = "";
                 int number_of_tasks = 0;
                 for(int j=0;j<getBestPosition().size();j++) {
@@ -225,9 +230,10 @@ public class Discrete_Particle {
                         ++number_of_tasks;
                     }
                 }
-                if(tasks.isEmpty())
-                    output += "NO Tasks is in VM "+ i+"\n";
-                else
+                // if(tasks.isEmpty())
+                //     output += "NO Tasks is in VM "+ i+"\n";
+                // else
+                if(!tasks.isEmpty())
                     output += number_of_tasks +" Tasks is in VM "+i +" Tasks id = " +tasks +"\n";
             }
         }

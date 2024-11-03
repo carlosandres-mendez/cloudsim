@@ -8,6 +8,9 @@ import org.cloudbus.cloudsim.examples.power.planetlab.PlanetLabConstants;
 import org.cloudbus.cloudsim.examples.power.planetlab.PlanetLabHelper;
 
 public class PlanetLabRunner extends RunnerAbstract{
+
+	public static int NUMBER_OF_VMS;
+
 	/**
 	 * Instantiates a new planet lab runner.
 	 * 
@@ -56,6 +59,8 @@ public class PlanetLabRunner extends RunnerAbstract{
 			cloudletList = PlanetLabHelper.createCloudletListPlanetLab(brokerId, inputFolder);
 			vmList = Helper.createVmList(brokerId, cloudletList.size());
 			hostList = Helper.createHostList(PlanetLabConstants.NUMBER_OF_HOSTS);
+
+			NUMBER_OF_VMS = cloudletList.size();
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.printLine("The simulation has been terminated due to an unexpected error");
