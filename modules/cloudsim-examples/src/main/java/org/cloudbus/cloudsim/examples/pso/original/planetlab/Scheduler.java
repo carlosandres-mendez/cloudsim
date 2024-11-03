@@ -81,6 +81,15 @@ public class Scheduler extends PlanetLabRunner {
             host.setUtilizationEstimation(vmsMIPS / (double) host.getTotalMips());
         }
 
+         /**
+         * POWER CONSUMPTION ESTIMATION
+         * Estimated percentage using the power consumption model and the UTILIZATION_THRESHOLD
+         * This is a estimated value when all the hosts are started (in this simulation
+         * all the vms and hosts start at the same time)
+         * However, during the simulation this value is going to be changed depending on
+         * the finish cloudlets time or vm migrations
+         **/
+
         // *** Estimate power consumption from all hosts ***
         List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(PlanetLabRunner.hostList); // asc, estimated
                                                                                                        // by
@@ -92,7 +101,23 @@ public class Scheduler extends PlanetLabRunner {
         // host doest have power as an attribute -only the method-, but added for power
         // consumption estimation
         for (PowerHost h1 : powerHostsOrderByPowerConsumption) {
-            h1.setPowerEstimation(h1.getPower(Constants.UTILIZATION_THRESHOLD));
+            h1.setPowerEstimation(h1.getPower(h1.getUtilizationEstimation()));
+        }
+
+        /**
+         * CLOUDLETS UTILIZATION CPU ESTIMATION
+         * Estimated average using the cpu utilization model of the first 10 intervals
+         * This is a estimated value when all the hosts are started (in this simulation
+         * all the vms and hosts start at the same time)
+         * However, during the simulation this value is going to be changed depending on
+         * the finish cloudlets time or vm migrations
+         **/
+        for(Cloudlet cloudlet : cloudletList){
+            double avg = 0.0d;
+            for(int i = 1; i <= 10; i++)
+                avg += cloudlet.getUtilizationOfCpu(((double)i)*Constants.SCHEDULING_INTERVAL);
+            avg /= 10;
+            cloudlet.setUtilizationOfCpuEstimation(avg);
         }
 
         // initialize particles

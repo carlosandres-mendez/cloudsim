@@ -69,6 +69,16 @@ public class Scheduler extends RandomRunner {
             host.setUtilizationEstimation(vmsMIPS / (double) host.getTotalMips());
         }
 
+
+         /**
+         * POWER CONSUMPTION ESTIMATION
+         * Estimated percentage using the power consumption model and the UTILIZATION_THRESHOLD
+         * This is a estimated value when all the hosts are started (in this simulation
+         * all the vms and hosts start at the same time)
+         * However, during the simulation this value is going to be changed depending on
+         * the finish cloudlets time or vm migrations
+         **/
+
         // *** Estimate power consumption from all hosts ***
         List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(RandomRunner.hostList); // asc, estimated by
                                                                                                     // the host
@@ -78,7 +88,7 @@ public class Scheduler extends RandomRunner {
         // host doest have power as an attribute -only the method-, but added for power
         // consumption estimation
         for (PowerHost h1 : powerHostsOrderByPowerConsumption) {
-            h1.setPowerEstimation(h1.getPower(Constants.UTILIZATION_THRESHOLD));
+            h1.setPowerEstimation(h1.getPower(h1.getUtilizationEstimation()));
         }
 
         // *** Estimate power consumption from all hosts ***
@@ -89,18 +99,7 @@ public class Scheduler extends RandomRunner {
         // .thenComparing((PowerVm p) ->
         // ((PowerHost)p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD) ));
 
-        List<PowerVm> powerVmsOrderByPowerConsumption = new ArrayList<>((List<PowerVm>) (Object) (RandomRunner.vmList)); // asc,
-                                                                                                                         // according
-                                                                                                                         // with
-                                                                                                                         // the
-                                                                                                                         // hosts
-                                                                                                                         // power
-                                                                                                                         // consumption
-                                                                                                                         // and
-                                                                                                                         // the
-                                                                                                                         // initial
-                                                                                                                         // policy
-                                                                                                                         // allocation
+        List<PowerVm> powerVmsOrderByPowerConsumption = new ArrayList<>((List<PowerVm>) (Object) (RandomRunner.vmList)); 
         powerVmsOrderByPowerConsumption.sort(
                 Comparator
                         .comparingDouble(
@@ -110,6 +109,25 @@ public class Scheduler extends RandomRunner {
         for (PowerHost host : powerHostsOrderByPowerConsumption) {
             System.out.println(host.getId() + " " + host.getPowerEstimation());
         }
+
+
+         /**
+         * CLOUDLETS UTILIZATION CPU ESTIMATION
+         * Estimated average using the cpu utilization model of the first 10 intervals
+         * This is a estimated value when all the hosts are started (in this simulation
+         * all the vms and hosts start at the same time)
+         * However, during the simulation this value is going to be changed depending on
+         * the finish cloudlets time or vm migrations
+         **/
+        for(Cloudlet cloudlet : cloudletList){
+            double avg = 0.0d;
+            for(int i = 1; i <= 10; i++)
+                avg += cloudlet.getUtilizationOfCpu(((double)i)*Constants.SCHEDULING_INTERVAL);
+            avg /= 10;
+            cloudlet.setUtilizationOfCpuEstimation(avg);
+        }
+
+
 
         System.out.println("Info Vms Ordered By VM mips and Host Power Consumption ************");
         for (PowerVm p : powerVmsOrderByPowerConsumption) {

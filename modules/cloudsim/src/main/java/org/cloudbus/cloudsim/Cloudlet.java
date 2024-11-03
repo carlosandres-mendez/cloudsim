@@ -25,6 +25,8 @@ import org.cloudbus.cloudsim.core.CloudSim;
  */
 public class Cloudlet {
 
+    public double utilizationOfCpuEstimation;
+
     /**
      * The cloudlet ID.
      */
@@ -1659,6 +1661,14 @@ public class Cloudlet {
     @Override
     public String toString() {
         return "Cloudlet [cloudletId=" + cloudletId + "]";
+    }
+
+    public double getUtilizationOfCpuEstimation() {
+        return utilizationOfCpuEstimation;
+    }
+
+    public void setUtilizationOfCpuEstimation(double utilizationOfCpuEstimation) {
+        this.utilizationOfCpuEstimation = utilizationOfCpuEstimation;
     }
 
 }

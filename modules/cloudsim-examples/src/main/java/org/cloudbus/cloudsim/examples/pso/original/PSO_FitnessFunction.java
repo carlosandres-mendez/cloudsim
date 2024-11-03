@@ -18,6 +18,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
     List<PowerVm> vmList;
     List<PowerHost> hostList;
 
+    protected double hostUtilization[];
     protected double hostTurnAroundTime[]; //execution time for each host considering the tasks are going to process if no SLA 
     protected double vmTurnAroundTime[]; //execution time for each vm considering the tasks are going to process
     protected double vmUtilization[]; //utilization for each host
@@ -27,6 +28,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         this.vmList = vmList;
         this.hostList = hostList;
 
+        hostUtilization = new double[hostList.size()];
         hostTurnAroundTime = new double[hostList.size()];
         vmTurnAroundTime = new double[vmList.size()];
         vmUtilization = new double[vmList.size()]; 
@@ -36,10 +38,22 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
     public double evaluate(double[] position) {
 
+        /**
+         * CLEAN ARRAYS in this method invocation
+         */
+        for(PowerHost host : hostList){
+            hostUtilization[host.getId()] = 0.0d;
+            hostTurnAroundTime[host.getId()] = 0.0d;
+        }
+
+        for(PowerVm vm : vmList){
+            vmTurnAroundTime[vm.getId()] = 0.0d;
+            vmUtilization[vm.getId()] = 0.0d;
+        }
 
         /**
-         * NUMBER OF HOSTS in the position array
-         * It is obtained from the vm, because each vm contains the host 
+         * NUMBER OF HOSTS AND VMS in the position array
+         * Host is obtained from the vm, because each vm was asociated with the host, according to the allocation policy
          */
 
         int numberOfHosts = 0;
@@ -66,12 +80,10 @@ public class PSO_FitnessFunction extends FitnessFunction{
  *              defined in terms of Millions Instructions Per Second (MIPS) rating]
  *              see org.cloudbus.cloudsim.provisioners.PeProvisioner.Pe.java
 **/
-        for(PowerHost host : hostList)
-            hostTurnAroundTime[host.getId()] = 0.0d;
 
         //For each host we are going to calculate the execution time using the cloudlets mips it has to process
         for(PowerVm vm : vmList){
-            //sum all cloudlet the host has to process
+            //FOR EACH CLOUDLET the host has to process
             for(int i=0; i< position.length; i++){
                 if((int)position[i]==vm.getId())
                     hostTurnAroundTime[vm.getHost().getId()]+= clouletList.get(i).getCloudletLength();
@@ -97,9 +109,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
         //For each vm we are going to calculate the execution time using the cloudlets mips it has to process
         for(PowerVm vm : vmList){
-            //clear
-            vmTurnAroundTime[vm.getId()] = 0.0d;
-            //sum all cloudlet the vm has to process
+            //FOR EACH CLOUDLET the vm has to process
             for(int i=0; i< position.length; i++){
                 if((int)position[i]==vm.getId())
                     vmTurnAroundTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
@@ -107,6 +117,22 @@ public class PSO_FitnessFunction extends FitnessFunction{
             //consider the vm capacity
             vmTurnAroundTime[vm.getId()] = vmTurnAroundTime[vm.getId()] / vm.getMips() * (double)vm.getNumberOfPes();
         } 
+
+
+/**
+ *      HOSTS UTILIZATION In this Particle position (in this solution)
+ *      Estimated by the total of vm mips the host has to process 
+**/        
+        for (PowerHost host : hostList) {
+            if(hostIds.contains(host.getId())){
+                double vmsMIPS = 0.0d;
+                for (Vm vm : host.getVmList()) {
+                    vmsMIPS += vm.getMips() * vm.getNumberOfPes();
+                }
+                hostUtilization[host.getId()] = vmsMIPS / (double) host.getTotalMips();
+            }
+        }
+
    
 /**
  *      NUMBER OF HOSTS WITH OVER UTILIZATION
@@ -115,12 +141,17 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
         int numberHostOverUtilized = 0;
         for(PowerHost host : hostList){ 
-            if(host.getUtilizationEstimation()>Constants.UTILIZATION_THRESHOLD)
-                numberHostOverUtilized++;
+            if(hostIds.contains(host.getId())){
+                if(hostUtilization[host.getId()]>Constants.UTILIZATION_THRESHOLD)
+                    numberHostOverUtilized++;
+            }
         }
 
+        double SLA = numberHostOverUtilized / (double)numberOfHosts;
+
 /**
- *      TOTAL UTILIZATION HOSTS MIPS of this solution (Estimated Resource Utilization)
+ *      CONSOLIDATION INDICATOR
+ *      TOTAL UTILIZATION HOSTS MIPS In this Particle position (in this solution) (Estimated Resource Utilization)
  *      We want to minimize the number of available mips in the datacenter.
  *      This sum all the available mips of only the hosts of the especific solucion/allocation (particle position)
 **/ 
@@ -130,32 +161,46 @@ public class PSO_FitnessFunction extends FitnessFunction{
         double hostsTotalMips = 0.0d;
         for(PowerHost host : hostList){
             if(hostIds.contains(host.getId())){ //considering only hosts in the this especific solucion/allocation (particle position)
-                hostsUtiliMips += host.getUtilizationEstimation()*(double)host.getTotalMips();
+                hostsUtiliMips += hostUtilization[host.getId()]*(double)host.getTotalMips();
                 hostsTotalMips += host.getTotalMips();
             }
         }
 
-        double hostResourceUtilization = hostsUtiliMips/hostsTotalMips;
+        double consolidation = hostsUtiliMips/hostsTotalMips;
 
 /**
- *      ENERGY
+ *      ENERGY In this Particle position (in this solution)
  *      Estimated by the estimated host utilization
 **/ 
-        double totalDatacenterPowerConsumption=0.0d;
-        for(PowerHost host : hostList){
-            if(hostIds.contains(host.getId())){ //considering only hosts in the this especific solucion/allocation (particle position)
-                    totalDatacenterPowerConsumption += (host.getPower(host.getUtilizationEstimation())*hostTurnAroundTime[host.getId()]); //Constants.UTILIZATION_THRESHOLD
-            }
-        }
-
-        //normalize: make the value comparable by changing the value from 0 to 1
-        double worstDatacenterPowerConsumption = 0.0d;
         double maxHostPower = 0.0d;
         for(PowerHost host : hostList)
-            maxHostPower = Math.max(maxHostPower, host.getPower(Constants.UTILIZATION_THRESHOLD));
-        //worstDatacenterPowerConsumption is an estimation. what is higher? one host processing all tasks or all hosts processing all the tasks?
-        worstDatacenterPowerConsumption = Math.max(maxHostPower*maxHostTurnAroundTime,(double)hostList.size()*((double)Constants.CLOUDLET_LENGTH)/((double)Constants.HOST_MIPS[0])*2.0d);
-        totalDatacenterPowerConsumption = totalDatacenterPowerConsumption / worstDatacenterPowerConsumption;
+            maxHostPower = Math.max(maxHostPower, host.getPower(1));
+
+        double totalDatacenterPowerConsumption=0.0d;
+        if(Constants.POWER_CONSUMPTION_ESTIMATED_BY_HTT){
+            for(PowerHost host : hostList){
+                if(hostIds.contains(host.getId())){ //considering only hosts in the this especific solucion/allocation (particle position)
+                        totalDatacenterPowerConsumption += (hostUtilization[host.getId()]*hostTurnAroundTime[host.getId()]); 
+                }
+            }
+
+            //normalize: make the value comparable by changing the value from 0 to 1
+            double worstDatacenterPowerConsumption = 0.0d;
+
+            //worstDatacenterPowerConsumption is an estimation. what is higher? one host processing all tasks or all hosts processing all the tasks?
+            worstDatacenterPowerConsumption = Math.max(maxHostPower*maxHostTurnAroundTime,(double)hostList.size()*((double)Constants.CLOUDLET_LENGTH)/((double)Constants.HOST_MIPS[0])*2.0d);
+            totalDatacenterPowerConsumption = totalDatacenterPowerConsumption / worstDatacenterPowerConsumption;
+        }
+        else{
+
+            for(PowerHost host : hostList){
+                if(hostIds.contains(host.getId())){ //considering only hosts in the this especific solucion/allocation (particle position)
+                        totalDatacenterPowerConsumption += (host.getPower(hostUtilization[host.getId()])); 
+                }
+            }
+            totalDatacenterPowerConsumption = totalDatacenterPowerConsumption / (maxHostPower * (double)hostList.size());
+        }
+
 
 /**
  *      MAKESPAN
@@ -205,6 +250,12 @@ public class PSO_FitnessFunction extends FitnessFunction{
         //desbalancing degree calculated as the variance of vmTurnAroundTime
         double desbalancing = calcularDesviacionEstandar(normalizarDatos(hostTurnAroundTime,0,maxHostTurnAroundTime)); //vmExecutionTime
 
+        //balancing degree calculated as the variance of host or vms balancing
+        double hostBalancingDegree = (double)numberOfHosts / (double)hostList.size();
+        double vmsBalancingDegree = (double)numberOfVms / (double)vmList.size();
+        desbalancing = 0.25*(1-hostBalancingDegree) + 0.25*(1-vmsBalancingDegree) + desbalancing;
+
+
         //desbalancingDegree normalized
         //double maxVariance = maxHostTurnAroundTime*maxHostTurnAroundTime/4;
         //desbalancingDegree = desbalancingDegree/maxVariance;
@@ -215,10 +266,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         // desbalancingDegree = desbalancingDegree/maxVariance;
         // double balancingDegree = 1 - desbalancingDegree;
 
-        //balancing degree calculated as the variance of host or vms balancing
-        // double hostBalancingDegree = (double)numberOfHosts / hostList.size();
-        // double vmsBalancingDegree = (double)numberOfVms / vmList.size();
-        // double balancingDegree = hostBalancingDegree * vmsBalancingDegree;
+
 
         //objetive function
         double weight1 = 0.2d;
@@ -228,11 +276,12 @@ public class PSO_FitnessFunction extends FitnessFunction{
         double weight5 = 0.2d;
 
         weight4 *= 2; // desviacion estandar goes from 0 to 0.5
-        double functOutput =  1.0d/((weight1 * totalDatacenterPowerConsumption) 
-            + (weight2 * (1.0d-hostResourceUtilization)) //this can be read resource sub utilization
+        double functOutput =  1.0d/(
+              (weight1 * (0.75*totalDatacenterPowerConsumption + 0.25*migrationCost)) 
+            + (weight2 * (1.0d-consolidation)) 
             + (weight3 * makespan) 
             + (weight4 * desbalancing) 
-            + (weight5 * migrationCost));
+            + (weight5 * SLA));
 
 /**
  *      This is when we need to validate, for example in containers

@@ -88,7 +88,7 @@ public class Helper extends org.cloudbus.cloudsim.examples.power.Helper {
 		return sum / array1.length;
 	}
 
-	public static List<List<Allocation>> createInitPoblation(List<Cloudlet> cloudletList, List<PowerVm> vmList,
+	public static List<List<Allocation>> createInitPoblationSizeEqualToNumberOfCloulets(List<Cloudlet> cloudletList, List<PowerVm> vmList,
 			List<PowerHost> hostList) {
 
 		// Number of subsets of particles, ej. {idX}, {idY,idZ}, ..., {idX..N}
@@ -123,6 +123,53 @@ public class Helper extends org.cloudbus.cloudsim.examples.power.Helper {
 				poblation.add(particle);
 			}
 		}
+		return poblation;
+	}
+
+	public static List<List<Allocation>> createInitPoblationBalanced(List<Cloudlet> cloudletList, List<PowerVm> vmList, List<PowerHost> hostList) {
+
+		List<List<Allocation>> poblation = new ArrayList<>();
+
+		for (int i = 1; i <= Constants.NUM_PARTICLES; i++) {
+
+			List<PowerVm> vmRandomList = new ArrayList<>(vmList);
+			Collections.shuffle(vmRandomList);
+
+			List<Allocation> particle = new ArrayList<>();
+			for (Cloudlet cloudlet : cloudletList) {
+				Allocation positionAllocation = new Allocation(
+						cloudlet,
+						vmRandomList.get(cloudlet.getCloudletId() % vmRandomList.size()),
+						hostList.get((int) (Math.random() * (double) hostList.size())));
+				particle.add(positionAllocation);
+			}
+			poblation.add(particle);
+		}		
+
+		return poblation;
+	}	
+
+	public static List<List<Allocation>> createInitPoblation(List<Cloudlet> cloudletList, List<PowerVm> vmList, List<PowerHost> hostList) {
+
+		List<List<Allocation>> poblation = new ArrayList<>();
+
+		for (int i = 1; i <= Constants.NUM_PARTICLES; i++) {
+
+			List<PowerVm> vmRandomList = new ArrayList<>(vmList);
+			//Collections.shuffle(vmRandomList);
+			
+			List<Allocation> particle = new ArrayList<>();
+			for (Cloudlet cloudlet : cloudletList) {
+				Allocation positionAllocation = new Allocation(
+						cloudlet,
+						vmRandomList.get(((int)((double)cloudlet.getCloudletId()*((double)i/(double)Constants.NUM_PARTICLES) 
+							+ ((double)vmRandomList.size()*(1.0d-((double)i/(double)Constants.NUM_PARTICLES)))) + i*5 ) % vmRandomList.size()),
+						hostList.get((int) (Math.random() * (double) hostList.size())));
+				particle.add(positionAllocation);
+			}
+			poblation.add(particle);
+		}		
+
 		return poblation;
 	}
 
