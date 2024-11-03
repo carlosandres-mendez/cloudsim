@@ -2,6 +2,7 @@ package org.cloudbus.cloudsim.examples.pso.discrete;
 
 import java.util.*;
 
+import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.examples.power.random.RandomConstants;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.PlanetLabRunner;
@@ -31,6 +32,10 @@ public class Discrete_Particle {
     
     /** Aditional info generated in the evaluation process */
     double vmTurnAroundTime[]; //execution time for each vm considering the tasks are going to process
+
+    Map<Integer, List<Cloudlet>> vmCloudletsMap;
+
+    double vmUtilization[]; //utilization for each vm
 
     //-------------------------------------------------------------------------
     // Constructors
@@ -159,7 +164,7 @@ public class Discrete_Particle {
     }
 
     public double[] getVmTurnAroundTime() {
-        return vmTurnAroundTime;
+        return this.vmTurnAroundTime;
     }
 
 	public void copyVmTurnAroundTime(double vmTurnAroundTime[]) {
@@ -167,6 +172,26 @@ public class Discrete_Particle {
 		for (int i = 0; i < vmTurnAroundTime.length; i++)
             this.vmTurnAroundTime[i] = vmTurnAroundTime[i];
 	}
+
+    public Map<Integer, List<Cloudlet>> getVmCloudletsMap() {
+        return vmCloudletsMap;
+    }
+
+    public void copyVmCloudletsMap(Map<Integer, List<Cloudlet>> vmCloudletsMap){
+        this.vmCloudletsMap = new HashMap<>();
+        for (Map.Entry<Integer, List<Cloudlet>> entry : vmCloudletsMap.entrySet()) 
+            this.vmCloudletsMap.put(entry.getKey(), entry.getValue());
+    }
+
+    public double[] getVmUtilization(){
+        return this.vmUtilization;
+    }
+
+    public void copyVmUtilization(double[] vmUtilization){
+        this.vmUtilization = new double[this.getDimension()];
+		for (int i = 0; i < vmUtilization.length; i++)
+            this.vmUtilization[i] = vmUtilization[i];
+    }
 
     /** Printable string */
     /** 

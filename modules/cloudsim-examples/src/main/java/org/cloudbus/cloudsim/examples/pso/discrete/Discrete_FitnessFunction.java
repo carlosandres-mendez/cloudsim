@@ -30,6 +30,8 @@ public class Discrete_FitnessFunction extends PSO_FitnessFunction{
 		double fit = evaluate(positionArray);
 		particle.setFitness(fit, super.isMaximize());
 		particle.copyVmTurnAroundTime(super.vmTurnAroundTime);
+		particle.copyVmCloudletsMap(super.vmCloudletsMap);
+		particle.copyVmUtilization(super.vmUtilization);
 
 		return fit;
 	}

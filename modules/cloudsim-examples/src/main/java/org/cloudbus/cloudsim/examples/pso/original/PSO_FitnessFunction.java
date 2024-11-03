@@ -24,7 +24,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
     protected double hostUtilization[];
     protected double hostTurnAroundTime[]; //execution time for each host considering the tasks are going to process if no SLA 
     protected double vmTurnAroundTime[]; //execution time for each vm considering the tasks are going to process
-    protected double vmUtilization[]; //utilization for each host
+    protected double vmUtilization[]; //utilization for each vm
     protected Map<Integer, List<Cloudlet>> vmCloudletsMap;
 
     public PSO_FitnessFunction(List<Cloudlet> clouletList, List<PowerVm> vmList, List<PowerHost> hostList){
@@ -137,6 +137,21 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
 
 /**
+ *      VMS UTILIZATION In this Particle position (in this solution)
+ *      Estimated by the sum of estimated cpu utilization of cloudlets
+**/ 
+
+        for(PowerVm vm : vmList){
+            if(vmCloudletsMap.containsKey(vm.getId())){
+                for (Cloudlet cloudlet : vmCloudletsMap.get(vm.getId())) {
+
+                    vmUtilization[vm.getId()] += cloudlet.getUtilizationOfCpuEstimation();
+                }
+                
+            }
+        }
+
+/**
  *      HOSTS UTILIZATION In this Particle position (in this solution)
  *      Estimated by the total of vm mips the host has to process in each cloudlet
  *      In other words, estimated by the utilization ratio of the host that considers the utilization ratio of the vms in each
@@ -145,9 +160,9 @@ public class PSO_FitnessFunction extends FitnessFunction{
             if(hostIds.contains(host.getId())){
                 double vmsMIPS = 0.0d;
                 for (Vm vm : host.getVmList()) {
-                    for (Cloudlet cloudlet : vmCloudletsMap.get(vm.getId())) {
+                    if(vmCloudletsMap.containsKey(vm.getId())){
 
-                        vmsMIPS += (vm.getMips() * (double)vm.getNumberOfPes() * cloudlet.getUtilizationOfCpuEstimation());
+                        vmsMIPS += (vm.getMips() * (double)vm.getNumberOfPes() * vmUtilization[vm.getId()]);
                     }
                 }
                 hostUtilization[host.getId()] = vmsMIPS / (double) host.getTotalMips();
@@ -339,11 +354,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
  */
 
         //print results
-        System.out.print("--------- evaluate ");
-        for(int i=0;i<position.length;i++) {
-            System.out.print(position[i]+" ");
-        }
-        System.out.println(functOutput);
+        // System.out.print("--------- evaluate ");
+        // for(int i=0;i<position.length;i++) {
+        //     System.out.print(position[i]+" ");
+        // }
+        // System.out.println(functOutput);
 
         return functOutput;
 	}
