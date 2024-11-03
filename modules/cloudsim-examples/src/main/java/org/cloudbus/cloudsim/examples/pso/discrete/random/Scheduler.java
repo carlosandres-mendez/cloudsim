@@ -151,7 +151,7 @@ public class Scheduler extends RandomRunner {
                         RandomRunner.hostList),
                 RandomRunner.hostList, (List<PowerVm>) (Object) (RandomRunner.vmList), cloudletList);
         swarm.setParticleUpdate(
-                new Discrete_ParticleUpdate(powerHostsOrderByPowerConsumption, powerVmsOrderByPowerConsumption));
+                new Discrete_ParticleUpdate(powerHostsOrderByPowerConsumption, powerVmsOrderByPowerConsumption, cloudletList));
         swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
         swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
         swarm.setInertia(Constants.INERTIA_WEIGHT);

@@ -34,9 +34,10 @@ public class Discrete_ParticleUpdate {
         //not implemented the default dehaviour
     }
  
-    public Discrete_ParticleUpdate(List<PowerHost> powerHostsOrderByPowerConsumption, List<PowerVm> powerVmsOrderByPowerConsumption) {
+    public Discrete_ParticleUpdate(List<PowerHost> powerHostsOrderByPowerConsumption, List<PowerVm> powerVmsOrderByPowerConsumption, List<Cloudlet> cloudlets) {
         this.powerHostsOrderByPowerConsumption = powerHostsOrderByPowerConsumption;
         this.powerVmsOrderByPowerConsumption = powerVmsOrderByPowerConsumption;
+        this.cloudlets = cloudlets;
     }
 
     /** Update particle's velocity and position */
@@ -99,7 +100,7 @@ public class Discrete_ParticleUpdate {
             else if(velocityBestPersonalMap.containsKey(cloudlet.getCloudletId()))
                 numberList=2;
 
-            else 
+            else if(velocityBestGlobalMap.containsKey(cloudlet.getCloudletId()))
                 numberList=3;
 
             switch(numberList){
