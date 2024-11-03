@@ -84,13 +84,13 @@ public class Discrete_ParticleUpdate {
         for(Cloudlet cloudlet : cloudlets){
             int numberList = 0;
             if(velocityInertiaMap.containsKey(cloudlet.getCloudletId()) && velocityBestPersonalMap.containsKey(cloudlet.getCloudletId()) 
-                && velocityBestPersonalMap.containsKey(cloudlet.getCloudletId())){
+                && velocityBestGlobalMap.containsKey(cloudlet.getCloudletId())){
                     numberList = (int)(Math.random() * 3) + 1; 
                 }
             else if(velocityInertiaMap.containsKey(cloudlet.getCloudletId()) && velocityBestPersonalMap.containsKey(cloudlet.getCloudletId())){
                 numberList = (int)(Math.random() * 2) + 1; 
             }
-            else if(velocityBestPersonalMap.containsKey(cloudlet.getCloudletId()) && velocityBestPersonalMap.containsKey(cloudlet.getCloudletId())){
+            else if(velocityBestPersonalMap.containsKey(cloudlet.getCloudletId()) && velocityBestGlobalMap.containsKey(cloudlet.getCloudletId())){
                 numberList = (int)(Math.random() * 2) + 1; 
                 numberList++;
             }
@@ -122,6 +122,8 @@ public class Discrete_ParticleUpdate {
                      */
                     if(Math.random()<0.5)
                         nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityBestGlobalMap.get(cloudlet.getCloudletId()).getVm());
+                    break;
+                default:
                     
             }
         }
