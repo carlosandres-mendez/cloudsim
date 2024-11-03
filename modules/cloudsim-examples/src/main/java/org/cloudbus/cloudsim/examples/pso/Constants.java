@@ -21,8 +21,8 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 	 * Added for PSO Original and discrete
 	 */
 
-	//public final static int NUM_PARTICLES	= 1052; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
-	public final static int NUM_PARTICLES	= 10; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
+	public final static int NUM_PARTICLES	= 105; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
+	//public final static int NUM_PARTICLES	= 10; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
 
 	public final static int NUM_ITERATIONS	= 125;
     
@@ -37,8 +37,8 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 		James Kennedy && Daniel Bratton, 2007. Defining a Standard for Particle Swarm Optimization 
 		
 		In this discrete PSO, inertia weight should be from 0 to D (dimension size), indicating the number of the current velocity is going to remain in the next velocity */
-    //public final static int INERTIA_WEIGHT = 300; //Planetlab
-	public final static int INERTIA_WEIGHT = 14; //Random
+    public final static int INERTIA_WEIGHT = 526; //Planetlab
+	//public final static int INERTIA_WEIGHT = 50; //Random
 
     //The cognitive acceleration coefficient c1.
     public final static double COGNIT_COEFFICIENT = 0.5d;
@@ -49,6 +49,6 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 	//Metrics related
 
 	//Power consumption estimated by the host turn around time
-	public final static boolean POWER_CONSUMPTION_ESTIMATED_BY_HTT = false;
+	public final static boolean POWER_CONSUMPTION_ESTIMATED_BY_HTT = false; 
 
 }

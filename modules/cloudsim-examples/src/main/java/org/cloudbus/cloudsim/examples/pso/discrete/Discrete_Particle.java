@@ -12,8 +12,8 @@ import org.cloudbus.cloudsim.examples.pso.PlanetLabRunner;
  */
 public class Discrete_Particle {
 
-    int NUMBER_OF_VMS = RandomConstants.NUMBER_OF_VMS;
-    //int NUMBER_OF_VMS = PlanetLabRunner.NUMBER_OF_VMS;
+    //int NUMBER_OF_VMS = RandomConstants.NUMBER_OF_VMS;
+    int NUMBER_OF_VMS = PlanetLabRunner.NUMBER_OF_VMS;
 
     /** Best fitness function so far */
     double bestFitness;

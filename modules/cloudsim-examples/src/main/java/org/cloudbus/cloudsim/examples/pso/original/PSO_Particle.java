@@ -9,8 +9,8 @@ import net.sourceforge.jswarm_pso.Particle;
 
 public class PSO_Particle extends Particle{
 
-    int NUMBER_OF_VMS = RandomConstants.NUMBER_OF_VMS;
-    //int NUMBER_OF_VMS = PlanetLabRunner.NUMBER_OF_VMS;
+    //int NUMBER_OF_VMS = RandomConstants.NUMBER_OF_VMS;
+    int NUMBER_OF_VMS = PlanetLabRunner.NUMBER_OF_VMS;
 
     public PSO_Particle(int dimention, double[] position, double[] velocity){
         super(dimention);
