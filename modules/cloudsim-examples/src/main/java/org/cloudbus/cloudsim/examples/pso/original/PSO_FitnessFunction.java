@@ -287,6 +287,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
         //desbalancing degree calculated as the variance of vmTurnAroundTime
         double desbalancing = calcularDesviacionEstandar(normalizarDatos(hostTurnAroundTime,0,maxHostTurnAroundTime)); //vmExecutionTime
+        desbalancing *= 2; //desviacion estandar goes from 0 to 0.5
 
         //balancing degree calculated as the variance of host or vms balancing
         double hostBalancingDegree = (double)numberOfHosts / (double)hostList.size();
@@ -304,16 +305,19 @@ public class PSO_FitnessFunction extends FitnessFunction{
         // desbalancingDegree = desbalancingDegree/maxVariance;
         // double balancingDegree = 1 - desbalancingDegree;
 
-
+        // double weight1 = 0.3d;
+        // double weight2 = 0.2d;
+        // double weight3 = 0.1d;
+        // double weight4 = 0.2d; 
+        // double weight5 = 0.3d;
 
         //objetive function
-        double weight1 = 0.3d;
-        double weight2 = 0.2d;
-        double weight3 = 0.1d;
-        double weight4 = 0.2d; 
-        double weight5 = 0.3d;
+        double weight1 = 2d;
+        double weight2 = 2d;
+        double weight3 = 2d;
+        double weight4 = 2d; 
+        double weight5 = 2d;
 
-        weight4 *= 2; // desviacion estandar goes from 0 to 0.5
         double functOutput =  1.0d/(
               (weight1 * (0.5*totalDatacenterPowerConsumption + 0.5*migrationCost)) 
             + (weight2 * (1.0d-consolidation)) 

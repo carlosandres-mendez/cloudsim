@@ -333,7 +333,7 @@ public class Discrete_ParticleUpdate {
      * @param numMaxDifferences null or the maximum number of differences between the actual position and the best position to generate
      * @return
      */
-    private List<Allocation> generatePossibleCombinationsHEURISTICA(Discrete_Particle bestParticle, Discrete_Particle particle, Double incrementCoefficient){
+    private List<Allocation> generatePossibleCombinationsHeuristicVmUtilization(Discrete_Particle bestParticle, Discrete_Particle particle, Double incrementCoefficient){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
         //Find different allocations between best position and the current position

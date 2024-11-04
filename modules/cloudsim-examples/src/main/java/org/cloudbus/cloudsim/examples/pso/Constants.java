@@ -24,7 +24,7 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 	public final static int NUM_PARTICLES	= 105; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
 	//public final static int NUM_PARTICLES	= 10; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
 
-	public final static int NUM_ITERATIONS	= 125;
+	public final static int NUM_ITERATIONS	= 80;
     
 	//The inertia Weight 
 	/**
