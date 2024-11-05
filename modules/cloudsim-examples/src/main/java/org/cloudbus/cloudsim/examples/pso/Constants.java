@@ -21,10 +21,10 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 	 * Added for PSO Original and discrete
 	 */
 
-	public final static int NUM_PARTICLES	= 105; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
+	public final static int NUM_PARTICLES	= 30520; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
 	//public final static int NUM_PARTICLES	= 10; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
 
-	public final static int NUM_ITERATIONS	= 80;
+	public final static int NUM_ITERATIONS	= 1;
     
 	//The inertia Weight 
 	/**
@@ -37,14 +37,14 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 		James Kennedy && Daniel Bratton, 2007. Defining a Standard for Particle Swarm Optimization 
 		
 		In this discrete PSO, inertia weight should be from 0 to D (dimension size), indicating the number of the current velocity is going to remain in the next velocity */
-    public final static int INERTIA_WEIGHT = 526; //Planetlab
+    public final static int INERTIA_WEIGHT = 0; //Planetlab
 	//public final static int INERTIA_WEIGHT = 50; //Random
 
     //The cognitive acceleration coefficient c1.
-    public final static double COGNIT_COEFFICIENT = 0.5d;
+    public final static double COGNIT_COEFFICIENT = 0d;
 
     //The social coefficient
-    public final static double SOCIAL_COEFFICIENT = 0.5d;
+    public final static double SOCIAL_COEFFICIENT = 0d;
 
 	//Metrics related
 

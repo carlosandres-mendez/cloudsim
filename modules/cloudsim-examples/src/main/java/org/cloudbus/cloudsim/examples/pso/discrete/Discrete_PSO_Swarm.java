@@ -162,7 +162,7 @@ public class Discrete_PSO_Swarm {
 		if (particles == null) init();
 
 		evaluate(); // Evaluate particles
-		update(); // Update positions and velocities
+		//update(); // Update positions and velocities
 	}
 
     	/**

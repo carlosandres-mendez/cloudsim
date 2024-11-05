@@ -311,12 +311,18 @@ public class PSO_FitnessFunction extends FitnessFunction{
         // double weight4 = 0.2d; 
         // double weight5 = 0.3d;
 
+        // double weight1 = 1d;
+        // double weight2 = 1d;
+        // double weight3 = 1d;
+        // double weight4 = 4d; 
+        // double weight5 = 3d;
+
         //objetive function
-        double weight1 = 2d;
-        double weight2 = 2d;
-        double weight3 = 2d;
-        double weight4 = 2d; 
-        double weight5 = 2d;
+        double weight1 = 2.3d;
+        double weight2 = 0.7d;
+        double weight3 = 0d;
+        double weight4 = 3.8d; 
+        double weight5 = 3.2d;
 
         double functOutput =  1.0d/(
               (weight1 * (0.5*totalDatacenterPowerConsumption + 0.5*migrationCost)) 

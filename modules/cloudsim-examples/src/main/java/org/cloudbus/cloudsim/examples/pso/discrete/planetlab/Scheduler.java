@@ -344,7 +344,7 @@ public class Scheduler extends PlanetLabRunner {
         Log.printLine("Finished " + experimentName);
     }
 
-    // @Override
+   //@Override
     protected void start2(String experimentName, String outputFolder, VmAllocationPolicy vmAllocationPolicy) {
         System.out.println("Starting " + experimentName);
 
@@ -430,16 +430,44 @@ public class Scheduler extends PlanetLabRunner {
 
                 broker.bindCloudletToVm(count, p.getId());
                 count++;
-                if (count == 50)
+                if (count == 1052)
                     break;
-                broker.bindCloudletToVm(count, p.getId());
-                count++;
-                if (count == 50)
-                    break;
-                broker.bindCloudletToVm(count, p.getId());
-                count++;
-                if (count == 50)
-                    break;
+                // broker.bindCloudletToVm(count, p.getId());
+                // count++;
+                // if (count == 1052)
+                //     break;
+                // broker.bindCloudletToVm(count, p.getId());
+                // count++;
+                // if (count == 1052)
+                //     break;
+                // broker.bindCloudletToVm(count, p.getId());
+                //     count++;
+                // if (count == 1052)
+                //     break;
+                // broker.bindCloudletToVm(count, p.getId());
+                //     count++;
+                // if (count == 1052)
+                //     break;
+                // broker.bindCloudletToVm(count, p.getId());
+                //     count++;
+                // if (count == 1052)
+                //     break;
+                // broker.bindCloudletToVm(count, p.getId());
+                //     count++;
+                // if (count == 1052)
+                //     break;  
+                // broker.bindCloudletToVm(count, p.getId()); 
+                //     count++;
+                // if (count == 1052)
+                //     break; //best
+                // broker.bindCloudletToVm(count, p.getId());
+                //     count++;
+                // if (count == 1052)
+                //     break; 
+                //     broker.bindCloudletToVm(count, p.getId());
+                //     count++;
+                // if (count == 1052)
+                //     break; 
             }
 
             /***
