@@ -41,10 +41,10 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 	//public final static int INERTIA_WEIGHT = 50; //Random
 
     //The cognitive acceleration coefficient c1.
-    public final static double COGNIT_COEFFICIENT = 0.5d;
+    public final static double COGNIT_COEFFICIENT = 0.9d;
 
     //The social coefficient
-    public final static double SOCIAL_COEFFICIENT = 0.5d;
+    public final static double SOCIAL_COEFFICIENT = 0.9d;
 
 	//Metrics related
 

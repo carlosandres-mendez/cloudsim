@@ -382,13 +382,23 @@ public class Discrete_ParticleUpdate {
             if(changedCloulets.size() < numPossibleCombinations){
                 if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
                     if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD){ //if we need to take off the cloudlet from the vm 
+
+                        List<Allocation> prueba = new ArrayList<>(particle.getPosition());
+                        Collections.shuffle(prueba);
                         
                         //if there is a vm in the same particle that fits (consolidation)
                         PowerVm vm = null;
-                        for(Allocation all : particle.getPosition()){
+                        double minPower = Double.MAX_VALUE;
+                        for(Allocation all : prueba){
                             double vmUtilization = particle.getVmUtilization()[all.getVm().getId()];
                             double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
                             if( vmUtilization + cloudletUtilizationCPU < Constants.VM_UTILIZATION_THRESHOLD){ 
+                                // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
+                                // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
+                                // if(power<minPower){
+                                //     minPower = power;
+                                //     vm = all.getVm();
+                                // }
                                 vm = all.getVm();
                                 break;
                             }
@@ -407,8 +417,17 @@ public class Discrete_ParticleUpdate {
                         }
 
                         if(vm==null){
-                            for(Allocation all : bestParticle.getBestPosition()){
+                            List<Allocation> prueba2 = new ArrayList<>(bestParticle.getBestPosition());
+                            Collections.shuffle(prueba2);
+
+                            for(Allocation all : prueba2){
                                 if(particle.getVmUtilization()[all.vm.getId()] + allocation.getCloudlet().getUtilizationOfCpuEstimation() < Constants.VM_UTILIZATION_THRESHOLD){
+                                    // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
+                                    // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
+                                    // if(power<minPower){
+                                    //     minPower = power;
+                                    //     vm = all.getVm();
+                                    // }
                                     vm = all.getVm();
                                     break;
                                 }
@@ -484,11 +503,11 @@ public class Discrete_ParticleUpdate {
                      else{
                         PowerHost hostAllocated = (PowerHost)allocation.getVm().getHost();
                         double hostUtilization = particle.getHostUtilization()[hostAllocated.getId()];
-                        double energyHostAllocated = hostAllocated.getPower(hostUtilization);
+                        double energyHostAllocated = hostAllocated.getPower(hostUtilization>1?1:hostUtilization);
 
                         PowerHost hostAllocatedBest = (PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost();
                         double hostUtilizationBest = particle.getHostUtilization()[hostAllocatedBest.getId()];
-                        double energyHostAllocatedBest =  hostAllocatedBest.getPower(hostUtilizationBest);
+                        double energyHostAllocatedBest =  hostAllocatedBest.getPower(hostUtilizationBest>1?1:hostUtilizationBest);
 
                         if(energyHostAllocated > energyHostAllocatedBest){
                         
@@ -532,12 +551,22 @@ public class Discrete_ParticleUpdate {
                 if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
                     //if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD){ //if we need to take off the cloudlet from the vm 
                         
+                    // List<Allocation> prueba = new ArrayList<>(particle.getPosition());
+                    // Collections.shuffle(prueba);
+
                         //if there is a vm in the same particle that fits (consolidation)
                         PowerVm vm = null;
+                        double minPower = Double.MAX_VALUE;
                         for(Allocation all : particle.getPosition()){
                             double vmUtilization = particle.getVmUtilization()[all.getVm().getId()];
                             double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
                             if( vmUtilization + cloudletUtilizationCPU < Constants.VM_UTILIZATION_THRESHOLD){ 
+                                // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
+                                // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
+                                // if(power<minPower){
+                                //     minPower = power;
+                                //     vm = all.getVm();
+                                // }
                                 vm = all.getVm();
                                 break;
                             }
@@ -556,8 +585,17 @@ public class Discrete_ParticleUpdate {
                         }
 
                         if(vm==null){
+                            // List<Allocation> prueba2 = new ArrayList<>(bestParticle.getBestPosition());
+                            // Collections.shuffle(prueba2);
+
                             for(Allocation all : bestParticle.getBestPosition()){
                                 if(particle.getVmUtilization()[all.vm.getId()] + allocation.getCloudlet().getUtilizationOfCpuEstimation() < Constants.VM_UTILIZATION_THRESHOLD){
+                                    // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
+                                    // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
+                                    // if(power<minPower){
+                                    //     minPower = power;
+                                    //     vm = all.getVm();
+                                    // }
                                     vm = all.getVm();
                                     break;
                                 }
@@ -706,25 +744,25 @@ public class Discrete_ParticleUpdate {
         // }
 
         //Apply any heuristic or intelligent process to change allocations that can be considered better options
-        for(Allocation allocation : difAllocPositiontions){
-            if(changedCloulets.size() < numPossibleCombinations){
-                if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
+        // for(Allocation allocation : difAllocPositiontions){
+        //     if(changedCloulets.size() < numPossibleCombinations){
+        //         if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
 
-                        //The vm to change the cloudlet is going to be the same used in the best position
-                        PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
+        //                 //The vm to change the cloudlet is going to be the same used in the best position
+        //                 PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
 
-                        possibleCombinations.add(
-                                new Allocation(
-                                        allocation.getCloudlet(),
-                                        vm, 
-                                        (PowerHost)vm.getHost())
-                        );
-                        changedCloulets.add(allocation.getCloudlet().getCloudletId());    
-                }
-            }
-            else 
-                break;
-        }
+        //                 possibleCombinations.add(
+        //                         new Allocation(
+        //                                 allocation.getCloudlet(),
+        //                                 vm, 
+        //                                 (PowerHost)vm.getHost())
+        //                 );
+        //                 changedCloulets.add(allocation.getCloudlet().getCloudletId());    
+        //         }
+        //     }
+        //     else 
+        //         break;
+        // }
 
         return possibleCombinations;
     }    
