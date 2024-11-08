@@ -650,21 +650,33 @@ public class Helper {
 	 * @param outputPath the output path
 	 */
 	public static void writeDataRow(String data, String outputPath) {
-		File file = new File(outputPath);
+		// File file = new File(outputPath);
+		// try {
+		// 	file.createNewFile();
+		// } catch (IOException e1) {
+		// 	e1.printStackTrace();
+		// 	System.exit(0);
+		// }
+		// try {
+		// 	BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+		// 	writer.write(data);
+		// 	writer.close();
+		// } catch (IOException e) {
+		// 	e.printStackTrace();
+		// 	System.exit(0);
+		// }
+
+
 		try {
-			file.createNewFile();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			System.exit(0);
-		}
-		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			FileWriter fw = new FileWriter(outputPath, true);
+			BufferedWriter writer = new BufferedWriter(fw);
 			writer.write(data);
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(0);
 		}
+		
 	}
 
 	/**

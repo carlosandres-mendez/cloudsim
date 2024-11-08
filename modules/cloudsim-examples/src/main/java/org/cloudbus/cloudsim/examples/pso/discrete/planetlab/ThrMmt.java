@@ -40,15 +40,24 @@ public class ThrMmt {
 		String vmSelectionPolicy = "mmt"; // Minimum Migration Time (MMT) VM selection policy
 		String parameter = String.valueOf(Constants.UTILIZATION_THRESHOLD); // the static utilization threshold
 
-		new Scheduler(
-				enableOutput,
-				outputToFile,
-				inputFolder,
-				outputFolder,
-				workload,
-				vmAllocationPolicy,
-				vmSelectionPolicy,
-				parameter);
+		for(double i=0;i<1;i += 0.1){
+			for(double j=1-i;j<1;j += 0.1){
+				for(double k=1-j;k<1;k += 0.1){
+					System.out.println(i+" "+j+" "+k);
+					
+
+					new Scheduler(
+							enableOutput,
+							outputToFile,
+							inputFolder,
+							outputFolder,
+							workload,
+							vmAllocationPolicy,
+							vmSelectionPolicy,
+							parameter,1-i,i,i,i);
+				}
+			}
+		}
 	}
 
 }

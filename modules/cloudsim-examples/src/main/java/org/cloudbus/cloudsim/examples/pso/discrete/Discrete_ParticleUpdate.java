@@ -344,10 +344,10 @@ public class Discrete_ParticleUpdate {
      * @return
      */
     private List<Allocation> generatePossibleCombinations(Discrete_Particle bestParticle, Discrete_Particle particle, Double incrementCoefficient){
-        System.out.println("--------- Position--------->");
-        for(int i=0;i<particle.getPosition().size();i++) {
-            System.out.print(particle.getPosition().get(i).getVm().getId()+" ");
-        }
+        // System.out.println("--------- Position--------->");
+        // for(int i=0;i<particle.getPosition().size();i++) {
+        //     System.out.print(particle.getPosition().get(i).getVm().getId()+" ");
+        // }
 
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
@@ -461,7 +461,7 @@ public class Discrete_ParticleUpdate {
             if(changedCloulets.size() < numPossibleCombinations){
                 if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
                     if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD){ //if we need to take off the cloudlet from the vm 
-                        System.out.println("ALERTA");
+                         //System.out.println("ALERTA");
                      }
                      else if((((PowerHost)allocation.getVm().getHost()).getPowerEstimation() //or vm is not overutilized but energy can improve
                                   > ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getPowerEstimation())
@@ -497,7 +497,7 @@ public class Discrete_ParticleUpdate {
             if(changedCloulets.size() < numPossibleCombinations){
                 if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
                     if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD){ //if we need to take off the cloudlet from the vm 
-                        System.out.println("ALERTA");
+                        //System.out.println("ALERTA");
                      }
                       //or vm is not overutilized but energy can improve
                      else{
@@ -625,16 +625,16 @@ public class Discrete_ParticleUpdate {
 
 
 
-        System.out.print("\nBEst> ");
-        for(int i=0;i<bestParticle.getBestPosition().size();i++) {
-            System.out.print(bestParticle.getBestPosition().get(i).getVm().getId()+" ");
-        }
-        System.out.println();
-        System.out.print("New P>");
-        for(int i=0;i<particle.getPosition().size();i++) {
-            System.out.print(particle.getPosition().get(i).getVm().getId()+" ");
-        }
-        System.out.println(" diffs> "+difAllocPositiontions.size() + "  " +changedCloulets.size());
+        // System.out.print("\nBEst> ");
+        // for(int i=0;i<bestParticle.getBestPosition().size();i++) {
+        //     System.out.print(bestParticle.getBestPosition().get(i).getVm().getId()+" ");
+        // }
+        // System.out.println();
+        // System.out.print("New P>");
+        // for(int i=0;i<particle.getPosition().size();i++) {
+        //     System.out.print(particle.getPosition().get(i).getVm().getId()+" ");
+        // }
+        // System.out.println(" diffs> "+difAllocPositiontions.size() + "  " +changedCloulets.size());
 
 
         //Apply any heuristic or intelligent process to change allocations that can be considered better options

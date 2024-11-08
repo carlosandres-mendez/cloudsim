@@ -32,6 +32,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
     protected double desbalancingObjetive;
     protected double slaObjetive;
 
+    double weight1 = 0.3d;
+    double weight2 = 0.2d;
+    double weight3 = 0.2d;
+    double weight4 = 0.3d;
+
     public PSO_FitnessFunction(List<Cloudlet> clouletList, List<PowerVm> vmList, List<PowerHost> hostList){
         this.clouletList = clouletList;
         this.vmList = vmList;
@@ -312,7 +317,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
 
         // double hostBalancingDegree = (double)numberOfHosts / (double)hostList.size();
         // double vmsBalancingDegree = (double)numberOfVms / (double)vmList.size();
-        // desbalancing = 0.25*(1-hostBalancingDegree) + 0.25*(1-vmsBalancingDegree) + desbalancing;
+        // desbalancing = 0.19*(1-hostBalancingDegree) + 0.19*(1-vmsBalancingDegree) + 0.62*desbalancing;
 
 
         //desbalancingDegree normalized
@@ -332,10 +337,6 @@ public class PSO_FitnessFunction extends FitnessFunction{
         // double weight5 = 0.3d;
 
         //objetive function
-        double weight1 = 2.5d;
-        double weight2 = 2.5d;
-        double weight3 = 2.5d;
-        double weight4 = 2.5d;
         
         powerConsumptionObjetive = (0.4*totalDatacenterPowerConsumption + 0.2*migrationCost + 0.4*(1.0d-consolidation));
         makespanObjetive = makespan;
@@ -381,11 +382,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
  */
 
         //print results
-        System.out.print("--------- evaluate ");
-        for(int i=0;i<position.length;i++) {
-            System.out.print(position[i]+" ");
-        }
-        System.out.println(functOutput);
+        // System.out.print("--------- evaluate ");
+        // for(int i=0;i<position.length;i++) {
+        //     System.out.print(position[i]+" ");
+        // }
+        // System.out.println(functOutput);
 
         return functOutput;
 	}
@@ -483,4 +484,37 @@ public class PSO_FitnessFunction extends FitnessFunction{
         return cargasNormalizadas;
     }
 
+    public double getWeight1() {
+        return weight1;
+    }
+
+    public void setWeight1(double weight1) {
+        this.weight1 = weight1;
+    }
+
+    public double getWeight2() {
+        return weight2;
+    }
+
+    public void setWeight2(double weight2) {
+        this.weight2 = weight2;
+    }
+
+    public double getWeight3() {
+        return weight3;
+    }
+
+    public void setWeight3(double weight3) {
+        this.weight3 = weight3;
+    }
+
+    public double getWeight4() {
+        return weight4;
+    }
+
+    public void setWeight4(double weight4) {
+        this.weight4 = weight4;
+    }
+
+    
 }

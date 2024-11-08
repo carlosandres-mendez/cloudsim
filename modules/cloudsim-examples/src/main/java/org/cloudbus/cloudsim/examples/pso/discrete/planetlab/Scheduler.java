@@ -49,7 +49,7 @@ public class Scheduler extends PlanetLabRunner {
 			String workload,
 			String vmAllocationPolicy,
 			String vmSelectionPolicy,
-			String parameter) {
+			String parameter, double w1, double w2, double w3, double w4) {
 		super(
 				enableOutput,
 				outputToFile,
@@ -186,11 +186,13 @@ public class Scheduler extends PlanetLabRunner {
         swarm.setNumberOfParticles(Constants.NUM_PARTICLES);
         swarm.setParticles(particles);
 
+        double[] fitValues = new double[Constants.NUM_ITERATIONS];
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
             swarm.evolve();
-            if (i % 10 == 0) {
+            //if (i % 10 == 0) {
                 System.out.println("Global best at iteration " + i + " :" + swarm.getBestFitness());
-            }
+                fitValues[i]= swarm.getBestFitness();
+            //}
 
             double sumMae = 0.0;
             double sumMaeGlobalUpdate = 0.0;
@@ -204,6 +206,14 @@ public class Scheduler extends PlanetLabRunner {
             maeIteracionGobalUpdate[i] = promedioMaeGlobalUpdate;
         }
 
+        //Print file
+        String fitValuesString = "";
+        for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
+            if(fitValues[i]!=fitValues[Constants.NUM_ITERATIONS-1])
+                fitValuesString+=fitValues[i]+"\t";
+        }
+        fitValuesString+="\n";
+        Helper.writeDataRow(fitValuesString, "fit.txt");
         
         Discrete_Particle bestparticle = (Discrete_Particle) swarm.getBestParticle();
         System.out.println(bestparticle.toString());

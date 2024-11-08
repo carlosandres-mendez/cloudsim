@@ -171,9 +171,9 @@ public class Scheduler extends PlanetLabRunner {
                 new ParticleUpdateSimple(new PSO_Particle(cloudletList.size(), PlanetLabRunner.vmList.size())));
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
             swarm.evolve();
-            if (i % 10 == 0) {
+            //if (i % 10 == 0) {
                 System.out.println("Global best at iteration " + i + " :" + swarm.getBestFitness());
-            }
+            //}
 
             double sumMae = 0.0;
             double sumMaeGlobalUpdate = 0.0;
