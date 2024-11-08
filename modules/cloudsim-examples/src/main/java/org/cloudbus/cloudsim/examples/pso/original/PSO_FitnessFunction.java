@@ -27,6 +27,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
     protected double vmUtilization[]; //utilization for each vm
     protected Map<Integer, List<Cloudlet>> vmCloudletsMap;
 
+    protected double powerConsumptionObjetive;
+    protected double makespanObjetive;
+    protected double desbalancingObjetive;
+    protected double slaObjetive;
+
     public PSO_FitnessFunction(List<Cloudlet> clouletList, List<PowerVm> vmList, List<PowerHost> hostList){
         this.clouletList = clouletList;
         this.vmList = vmList;
@@ -162,7 +167,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
                 for (Vm vm : host.getVmList()) {
                     if(vmCloudletsMap.containsKey(vm.getId())){
 
-                        vmsMIPS += (vm.getMips() * (double)vm.getNumberOfPes() * vmUtilization[vm.getId()]);
+                        vmsMIPS += (vm.getMips() * (double)vm.getNumberOfPes() * (vmUtilization[vm.getId()]>1?1:vmUtilization[vm.getId()]));
                     }
                 }
                 hostUtilization[host.getId()] = vmsMIPS / (double) host.getTotalMips();
@@ -183,7 +188,23 @@ public class PSO_FitnessFunction extends FitnessFunction{
             }
         }
 
-        double SLA = numberHostOverUtilized / (double)numberOfHosts;
+        double hostSLA = (double)numberHostOverUtilized / (double)numberOfHosts;
+
+/**
+ *      NUMBER OF VMs WITH OVER UTILIZATION
+ *      Estimated count the number of vms over CPU > 100%
+**/  
+
+        int numberVmOverUtilized = 0;
+        for(PowerVm vm : vmList){ 
+            if(vmIds.contains(vm.getId())){
+                if(vmUtilization[vm.getId()]>1)
+                    numberVmOverUtilized++;
+            }
+        }
+
+
+        double vmSLA = (double)numberVmOverUtilized / (double)numberOfVms;
 
 /**
  *      CONSOLIDATION INDICATOR
@@ -289,10 +310,9 @@ public class PSO_FitnessFunction extends FitnessFunction{
         double desbalancing = calcularDesviacionEstandar(normalizarDatos(hostTurnAroundTime,0,maxHostTurnAroundTime)); //vmExecutionTime
         desbalancing *= 2; //desviacion estandar goes from 0 to 0.5
 
-        //balancing degree calculated as the variance of host or vms balancing
-        double hostBalancingDegree = (double)numberOfHosts / (double)hostList.size();
-        double vmsBalancingDegree = (double)numberOfVms / (double)vmList.size();
-        desbalancing = 0.25*(1-hostBalancingDegree) + 0.25*(1-vmsBalancingDegree) + desbalancing;
+        // double hostBalancingDegree = (double)numberOfHosts / (double)hostList.size();
+        // double vmsBalancingDegree = (double)numberOfVms / (double)vmList.size();
+        // desbalancing = 0.25*(1-hostBalancingDegree) + 0.25*(1-vmsBalancingDegree) + desbalancing;
 
 
         //desbalancingDegree normalized
@@ -312,18 +332,21 @@ public class PSO_FitnessFunction extends FitnessFunction{
         // double weight5 = 0.3d;
 
         //objetive function
-        double weight1 = 2d;
-        double weight2 = 2d;
-        double weight3 = 2d;
-        double weight4 = 2d; 
-        double weight5 = 2d;
+        double weight1 = 2.5d;
+        double weight2 = 2.5d;
+        double weight3 = 2.5d;
+        double weight4 = 2.5d;
+        
+        powerConsumptionObjetive = (0.4*totalDatacenterPowerConsumption + 0.2*migrationCost + 0.4*(1.0d-consolidation));
+        makespanObjetive = makespan;
+        desbalancingObjetive = desbalancing;
+        slaObjetive = 0.5*vmSLA + 0.5*hostSLA;
 
         double functOutput =  1.0d/(
-              (weight1 * (0.5*totalDatacenterPowerConsumption + 0.5*migrationCost)) 
-            + (weight2 * (1.0d-consolidation)) 
-            + (weight3 * makespan) 
-            + (weight4 * desbalancing) 
-            + (weight5 * SLA));
+              (weight1 * powerConsumptionObjetive) 
+            + (weight2 * makespanObjetive) 
+            + (weight3 * desbalancingObjetive) 
+            + (weight4 * slaObjetive));
 
 /**
  *      This is when we need to validate, for example in containers
@@ -358,11 +381,11 @@ public class PSO_FitnessFunction extends FitnessFunction{
  */
 
         //print results
-        // System.out.print("--------- evaluate ");
-        // for(int i=0;i<position.length;i++) {
-        //     System.out.print(position[i]+" ");
-        // }
-        // System.out.println(functOutput);
+        System.out.print("--------- evaluate ");
+        for(int i=0;i<position.length;i++) {
+            System.out.print(position[i]+" ");
+        }
+        System.out.println(functOutput);
 
         return functOutput;
 	}

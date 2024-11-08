@@ -32,6 +32,11 @@ public class Discrete_FitnessFunction extends PSO_FitnessFunction{
 		particle.copyVmTurnAroundTime(super.vmTurnAroundTime);
 		particle.copyVmCloudletsMap(super.vmCloudletsMap);
 		particle.copyVmUtilization(super.vmUtilization);
+		particle.copyHostUtilization(super.hostUtilization);
+		particle.setPowerConsumptionObjetive(super.powerConsumptionObjetive);
+		particle.setMakespanObjetive(super.makespanObjetive);
+		particle.setDesbalancingObjetive(super.desbalancingObjetive);
+		particle.setSlaObjetive(super.slaObjetive);
 
 		return fit;
 	}

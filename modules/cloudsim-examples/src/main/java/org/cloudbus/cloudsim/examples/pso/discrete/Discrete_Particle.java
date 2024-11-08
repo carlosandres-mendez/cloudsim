@@ -3,6 +3,7 @@ package org.cloudbus.cloudsim.examples.pso.discrete;
 import java.util.*;
 
 import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.examples.power.planetlab.PlanetLabConstants;
 import org.cloudbus.cloudsim.examples.power.random.RandomConstants;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.PlanetLabRunner;
@@ -15,6 +16,8 @@ public class Discrete_Particle {
 
     //int NUMBER_OF_VMS = RandomConstants.NUMBER_OF_VMS;
     int NUMBER_OF_VMS = PlanetLabRunner.NUMBER_OF_VMS;
+    //int NUMBER_OF_HOSTS = RandomConstants.NUMBER_OF_HOSTS;
+    int NUMBER_OF_HOSTS = PlanetLabConstants.NUMBER_OF_HOSTS;
 
     /** Best fitness function so far */
     double bestFitness;
@@ -36,6 +39,12 @@ public class Discrete_Particle {
     Map<Integer, List<Cloudlet>> vmCloudletsMap;
 
     double vmUtilization[]; //utilization for each vm
+    double hostUtilization[];
+
+    protected double powerConsumptionObjetive;
+    protected double makespanObjetive;
+    protected double desbalancingObjetive;
+    protected double slaObjetive;
 
     //-------------------------------------------------------------------------
     // Constructors
@@ -191,7 +200,57 @@ public class Discrete_Particle {
         this.vmUtilization = new double[this.getDimension()];
 		for (int i = 0; i < vmUtilization.length; i++)
             this.vmUtilization[i] = vmUtilization[i];
+    }  
+
+    public double[] getHostUtilization(){
+        return this.hostUtilization;
     }
+
+    public void copyHostUtilization(double[] hostUtilization){
+        this.hostUtilization = new double[NUMBER_OF_HOSTS];
+		for (int i = 0; i < hostUtilization.length; i++)
+            this.hostUtilization[i] = hostUtilization[i];
+    }  
+
+    public double getPowerConsumptionObjetive() {
+        return powerConsumptionObjetive;
+    }
+
+
+    public void setPowerConsumptionObjetive(double powerConsumptionObjetive) {
+        this.powerConsumptionObjetive = powerConsumptionObjetive;
+    }
+
+
+    public double getMakespanObjetive() {
+        return makespanObjetive;
+    }
+
+
+    public void setMakespanObjetive(double makespanObjetive) {
+        this.makespanObjetive = makespanObjetive;
+    }
+
+
+    public double getDesbalancingObjetive() {
+        return desbalancingObjetive;
+    }
+
+
+    public void setDesbalancingObjetive(double desbalancingObjetive) {
+        this.desbalancingObjetive = desbalancingObjetive;
+    }
+
+
+    public double getSlaObjetive() {
+        return slaObjetive;
+    }
+
+
+    public void setSlaObjetive(double slaObjetive) {
+        this.slaObjetive = slaObjetive;
+    }
+
 
     /** Printable string */
     /** 
