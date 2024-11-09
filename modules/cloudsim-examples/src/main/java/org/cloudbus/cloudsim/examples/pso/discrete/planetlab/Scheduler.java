@@ -28,6 +28,10 @@ import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThresho
 public class Scheduler extends PlanetLabRunner {
 
     Discrete_PSO_Swarm swarm;
+    double weight1;
+    double weight2;
+    double weight3;
+    double weight4;
 
 	/**
 	 * Instantiates a new planet lab runner.
@@ -59,6 +63,11 @@ public class Scheduler extends PlanetLabRunner {
 				vmAllocationPolicy,
 				vmSelectionPolicy,
 				parameter);
+
+        this.weight1 = w1;
+        this.weight2 = w2;
+        this.weight3 = w3;
+        this.weight4 = w4;  
 	}
 
     private void optimize() {
@@ -174,9 +183,14 @@ public class Scheduler extends PlanetLabRunner {
         double[] maeIteracion = new double[Constants.NUM_ITERATIONS];
         double[] maeIteracionGobalUpdate = new double[Constants.NUM_ITERATIONS];
 
+        Discrete_FitnessFunction fitnessFunction = new Discrete_FitnessFunction(cloudletList, (List<PowerVm>) (Object) (PlanetLabRunner.vmList), PlanetLabRunner.hostList);
+        fitnessFunction.setWeight1(this.weight1);
+        fitnessFunction.setWeight2(this.weight2);
+        fitnessFunction.setWeight3(this.weight3);
+        fitnessFunction.setWeight4(this.weight4);
+        
         swarm = new Discrete_PSO_Swarm(
-                new Discrete_FitnessFunction(cloudletList, (List<PowerVm>) (Object) (PlanetLabRunner.vmList),
-                        PlanetLabRunner.hostList),
+                fitnessFunction,
                 PlanetLabRunner.hostList, (List<PowerVm>) (Object) (PlanetLabRunner.vmList), cloudletList);
         swarm.setParticleUpdate(
                 new Discrete_ParticleUpdate(powerHostsOrderByPowerConsumption, powerVmsOrderByPowerConsumption, cloudletList));

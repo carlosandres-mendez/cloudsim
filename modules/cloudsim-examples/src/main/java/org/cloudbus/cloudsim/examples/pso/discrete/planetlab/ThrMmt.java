@@ -1,6 +1,8 @@
 package org.cloudbus.cloudsim.examples.pso.discrete.planetlab;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.cloudbus.cloudsim.examples.power.planetlab.NonPowerAware;
 import org.cloudbus.cloudsim.examples.pso.Constants;
@@ -40,24 +42,45 @@ public class ThrMmt {
 		String vmSelectionPolicy = "mmt"; // Minimum Migration Time (MMT) VM selection policy
 		String parameter = String.valueOf(Constants.UTILIZATION_THRESHOLD); // the static utilization threshold
 
-		for(double i=0;i<1;i += 0.1){
-			for(double j=1-i;j<1;j += 0.1){
-				for(double k=1-j;k<1;k += 0.1){
-					System.out.println(i+" "+j+" "+k);
-					
+		double[] valores ={0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1}; // Generamos los valores individuales
+        List<double[]> todasLasCombinaciones = generarCombinaciones(valores);
 
-					new Scheduler(
-							enableOutput,
-							outputToFile,
-							inputFolder,
-							outputFolder,
-							workload,
-							vmAllocationPolicy,
-							vmSelectionPolicy,
-							parameter,1-i,i,i,i);
-				}
-			}
+        // Imprimir las combinaciones (opcional)
+        for (double[] combinacion : todasLasCombinaciones) {
+            for (double valor : combinacion) {
+                System.out.print(valor + " ");
+            }
+
+			new Scheduler(
+					enableOutput,
+					outputToFile,
+					inputFolder,
+					outputFolder,
+					workload,
+					vmAllocationPolicy,
+					vmSelectionPolicy,
+					parameter,combinacion[0],combinacion[1],combinacion[2],combinacion[3]);
+					System.out.println();
 		}
 	}
+
+	public static List<double[]> generarCombinaciones(double[] valoresIndividuales) {
+        List<double[]> combinaciones = new ArrayList<>();
+        int n = valoresIndividuales.length;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
+                    for (int l = 0; l < n; l++) {
+						if((valoresIndividuales[i] + valoresIndividuales[j] +valoresIndividuales[k] +valoresIndividuales[l])==1){
+							double[] combinacion = {valoresIndividuales[i], valoresIndividuales[j], valoresIndividuales[k], valoresIndividuales[l]};
+							combinaciones.add(combinacion);
+						}
+                    }
+                }
+            }
+        }
+        return combinaciones;
+    }
 
 }

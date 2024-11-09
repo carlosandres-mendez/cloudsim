@@ -57,10 +57,15 @@ public class Discrete_ParticleUpdate {
         //***** Update velocity  ******/
         List<Allocation> personalPossibleCombinations = new ArrayList<>();
         List<Allocation> globalPossibleCombinations =  new ArrayList<>();
-        //if(Math.random()<0.5)
+
+        if(Math.random()<0.5){
             personalPossibleCombinations = generatePossibleCombinations(particle, particle, swarm.getParticleIncrement());
-        //else
             globalPossibleCombinations = generatePossibleCombinations(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
+        }
+        else{
+            globalPossibleCombinations = generatePossibleCombinations(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
+            personalPossibleCombinations = generatePossibleCombinations(particle, particle, swarm.getParticleIncrement());
+        }
 
         //Inertia allocations
         List<Allocation> currentVelocity = new ArrayList<>(particle.getVelocity()); //copy from particle velocity
