@@ -148,14 +148,15 @@ public class Scheduler extends RandomRunner {
         for (List<Allocation> particle_position : initPoblation) {
 
             List<Allocation> velocity = new ArrayList<>();
-            for (Allocation allocation : particle_position) {
-                Allocation velocityAllocation = new Allocation(
-                        allocation.getCloudlet(),
-                        ((List<PowerVm>) (Object) (RandomRunner.vmList))
-                                .get((int) (Math.random() * (double) RandomConstants.NUMBER_OF_VMS)),
-                        RandomRunner.hostList.get((int) (Math.random() * (double) RandomRunner.hostList.size())));
-                velocity.add(velocityAllocation);
-            }
+            //not random velocities in discrete PSO
+            // for (Allocation allocation : particle_position) {
+            //     Allocation velocityAllocation = new Allocation(
+            //             allocation.getCloudlet(),
+            //             ((List<PowerVm>) (Object) (RandomRunner.vmList))
+            //                     .get((int) (Math.random() * (double) RandomConstants.NUMBER_OF_VMS)),
+            //             RandomRunner.hostList.get((int) (Math.random() * (double) RandomRunner.hostList.size())));
+            //     velocity.add(velocityAllocation);
+            // }
             particles.add(new Discrete_Particle(particle_position, velocity));
         }
 

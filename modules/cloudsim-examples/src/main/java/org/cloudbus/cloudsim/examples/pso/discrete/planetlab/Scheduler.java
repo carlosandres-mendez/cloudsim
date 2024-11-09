@@ -158,14 +158,15 @@ public class Scheduler extends PlanetLabRunner {
         for (List<Allocation> particle_position : initPoblation) {
 
             List<Allocation> velocity = new ArrayList<>();
-            for (Allocation allocation : particle_position) {
-                Allocation velocityAllocation = new Allocation(
-                        allocation.getCloudlet(),
-                        ((List<PowerVm>) (Object) (PlanetLabRunner.vmList))
-                                .get((int) (Math.random() * (double) PlanetLabRunner.NUMBER_OF_VMS)),
-                        PlanetLabRunner.hostList.get((int) (Math.random() * (double) PlanetLabRunner.hostList.size())));
-                velocity.add(velocityAllocation);
-            }
+            //not random velocities in discrete PSO
+            // for (Allocation allocation : particle_position) {
+            //     Allocation velocityAllocation = new Allocation(
+            //             allocation.getCloudlet(),
+            //             ((List<PowerVm>) (Object) (PlanetLabRunner.vmList))
+            //                     .get((int) (Math.random() * (double) PlanetLabRunner.NUMBER_OF_VMS)),
+            //             PlanetLabRunner.hostList.get((int) (Math.random() * (double) PlanetLabRunner.hostList.size())));
+            //     velocity.add(velocityAllocation);
+            // }
             particles.add(new Discrete_Particle(particle_position, velocity));
         }
 

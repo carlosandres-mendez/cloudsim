@@ -141,14 +141,15 @@ public class Discrete_ParticleUpdate {
 
             switch(numberList){
                 case 1:
-                    nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityInertiaMap.get(cloudlet.getCloudletId()).getVm());
+                    if(nextVelocity.contains(cloudlet.getCloudletId()))
+                        nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityInertiaMap.get(cloudlet.getCloudletId()).getVm());
                     break;
                 case 2:
                      /**
                      * R1 independent random number uniquely
                      * generated from 0-1 at every update for each individual dimension d = 1 to D
                      */
-                    if(Math.random()<0.5)
+                    if(Math.random()<0.5 && nextVelocity.contains(cloudlet.getCloudletId()))
                         nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityBestPersonalMap.get(cloudlet.getCloudletId()).getVm());
                     // else
                     //     nextVelocity.get(cloudlet.getCloudletId()).setVm(swarm.getPowerVms().get((int)(Math.random() * (double)(swarm.getPowerVms().size()-1)) + 1)); 
@@ -158,7 +159,7 @@ public class Discrete_ParticleUpdate {
                      * R2 independent random number uniquely
                      * generated from 0-1 at every update for each individual dimension d = 1 to D
                      */
-                    if(Math.random()<0.5)
+                    if(Math.random()<0.5 && nextVelocity.contains(cloudlet.getCloudletId()))
                         nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityBestGlobalMap.get(cloudlet.getCloudletId()).getVm());
                     // else
                     //     nextVelocity.get(cloudlet.getCloudletId()).setVm(swarm.getPowerVms().get((int)(Math.random() * (double)(swarm.getPowerVms().size()-1)) + 1)); 
@@ -171,17 +172,17 @@ public class Discrete_ParticleUpdate {
         particle.setVelocity(nextVelocity);
 
         //***** Update position  ******/
-        // Update position by replacing the current position with the velocity values  
-        // for (Allocation positionAllocation : particle.getPosition()) {
-        //     for (Allocation velocityAllocation : nextVelocity){
-        //         if(positionAllocation.getCloudlet().equals(velocityAllocation.getCloudlet())){
+        //Update position by replacing the current position with the velocity values  
+        for (Allocation positionAllocation : particle.getPosition()) {
+            for (Allocation velocityAllocation : nextVelocity){
+                if(positionAllocation.getCloudlet().equals(velocityAllocation.getCloudlet())){
 
-        //             //replace the vm and host
-        //             positionAllocation.setVm(velocityAllocation.getVm());
-        //             positionAllocation.setHost(velocityAllocation.getHost());
-        //         }
-        //     }
-        // }
+                    //replace the vm and host
+                    positionAllocation.setVm(velocityAllocation.getVm());
+                    positionAllocation.setHost(velocityAllocation.getHost());
+                }
+            }
+        }
 
 
         //*** For analysis and stats  ***/
@@ -464,12 +465,12 @@ public class Discrete_ParticleUpdate {
                                 allocation.setVm(vm);
                                 particle.getVmUtilization()[vm.getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
                                 particle.getHostUtilization()[vm.getHost().getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
-                                // possibleCombinations.add(
-                                //         new Allocation(
-                                //                 allocation.getCloudlet(),
-                                //                 vm, 
-                                //                 (PowerHost)vm.getHost())
-                                // );
+                                possibleCombinations.add(
+                                        new Allocation(
+                                                allocation.getCloudlet(),
+                                                vm, 
+                                                (PowerHost)vm.getHost())
+                                );
                                 changedCloulets.add(allocation.getCloudlet().getCloudletId());
                         }
 
@@ -502,12 +503,12 @@ public class Discrete_ParticleUpdate {
                                 allocation.setVm(vm);
                                 particle.getVmUtilization()[vm.getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
                                 particle.getHostUtilization()[vm.getHost().getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
-                                // possibleCombinations.add(
-                                //         new Allocation(
-                                //                 allocation.getCloudlet(),
-                                //                 vm, 
-                                //                 (PowerHost)vm.getHost())
-                                // );
+                                possibleCombinations.add(
+                                        new Allocation(
+                                                allocation.getCloudlet(),
+                                                vm, 
+                                                (PowerHost)vm.getHost())
+                                );
                                 changedCloulets.add(allocation.getCloudlet().getCloudletId());
                         }
 
@@ -552,12 +553,12 @@ public class Discrete_ParticleUpdate {
                                     allocation.setVm(vm);
                                     particle.getVmUtilization()[vm.getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
                                     particle.getHostUtilization()[vm.getHost().getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
-                                    // possibleCombinations.add(
-                                    //         new Allocation(
-                                    //                 allocation.getCloudlet(),
-                                    //                 vm, 
-                                    //                 (PowerHost)vm.getHost())
-                                    // );
+                                    possibleCombinations.add(
+                                            new Allocation(
+                                                    allocation.getCloudlet(),
+                                                    vm, 
+                                                    (PowerHost)vm.getHost())
+                                    );
                                     changedCloulets.add(allocation.getCloudlet().getCloudletId());
                             }
 
@@ -632,12 +633,12 @@ public class Discrete_ParticleUpdate {
                                 allocation.setVm(vm);
                                 particle.getVmUtilization()[vm.getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
                                 particle.getHostUtilization()[vm.getHost().getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
-                                // possibleCombinations.add(
-                                //         new Allocation(
-                                //                 allocation.getCloudlet(),
-                                //                 vm, 
-                                //                 (PowerHost)vm.getHost())
-                                // );
+                                possibleCombinations.add(
+                                        new Allocation(
+                                                allocation.getCloudlet(),
+                                                vm, 
+                                                (PowerHost)vm.getHost())
+                                );
                                 changedCloulets.add(allocation.getCloudlet().getCloudletId());
                         }
 
