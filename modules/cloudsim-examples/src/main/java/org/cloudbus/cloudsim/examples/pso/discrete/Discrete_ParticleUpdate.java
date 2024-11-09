@@ -58,19 +58,44 @@ public class Discrete_ParticleUpdate {
         List<Allocation> personalPossibleCombinations = new ArrayList<>();
         List<Allocation> globalPossibleCombinations =  new ArrayList<>();
 
-        if(Math.random()<0.5){
-            personalPossibleCombinations = generatePossibleCombinations(particle, particle, swarm.getParticleIncrement());
-            globalPossibleCombinations = generatePossibleCombinations(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
-        }
-        else{
-            globalPossibleCombinations = generatePossibleCombinations(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
-            personalPossibleCombinations = generatePossibleCombinations(particle, particle, swarm.getParticleIncrement());
-        }
+        switch(Constants.INTELLIGENT_FUNCTION){
+            case Constants.RANDOM:
+                if(Math.random()<0.5){
+                    personalPossibleCombinations = generatePossibleCombinationsRandom(particle, particle, swarm.getParticleIncrement());
+                    globalPossibleCombinations = generatePossibleCombinationsRandom(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
+                }
+                else{
+                    globalPossibleCombinations = generatePossibleCombinationsRandom(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());  
+                    personalPossibleCombinations = generatePossibleCombinationsRandom(particle, particle, swarm.getParticleIncrement());
+                }
+                break;
+            case Constants.UTILIZATION:
+                if(Math.random()<0.5){
+                    personalPossibleCombinations = generatePossibleCombinationsUtilization(particle, particle, swarm.getParticleIncrement());
+                    globalPossibleCombinations = generatePossibleCombinationsUtilization(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
+                }
+                else{
+                    globalPossibleCombinations = generatePossibleCombinationsUtilization(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());  
+                    personalPossibleCombinations = generatePossibleCombinationsUtilization(particle, particle, swarm.getParticleIncrement()); 
+                }
+                break;
+            case Constants.MAKESPAN:
+                if(Math.random()<0.5){
+                    personalPossibleCombinations = generatePossibleCombinationsMakeSpan(particle, particle, swarm.getParticleIncrement());
+                    globalPossibleCombinations = generatePossibleCombinationsMakeSpan(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
+                }
+                else{
+                    globalPossibleCombinations = generatePossibleCombinationsMakeSpan(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
+                    personalPossibleCombinations = generatePossibleCombinationsMakeSpan(particle, particle, swarm.getParticleIncrement());
+                }
+                break; 
+            default:        
+        }  
 
         //Inertia allocations
         List<Allocation> currentVelocity = new ArrayList<>(particle.getVelocity()); //copy from particle velocity
         Collections.shuffle(currentVelocity);
-        currentVelocity = new ArrayList<>(currentVelocity.subList(0, Constants.INERTIA_WEIGHT)); //according to inertia, create a subset 
+        currentVelocity = new ArrayList<>(currentVelocity.subList(0, (int)(((double)currentVelocity.size()) * (1-Constants.INERTIA_WEIGHT)))); //according to inertia, create a subset 
 
         List<Allocation> nextVelocity = new ArrayList<>(particle.getVelocity());
 
@@ -175,30 +200,28 @@ public class Discrete_ParticleUpdate {
      * @param numMaxDifferences null or the maximum number of differences between the actual position and the best position to generate
      * @return
      */
-    private List<Allocation> generatePossibleCombinationsMakeSpan(List<Allocation> bestPosition, List<Allocation> xPosition, Double incrementCoefficient){
+    private List<Allocation> generatePossibleCombinationsMakeSpan(Discrete_Particle bestParticle, Discrete_Particle particle, Double incrementCoefficient){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
         //Find different allocations between best position and the current position
         List<Allocation> difAllocPositiontions = new ArrayList<>(); 
         Set<Integer> changedCloulets = new HashSet<>();
         Map<Integer, Allocation> difAllocBestPositionsMap = new HashMap<>();
-        for(int j=0; j< xPosition.size(); j++){
-            for(int k=0; k< bestPosition.size(); k++){
+        for(int j=0; j< particle.getPosition().size(); j++){
+            for(int k=0; k< bestParticle.getBestPosition().size(); k++){
 
                 //if vm not has the same characteristic than the vm in the best position then take the vm from the bestPosition or a vm from the vms ordered list (usign random to decide)
-                if(xPosition.get(j).getCloudlet().getCloudletId()==bestPosition.get(k).getCloudlet().getCloudletId() 
-                    && xPosition.get(j).getVm().getId()!=bestPosition.get(k).getVm().getId()){
-                    difAllocPositiontions.add(xPosition.get(j));
-                    difAllocBestPositionsMap.put(xPosition.get(j).getCloudlet().getCloudletId(), bestPosition.get(k));
+                if(particle.getPosition().get(j).getCloudlet().getCloudletId()==bestParticle.getBestPosition().get(k).getCloudlet().getCloudletId() 
+                    && particle.getPosition().get(j).getVm().getId()!=bestParticle.getBestPosition().get(k).getVm().getId()){
+                    difAllocPositiontions.add(particle.getPosition().get(j));
+                    difAllocBestPositionsMap.put(particle.getPosition().get(j).getCloudlet().getCloudletId(), bestParticle.getBestPosition().get(k));
                 }
-                    //&& (((PowerHost)xPositionShuffled.get(j).getVm().getHost()).getPowerEstimation() > ((PowerHost)bestPosition.get(j).getVm().getHost()).getPowerEstimation() )
-                        /*|| ((xPositionShuffled.get(j).getVm()).getMips() < (bestPosition.get(j).getVm()).getMips() ) */
             }
         }
 
         //Find a limited number of differences between the actual position and the best position
         //We are going to generate numPossibleCombinations new combinations acording with the w coefficient
-        int numPossibleCombinations =  (int) Math.floor(((double)xPosition.size()) * incrementCoefficient ); 
+        int numPossibleCombinations =  (int) Math.floor(((double)particle.getPosition().size()) * incrementCoefficient ); 
         
 
         //select random allocations
@@ -282,13 +305,13 @@ public class Discrete_ParticleUpdate {
     }
 
     /**
-     * **** No heuristic or intelligent process ****
+     * **** No heuristic or intelligent process, just random seleccion ****
      * @param bestPosition
      * @param xPosition
      * @param numMaxDifferences null or the maximum number of differences between the actual position and the best position to generate
      * @return
      */
-    private List<Allocation> generatePossibleCombinationsBASIC(Discrete_Particle bestParticle, Discrete_Particle particle, Double incrementCoefficient){
+    private List<Allocation> generatePossibleCombinationsRandom(Discrete_Particle bestParticle, Discrete_Particle particle, Double incrementCoefficient){
         List<Allocation> possibleCombinations = new ArrayList<Allocation>();
 
         //Find different allocations between best position and the current position
@@ -348,7 +371,7 @@ public class Discrete_ParticleUpdate {
      * @param numMaxDifferences null or the maximum number of differences between the actual position and the best position to generate
      * @return
      */
-    private List<Allocation> generatePossibleCombinations(Discrete_Particle bestParticle, Discrete_Particle particle, Double incrementCoefficient){
+    private List<Allocation> generatePossibleCombinationsUtilization(Discrete_Particle bestParticle, Discrete_Particle particle, Double incrementCoefficient){
         // System.out.println("--------- Position--------->");
         // for(int i=0;i<particle.getPosition().size();i++) {
         //     System.out.print(particle.getPosition().get(i).getVm().getId()+" ");
@@ -369,8 +392,6 @@ public class Discrete_ParticleUpdate {
                     difAllocPositiontions.add(particle.getPosition().get(j));
                     difAllocBestPositionsMap.put(particle.getPosition().get(j).getCloudlet().getCloudletId(), bestParticle.getBestPosition().get(k));
                 }
-                    //&& (((PowerHost)xPositionShuffled.get(j).getVm().getHost()).getPowerEstimation() > ((PowerHost)bestPosition.get(j).getVm().getHost()).getPowerEstimation() )
-                        /*|| ((xPositionShuffled.get(j).getVm()).getMips() < (bestPosition.get(j).getVm()).getMips() ) */
             }
         }
 
@@ -379,7 +400,7 @@ public class Discrete_ParticleUpdate {
         int numPossibleCombinations =  (int) Math.floor(((double)particle.getPosition().size()) * incrementCoefficient ); 
         
 
-        //select random allocations
+        //select random allocations but now lets make a selection process.
         Collections.shuffle(difAllocPositiontions);
 
         //Apply any heuristic or intelligent process to change allocations that can be considered better options

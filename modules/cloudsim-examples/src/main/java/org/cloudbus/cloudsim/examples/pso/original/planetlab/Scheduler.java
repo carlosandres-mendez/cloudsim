@@ -30,10 +30,10 @@ import net.sourceforge.jswarm_pso.Swarm;
 public class Scheduler extends PlanetLabRunner {
     Swarm swarm;
     PSO_FitnessFunction fitnessFunction;
-    double weight1;
-    double weight2;
-    double weight3;
-    double weight4;
+
+    //private
+    private int countGlobalUpdates;
+    private int lastIterGlobalUpdate;
 
     /**
      * Instantiates a new planet lab runner.
@@ -64,12 +64,7 @@ public class Scheduler extends PlanetLabRunner {
                 workload,
                 vmAllocationPolicy,
                 vmSelectionPolicy,
-                parameter);
-
-        this.weight1 = w1;
-        this.weight2 = w2;
-        this.weight3 = w3;
-        this.weight4 = w4;
+                parameter,w1,w2,w3,w4);
     }
 
     private void optimize() {
@@ -169,16 +164,15 @@ public class Scheduler extends PlanetLabRunner {
         
         swarm = new Swarm(cloudletList.size(), new PSO_Particle(cloudletList.size(), PlanetLabRunner.vmList.size()),
                 fitnessFunction);
-        /**
-         * better performance with the default parameters
-         * swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
-         * swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
-         * swarm.setInertia(Constants.INERTIA_WEIGHT);
-         */
+
         swarm.setNumberOfParticles(Constants.NUM_PARTICLES);
         swarm.setMinPosition(0);// minimum value is the minimum value of vm id
         swarm.setMaxPosition(PlanetLabRunner.vmList.size() - 1);// maximum value of vm id
         swarm.setMaxMinVelocity(1.1);
+        swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
+        swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
+        swarm.setInertia(Constants.INERTIA_WEIGHT);
+        swarm.setNumberOfParticles(Constants.NUM_PARTICLES);
         swarm.setParticles(particles);
         swarm.setParticleUpdate(
                 new ParticleUpdateSimple(new PSO_Particle(cloudletList.size(), PlanetLabRunner.vmList.size())));
@@ -206,8 +200,10 @@ public class Scheduler extends PlanetLabRunner {
         //Print file
         String fitValuesString = "";
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
-            if(fitValues[i]!=fitValues[Constants.NUM_ITERATIONS-1])
+            if(fitValues[i]!=fitValues[Constants.NUM_ITERATIONS-1]){
                 fitValuesString+=fitValues[i]+"\t";
+                lastIterGlobalUpdate = i;
+            }
         }
         fitValuesString+="\n";
         Helper.writeDataRow(fitValuesString, "fit.txt");
@@ -221,13 +217,13 @@ public class Scheduler extends PlanetLabRunner {
             System.out.print(String.format("%.2f", maeIteracion[i]) + " ");
         }
         System.out.println("********* MAE stat Global update **************");
-        int cont2 = 0;
+        countGlobalUpdates = 0;
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
             if (maeIteracionGobalUpdate[i] != 0)
-                cont2++;
+                countGlobalUpdates++;
             System.out.print(String.format("%.5f", maeIteracionGobalUpdate[i]) + " ");
         }
-        System.out.println("\nTotal global changes: " + cont2);
+        System.out.println("\nTotal global changes: " + countGlobalUpdates);
         System.out.println("***** END Original PSO **********");
     }
 
@@ -319,7 +315,7 @@ public class Scheduler extends PlanetLabRunner {
             lastClock,
             experimentName,
             Constants.OUTPUT_CSV,
-            outputFolder);
+            outputFolder,Constants.ORIGINAL_PSO,weight1,weight2,weight3,weight4,swarm.getBestFitness(),lastIterGlobalUpdate,countGlobalUpdates);
 
             Helper.printCloudletList(cloudletList);
 

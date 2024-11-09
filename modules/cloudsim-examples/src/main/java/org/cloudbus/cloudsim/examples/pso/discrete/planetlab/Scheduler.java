@@ -28,10 +28,10 @@ import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationStaticThresho
 public class Scheduler extends PlanetLabRunner {
 
     Discrete_PSO_Swarm swarm;
-    double weight1;
-    double weight2;
-    double weight3;
-    double weight4;
+
+    //private
+    private int countGlobalUpdates;
+    private int lastIterGlobalUpdate;
 
 	/**
 	 * Instantiates a new planet lab runner.
@@ -62,12 +62,7 @@ public class Scheduler extends PlanetLabRunner {
 				workload,
 				vmAllocationPolicy,
 				vmSelectionPolicy,
-				parameter);
-
-        this.weight1 = w1;
-        this.weight2 = w2;
-        this.weight3 = w3;
-        this.weight4 = w4;  
+				parameter,w1,w2,w3,w4);
 	}
 
     private void optimize() {
@@ -223,8 +218,10 @@ public class Scheduler extends PlanetLabRunner {
         //Print file
         String fitValuesString = "";
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
-            if(fitValues[i]!=fitValues[Constants.NUM_ITERATIONS-1])
+            if(fitValues[i]!=fitValues[Constants.NUM_ITERATIONS-1]){
                 fitValuesString+=fitValues[i]+"\t";
+                lastIterGlobalUpdate = i;
+            }
         }
         fitValuesString+="\n";
         Helper.writeDataRow(fitValuesString, "fit.txt");
@@ -238,13 +235,13 @@ public class Scheduler extends PlanetLabRunner {
             System.out.print(String.format("%.2f", maeIteracion[i]) + " ");
         }
         System.out.println("********* MAE stat Global update **************");
-        int cont = 0;
+        countGlobalUpdates = 0;
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
             if (maeIteracionGobalUpdate[i] != 0)
-                cont++;
+                countGlobalUpdates++;
             System.out.print(String.format("%.5f", maeIteracionGobalUpdate[i]) + " ");
         }
-        System.out.println("\nTotal global changes: " + cont);
+        System.out.println("\nTotal global changes: " + countGlobalUpdates);
         System.out.println("********* END Discrete PSO **************");
     }
 
@@ -354,7 +351,7 @@ public class Scheduler extends PlanetLabRunner {
             lastClock,
             experimentName,
             Constants.OUTPUT_CSV,
-            outputFolder);
+            outputFolder,Constants.DISCRETE_PSO,weight1,weight2,weight3,weight4,swarm.getBestFitness(),lastIterGlobalUpdate,countGlobalUpdates);
 
             Helper.printCloudletList(cloudletList);
 
@@ -368,142 +365,4 @@ public class Scheduler extends PlanetLabRunner {
         Log.printLine("Finished " + experimentName);
     }
 
-    // @Override
-    protected void start2(String experimentName, String outputFolder, VmAllocationPolicy vmAllocationPolicy) {
-        System.out.println("Starting " + experimentName);
-
-        try {
-            PowerDatacenter datacenter = (PowerDatacenter) Helper.createDatacenter(
-                    "Datacenter",
-                    PowerDatacenter.class,
-                    hostList,
-                    vmAllocationPolicy);
-
-            datacenter.setDisableMigrations(false);
-
-            broker.submitVmList(vmList);
-            broker.submitCloudletList(cloudletList);
-
-            /***
-             * Before optimization (see After optimization)
-             * scheduler may know allocation policy, so it can figure out host assignment
-             * (important for host power consideration in the scheduling process)
-             */
-            PowerVmAllocationPolicyMigrationStaticThresholdPSO vmAllocationMigrationMSPolicy = (PowerVmAllocationPolicyMigrationStaticThresholdPSO) vmAllocationPolicy;
-            vmAllocationMigrationMSPolicy.setHostList(hostList);
-            Set<? extends Host> excludedHosts = new HashSet<>();
-            for (PowerVm vm : (List<PowerVm>) (Object) (PlanetLabRunner.vmList)) {
-                PowerHost host = vmAllocationMigrationMSPolicy.findHostForVm(vm, excludedHosts);
-                if (host != null) {
-                    host.getVmList().add(vm);
-
-                    List<Double> mips = new ArrayList<Double>();
-                    for (int i = 0; i < vm.getNumberOfPes(); i++)
-                        mips.add(vm.getMips());
-                    host.getVmScheduler().allocatePesForVm(vm, mips);
-                    vm.setHost(host);
-                    vm.setBeingInstantiated(true);
-                    System.out
-                            .println(" Vm allocation in scheduling time: Vm: " + vm.getId() + " Host: " + host.getId());
-                } else
-                    throw new Exception(
-                            "According to the allocation policy, all Vms cannot be allocated in the datacenter. You need to increase servers on them.");
-            }
-
-            // *** domain problem data ***
-            List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(PlanetLabRunner.hostList); // asc,
-                                                                                                        // estimated by
-                                                                                                        // the host
-                                                                                                        // utilization
-                                                                                                        // fixed in
-                                                                                                        // Constants.UTILIZATION_THRESHOLD
-            List<PowerVm> powerVmsOrderByPowerConsumption = new ArrayList<>(
-                    (List<PowerVm>) (Object) (PlanetLabRunner.vmList)); // asc, according with the hosts power consumption
-                                                                     // and the initial policy allocation
-
-            // host doest have power as an attribute -only the method-, but added for power
-            // consumption estimation
-            for (PowerHost h1 : powerHostsOrderByPowerConsumption) {
-                h1.setPowerEstimation(h1.getPower(Constants.UTILIZATION_THRESHOLD));
-            }
-
-            powerHostsOrderByPowerConsumption.sort(Comparator.comparingDouble((PowerHost p) -> p.getTotalMips()));
-
-            // powerVmsOrderByPowerConsumption.sort(
-            // Comparator.comparingDouble((PowerVm p) -> p.getMips()).reversed()
-            // .thenComparing((PowerVm p) ->
-            // ((PowerHost)p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD))
-            // );
-
-            powerVmsOrderByPowerConsumption.sort(
-                    Comparator
-                            .comparingDouble(
-                                    (PowerVm p) -> ((PowerHost) p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD))
-                            .thenComparing(Comparator.comparingDouble(PowerVm::getMips).reversed()));
-
-            for (PowerHost host : powerHostsOrderByPowerConsumption) {
-                System.out.println(host.getId() + " " + host.getPowerEstimation());
-            }
-
-            System.out.println("Info Vms Ordered By VM mips and Host Power Consumption ************");
-            int count = 0;
-            for (PowerVm p : powerVmsOrderByPowerConsumption) {
-                System.out.println("Host: " + p.getHost().getId() + " power: "
-                        + ((PowerHost) p.getHost()).getPowerEstimation() + " mips: " + p.getHost().getTotalMips()
-                        + " vm: " + p.getId() + " vm mips:" + p.getMips());
-
-                broker.bindCloudletToVm(count, p.getId());
-                count++;
-                if (count == 50)
-                    break;
-                broker.bindCloudletToVm(count, p.getId());
-                count++;
-                if (count == 50)
-                    break;
-                broker.bindCloudletToVm(count, p.getId());
-                count++;
-                if (count == 50)
-                    break;
-            }
-
-            /***
-             * After optimization (see Before optimization)
-             * Clear the hosts and vms in the datacenter
-             */
-            for (PowerVm vm : (List<PowerVm>) (Object) (PlanetLabRunner.vmList)) {
-                vm.setHost(null);
-            }
-
-            for (PowerHost host : hostList) {
-                host.getVmList().clear();
-                host.getVmScheduler().deallocatePesForAllVms();
-            }
-
-            CloudSim.terminateSimulation(Constants.SIMULATION_LIMIT);
-            double lastClock = CloudSim.startSimulation();
-
-            List<Cloudlet> newList = broker.getCloudletReceivedList();
-            Log.printLine("Received " + newList.size() + " cloudlets");
-
-            CloudSim.stopSimulation();
-
-            Helper.printResults(
-                    datacenter,
-                    vmList,
-                    lastClock,
-                    experimentName,
-                    Constants.OUTPUT_CSV,
-                    outputFolder);
-
-            Helper.printCloudletList(cloudletList);
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-            Log.printLine("The simulation has been terminated due to an unexpected error");
-            System.exit(0);
-        }
-
-        Log.printLine("Finished " + experimentName);
-    }
 }

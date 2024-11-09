@@ -59,6 +59,13 @@ public abstract class RunnerAbstract {
 	/** The host list. */
 	protected static List<PowerHost> hostList;
 
+	//for objetive function
+	protected double weight1;
+	protected double weight2;
+	protected double weight3;
+	protected double weight4;
+
+
 	/**
 	 * Run.
 	 * 
@@ -79,7 +86,7 @@ public abstract class RunnerAbstract {
 			String workload,
 			String vmAllocationPolicy,
 			String vmSelectionPolicy,
-			String parameter) {
+			String parameter, double w1, double w2, double w3, double w4) {
 		try {
 			initLogOutput(
 					enableOutput,
@@ -93,6 +100,11 @@ public abstract class RunnerAbstract {
 			e.printStackTrace();
 			System.exit(0);
 		}
+
+		this.weight1 = w1;
+        this.weight2 = w2;
+        this.weight3 = w3;
+        this.weight4 = w4;
 
 		init(inputFolder + "/" + workload);
 		start(

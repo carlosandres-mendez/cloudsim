@@ -31,7 +31,7 @@ public class PlanetLabRunner extends RunnerAbstract{
 			String workload,
 			String vmAllocationPolicy,
 			String vmSelectionPolicy,
-			String parameter) {
+			String parameter, double w1, double w2, double w3, double w4) {
 		super(
 				enableOutput,
 				outputToFile,
@@ -40,7 +40,7 @@ public class PlanetLabRunner extends RunnerAbstract{
 				workload,
 				vmAllocationPolicy,
 				vmSelectionPolicy,
-				parameter);
+				parameter, w1, w2, w3, w4);
 	}
 
 	/*

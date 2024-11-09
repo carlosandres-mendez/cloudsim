@@ -31,6 +31,10 @@ public class Scheduler extends RandomRunner {
     Swarm swarm;
     PSO_FitnessFunction fitnessFunction;
 
+    //private
+    private int countGlobalUpdates;
+    private int lastIterGlobalUpdate;
+
     /**
      * @param enableOutput
      * @param outputToFile
@@ -49,7 +53,7 @@ public class Scheduler extends RandomRunner {
             String workload,
             String vmAllocationPolicy,
             String vmSelectionPolicy,
-            String parameter) {
+            String parameter, double w1, double w2, double w3, double w4) {
         super(
                 enableOutput,
                 outputToFile,
@@ -58,7 +62,7 @@ public class Scheduler extends RandomRunner {
                 workload,
                 vmAllocationPolicy,
                 vmSelectionPolicy,
-                parameter);
+                parameter,w1,w2,w3,w4);
     }
 
     private void optimize() {
@@ -148,28 +152,34 @@ public class Scheduler extends RandomRunner {
         // particles[Constants.NUM_PARTICLES-1]= new PSO_Particle(cloudletList.size(),
         // RandomRunner.vmList.size() , 0);
 
-        fitnessFunction = new PSO_FitnessFunction(cloudletList, (List<PowerVm>) (Object) (RandomRunner.vmList),
-                RandomRunner.hostList);
+        fitnessFunction = new PSO_FitnessFunction(cloudletList, (List<PowerVm>) (Object) (RandomRunner.vmList), RandomRunner.hostList);
+        fitnessFunction.setWeight1(this.weight1);
+        fitnessFunction.setWeight2(this.weight2);
+        fitnessFunction.setWeight3(this.weight3);
+        fitnessFunction.setWeight4(this.weight4);
+
         swarm = new Swarm(cloudletList.size(), new PSO_Particle(cloudletList.size(), RandomRunner.vmList.size()),
                 fitnessFunction);
-        /**
-         * better performance with the default parameters
-         * swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
-         * swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
-         * swarm.setInertia(Constants.INERTIA_WEIGHT);
-         */
+
         swarm.setNumberOfParticles(Constants.NUM_PARTICLES);
         swarm.setMinPosition(0);// minimum value is the minimum value of vm id
         swarm.setMaxPosition(RandomRunner.vmList.size() - 1);// maximum value of vm id
         swarm.setMaxMinVelocity(1.1);
+        swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
+        swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
+        swarm.setInertia(Constants.INERTIA_WEIGHT);
+        swarm.setNumberOfParticles(Constants.NUM_PARTICLES);
         swarm.setParticles(particles);
         swarm.setParticleUpdate(
                 new ParticleUpdateSimple(new PSO_Particle(cloudletList.size(), RandomRunner.vmList.size())));
+
+        double[] fitValues = new double[Constants.NUM_ITERATIONS];
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
             swarm.evolve();
-            if (i % 10 == 0) {
+            //if (i % 10 == 0) {
                 System.out.println("Global best at iteration " + i + " :" + swarm.getBestFitness());
-            }
+                fitValues[i]= swarm.getBestFitness();
+            //}
 
             double sumMae = 0.0;
             double sumMaeGlobalUpdate = 0.0;
@@ -182,6 +192,18 @@ public class Scheduler extends RandomRunner {
             maeIteracion[i] = promedioMae;
             maeIteracionGobalUpdate[i] = promedioMaeGlobalUpdate;
         }
+
+        //Print file
+        String fitValuesString = "";
+        for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
+            if(fitValues[i]!=fitValues[Constants.NUM_ITERATIONS-1]){
+                fitValuesString+=fitValues[i]+"\t";
+                lastIterGlobalUpdate = i;
+            }
+        }
+        fitValuesString+="\n";
+        Helper.writeDataRow(fitValuesString, "fit.txt");
+
         System.out.println("ORIGINAL PSO The best fitness value is " + swarm.getBestFitness());
         PSO_Particle bestparticle = (PSO_Particle) swarm.getBestParticle();
         System.out.println(bestparticle.toString());
@@ -191,13 +213,13 @@ public class Scheduler extends RandomRunner {
             System.out.print(String.format("%.2f", maeIteracion[i]) + " ");
         }
         System.out.println("********* MAE stat Global update **************");
-        int cont2 = 0;
+        countGlobalUpdates = 0;
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
             if (maeIteracionGobalUpdate[i] != 0)
-                cont2++;
+                countGlobalUpdates++;
             System.out.print(String.format("%.5f", maeIteracionGobalUpdate[i]) + " ");
         }
-        System.out.println("\nTotal global changes: " + cont2);
+        System.out.println("\nTotal global changes: " + countGlobalUpdates);
         System.out.println("***** END Original PSO **********");
     }
 
@@ -289,7 +311,7 @@ public class Scheduler extends RandomRunner {
             lastClock,
             experimentName,
             Constants.OUTPUT_CSV,
-            outputFolder);
+            outputFolder,Constants.ORIGINAL_PSO,weight1,weight2,weight3,weight4,swarm.getBestFitness(),lastIterGlobalUpdate,countGlobalUpdates);
 
             Helper.printCloudletList(cloudletList);
 

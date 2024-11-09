@@ -21,6 +21,9 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 	 * Added for PSO Original and discrete
 	 */
 
+	public final static int ORIGINAL_PSO = 1;
+	public final static int DISCRETE_PSO = 2;
+
 	public final static int NUM_PARTICLES	= 105; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
 	//public final static int NUM_PARTICLES	= 10; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
 
@@ -36,22 +39,34 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 		found in the exploration. 
 		James Kennedy && Daniel Bratton, 2007. Defining a Standard for Particle Swarm Optimization 
 		
-		In this discrete PSO, inertia weight should be from 0 to D (dimension size), indicating the number of the current velocity is going to remain in the next velocity */
-    public final static int INERTIA_WEIGHT = 0; //Planetlab
-	//public final static int INERTIA_WEIGHT = 50; //Random
+		In this discrete PSO, inertia weight should be from 0 to D (dimension size), indicating the % number of the current velocity is going to remain in the next velocity */
+    public final static double INERTIA_WEIGHT = 0.95; //by now I keep the defualt value in Lib jswarm_pso
 
     //The cognitive acceleration coefficient c1.
-    public final static double COGNIT_COEFFICIENT = 0.9d;
+    public final static double COGNIT_COEFFICIENT = 0.9d; //by now I keep the defualt value in Lib jswarm_pso
 
     //The social coefficient
-    public final static double SOCIAL_COEFFICIENT = 0.9d;
+    public final static double SOCIAL_COEFFICIENT = 0.9d; //by now I keep the defualt value in Lib jswarm_pso
 
-	//Metrics related
+	//******* Metrics related *******
 
 	//Power consumption estimated by the host turn around time
 	public final static boolean POWER_CONSUMPTION_ESTIMATED_BY_HTT = false; 
 
 	//Added by Carlos A. Mendez Rodriguez for tesis
 	public final static double VM_UTILIZATION_THRESHOLD = 0.7;
+
+	//******* Update particle related *******
+
+	//Options for intelligent function in discrete PSO: Basic, Makespan, Utilization
+	public final static String RANDOM = "Random";
+	public final static String MAKESPAN = "Makespan";
+	public final static String UTILIZATION = "Utilization";
+
+	public final static String INTELLIGENT_FUNCTION = UTILIZATION; //change here
+
+	//******* Init poblation related *******
+
+	public final static String POPULATION_INIT_FUNCTION = UTILIZATION; //change here
 
 }

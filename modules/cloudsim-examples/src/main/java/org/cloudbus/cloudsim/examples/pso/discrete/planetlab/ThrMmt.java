@@ -42,15 +42,35 @@ public class ThrMmt {
 		String vmSelectionPolicy = "mmt"; // Minimum Migration Time (MMT) VM selection policy
 		String parameter = String.valueOf(Constants.UTILIZATION_THRESHOLD); // the static utilization threshold
 
-		double[] valores ={0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1}; // Generamos los valores individuales
-        List<double[]> todasLasCombinaciones = generarCombinaciones(valores);
+		double weight1 = 0.3;
+		double weight2 = 0.2;
+		double weight3 = 0.2;
+		double weight4 = 0.3;
+		boolean allObjetiveCombinations = false;
 
-        // Imprimir las combinaciones (opcional)
-        for (double[] combinacion : todasLasCombinaciones) {
-            for (double valor : combinacion) {
-                System.out.print(valor + " ");
-            }
-
+		if(allObjetiveCombinations){
+			double[] valores ={0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1}; // Generamos los valores individuales
+			List<double[]> todasLasCombinaciones = generarCombinaciones(valores);
+	
+			// Imprimir las combinaciones (opcional)
+			for (double[] combinacion : todasLasCombinaciones) {
+				for (double valor : combinacion) {
+					System.out.print(valor + " ");
+				}
+	
+				new Scheduler(
+						enableOutput,
+						outputToFile,
+						inputFolder,
+						outputFolder,
+						workload,
+						vmAllocationPolicy,
+						vmSelectionPolicy,
+						parameter,combinacion[0],combinacion[1],combinacion[2],combinacion[3]);
+				System.out.println();
+			}
+		}
+		else{
 			new Scheduler(
 					enableOutput,
 					outputToFile,
@@ -59,8 +79,7 @@ public class ThrMmt {
 					workload,
 					vmAllocationPolicy,
 					vmSelectionPolicy,
-					parameter,combinacion[0],combinacion[1],combinacion[2],combinacion[3]);
-					System.out.println();
+					parameter,weight1,weight2,weight3,weight4);
 		}
 	}
 

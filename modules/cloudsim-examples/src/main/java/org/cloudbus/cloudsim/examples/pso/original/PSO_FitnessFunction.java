@@ -386,7 +386,7 @@ public class PSO_FitnessFunction extends FitnessFunction{
         // for(int i=0;i<position.length;i++) {
         //     System.out.print(position[i]+" ");
         // }
-        // System.out.println(functOutput);
+        System.out.println(functOutput);
 
         return functOutput;
 	}

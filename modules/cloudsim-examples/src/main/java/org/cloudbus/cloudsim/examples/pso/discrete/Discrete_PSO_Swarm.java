@@ -19,7 +19,7 @@ import org.cloudbus.cloudsim.examples.pso.Helper;
 public class Discrete_PSO_Swarm {
 
     public static double DEFAULT_GLOBAL_INCREMENT = 0.9;
-	public static int DEFAULT_INERTIA = 5;
+	public static double DEFAULT_INERTIA = 0.95;
 	public static int DEFAULT_NUMBER_OF_PARTICLES = 25;
 	public static double DEFAULT_PARTICLE_INCREMENT = 0.9;
 
@@ -30,7 +30,7 @@ public class Discrete_PSO_Swarm {
     /** Global increment (for velocity update), usually called 'c2' constant */
 	double globalIncrement;
 	/** Inertia (for velocity update), usually called 'w' constant */
-	int inertia;
+	double inertia;
 
     /** Best fitness so far (global best) */
     double bestFitness;
@@ -272,11 +272,11 @@ public class Discrete_PSO_Swarm {
         return cloudlets.size();
     }
 
-    public int getInertia() {
+    public double getInertia() {
         return inertia;
     }
 
-    public void setInertia(int inertia) {
+    public void setInertia(double inertia) {
         this.inertia = inertia;
     }
 

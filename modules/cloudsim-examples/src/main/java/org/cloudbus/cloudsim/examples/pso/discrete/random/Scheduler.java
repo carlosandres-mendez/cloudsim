@@ -30,6 +30,10 @@ public class Scheduler extends RandomRunner {
 
     Discrete_PSO_Swarm swarm;
 
+    //private
+    private int countGlobalUpdates;
+    private int lastIterGlobalUpdate;
+
     public Scheduler(
             boolean enableOutput,
             boolean outputToFile,
@@ -38,7 +42,7 @@ public class Scheduler extends RandomRunner {
             String workload,
             String vmAllocationPolicy,
             String vmSelectionPolicy,
-            String parameter) {
+            String parameter, double w1, double w2, double w3, double w4) {
         super(
                 enableOutput,
                 outputToFile,
@@ -47,7 +51,7 @@ public class Scheduler extends RandomRunner {
                 workload,
                 vmAllocationPolicy,
                 vmSelectionPolicy,
-                parameter);
+                parameter,w1,w2,w3,w4);
     }
 
     private void optimize() {
@@ -164,10 +168,17 @@ public class Scheduler extends RandomRunner {
         double[] maeIteracion = new double[Constants.NUM_ITERATIONS];
         double[] maeIteracionGobalUpdate = new double[Constants.NUM_ITERATIONS];
 
+        Discrete_FitnessFunction fitnessFunction = new Discrete_FitnessFunction(cloudletList, (List<PowerVm>) (Object) (RandomRunner.vmList),
+                        RandomRunner.hostList);
+        fitnessFunction.setWeight1(this.weight1);
+        fitnessFunction.setWeight2(this.weight2);
+        fitnessFunction.setWeight3(this.weight3);
+        fitnessFunction.setWeight4(this.weight4);
+
         swarm = new Discrete_PSO_Swarm(
-                new Discrete_FitnessFunction(cloudletList, (List<PowerVm>) (Object) (RandomRunner.vmList),
-                        RandomRunner.hostList),
+                fitnessFunction,
                 RandomRunner.hostList, (List<PowerVm>) (Object) (RandomRunner.vmList), cloudletList);
+
         swarm.setParticleUpdate(
                 new Discrete_ParticleUpdate(powerHostsOrderByPowerConsumption, powerVmsOrderByPowerConsumption, cloudletList));
         swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
@@ -176,11 +187,13 @@ public class Scheduler extends RandomRunner {
         swarm.setNumberOfParticles(Constants.NUM_PARTICLES);
         swarm.setParticles(particles);
 
+        double[] fitValues = new double[Constants.NUM_ITERATIONS];
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
             swarm.evolve();
-            if (i % 10 == 0) {
+            //if (i % 10 == 0) {
                 System.out.println("Global best at iteration " + i + " :" + swarm.getBestFitness());
-            }
+                fitValues[i]= swarm.getBestFitness();
+            //}
 
             double sumMae = 0.0;
             double sumMaeGlobalUpdate = 0.0;
@@ -193,6 +206,17 @@ public class Scheduler extends RandomRunner {
             maeIteracion[i] = promedioMae;
             maeIteracionGobalUpdate[i] = promedioMaeGlobalUpdate;
         }
+
+        //Print file
+        String fitValuesString = "";
+        for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
+            if(fitValues[i]!=fitValues[Constants.NUM_ITERATIONS-1]){
+                fitValuesString+=fitValues[i]+"\t";
+                lastIterGlobalUpdate = i;
+            }
+        }
+        fitValuesString+="\n";
+        Helper.writeDataRow(fitValuesString, "fit.txt");
 
         System.out.println("DISCRETE PSO The best fitness value is " + swarm.getBestFitness());
         Discrete_Particle bestparticle = (Discrete_Particle) swarm.getBestParticle();
@@ -211,14 +235,13 @@ public class Scheduler extends RandomRunner {
             System.out.print(String.format("%.2f", maeIteracion[i]) + " ");
         }
         System.out.println("********* MAE stat Global update **************");
-        int cont = 0;
+        countGlobalUpdates = 0;
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
             if (maeIteracionGobalUpdate[i] != 0)
-                cont++;
+                countGlobalUpdates++;
             System.out.print(String.format("%.5f", maeIteracionGobalUpdate[i]) + " ");
         }
-        System.out.println("\nTotal global changes: " + cont);
-
+        System.out.println("\nTotal global changes: " + countGlobalUpdates);
         System.out.println("********* END Discrete PSO **************");
     }
 
@@ -328,146 +351,7 @@ public class Scheduler extends RandomRunner {
             lastClock,
             experimentName,
             Constants.OUTPUT_CSV,
-            outputFolder);
-
-            Helper.printCloudletList(cloudletList);
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-            Log.printLine("The simulation has been terminated due to an unexpected error");
-            System.exit(0);
-        }
-
-        Log.printLine("Finished " + experimentName);
-    }
-
-    // @Override
-    protected void start2(String experimentName, String outputFolder, VmAllocationPolicy vmAllocationPolicy) {
-        System.out.println("Starting " + experimentName);
-
-        try {
-            PowerDatacenter datacenter = (PowerDatacenter) Helper.createDatacenter(
-                    "Datacenter",
-                    PowerDatacenter.class,
-                    hostList,
-                    vmAllocationPolicy);
-
-            datacenter.setDisableMigrations(false);
-
-            broker.submitVmList(vmList);
-            broker.submitCloudletList(cloudletList);
-
-            /***
-             * Before optimization (see After optimization)
-             * scheduler may know allocation policy, so it can figure out host assignment
-             * (important for host power consideration in the scheduling process)
-             */
-            PowerVmAllocationPolicyMigrationStaticThresholdPSO vmAllocationMigrationMSPolicy = (PowerVmAllocationPolicyMigrationStaticThresholdPSO) vmAllocationPolicy;
-            vmAllocationMigrationMSPolicy.setHostList(hostList);
-            Set<? extends Host> excludedHosts = new HashSet<>();
-            for (PowerVm vm : (List<PowerVm>) (Object) (RandomRunner.vmList)) {
-                PowerHost host = vmAllocationMigrationMSPolicy.findHostForVm(vm, excludedHosts);
-                if (host != null) {
-                    host.getVmList().add(vm);
-
-                    List<Double> mips = new ArrayList<Double>();
-                    for (int i = 0; i < vm.getNumberOfPes(); i++)
-                        mips.add(vm.getMips());
-                    host.getVmScheduler().allocatePesForVm(vm, mips);
-                    vm.setHost(host);
-                    vm.setBeingInstantiated(true);
-                    System.out
-                            .println(" Vm allocation in scheduling time: Vm: " + vm.getId() + " Host: " + host.getId());
-                } else
-                    throw new Exception(
-                            "According to the allocation policy, all Vms cannot be allocated in the datacenter. You need to increase servers on them.");
-            }
-
-            // *** domain problem data ***
-            List<PowerHost> powerHostsOrderByPowerConsumption = new ArrayList<>(RandomRunner.hostList); // asc,
-                                                                                                        // estimated by
-                                                                                                        // the host
-                                                                                                        // utilization
-                                                                                                        // fixed in
-                                                                                                        // Constants.UTILIZATION_THRESHOLD
-            List<PowerVm> powerVmsOrderByPowerConsumption = new ArrayList<>(
-                    (List<PowerVm>) (Object) (RandomRunner.vmList)); // asc, according with the hosts power consumption
-                                                                     // and the initial policy allocation
-
-            // host doest have power as an attribute -only the method-, but added for power
-            // consumption estimation
-            for (PowerHost h1 : powerHostsOrderByPowerConsumption) {
-                h1.setPowerEstimation(h1.getPower(Constants.UTILIZATION_THRESHOLD));
-            }
-
-            powerHostsOrderByPowerConsumption.sort(Comparator.comparingDouble((PowerHost p) -> p.getTotalMips()));
-
-            // powerVmsOrderByPowerConsumption.sort(
-            // Comparator.comparingDouble((PowerVm p) -> p.getMips()).reversed()
-            // .thenComparing((PowerVm p) ->
-            // ((PowerHost)p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD))
-            // );
-
-            powerVmsOrderByPowerConsumption.sort(
-                    Comparator
-                            .comparingDouble(
-                                    (PowerVm p) -> ((PowerHost) p.getHost()).getPower(Constants.UTILIZATION_THRESHOLD))
-                            .thenComparing(Comparator.comparingDouble(PowerVm::getMips).reversed()));
-
-            for (PowerHost host : powerHostsOrderByPowerConsumption) {
-                System.out.println(host.getId() + " " + host.getPowerEstimation());
-            }
-
-            System.out.println("Info Vms Ordered By VM mips and Host Power Consumption ************");
-            int count = 0;
-            for (PowerVm p : powerVmsOrderByPowerConsumption) {
-                System.out.println("Host: " + p.getHost().getId() + " power: "
-                        + ((PowerHost) p.getHost()).getPowerEstimation() + " mips: " + p.getHost().getTotalMips()
-                        + " vm: " + p.getId() + " vm mips:" + p.getMips());
-
-                broker.bindCloudletToVm(count, p.getId());
-                count++;
-                if (count == 50)
-                    break;
-                broker.bindCloudletToVm(count, p.getId());
-                count++;
-                if (count == 50)
-                    break;
-                broker.bindCloudletToVm(count, p.getId());
-                count++;
-                if (count == 50)
-                    break;
-            }
-
-            /***
-             * After optimization (see Before optimization)
-             * Clear the hosts and vms in the datacenter
-             */
-            for (PowerVm vm : (List<PowerVm>) (Object) (RandomRunner.vmList)) {
-                vm.setHost(null);
-            }
-
-            for (PowerHost host : hostList) {
-                host.getVmList().clear();
-                host.getVmScheduler().deallocatePesForAllVms();
-            }
-
-            CloudSim.terminateSimulation(Constants.SIMULATION_LIMIT);
-            double lastClock = CloudSim.startSimulation();
-
-            List<Cloudlet> newList = broker.getCloudletReceivedList();
-            Log.printLine("Received " + newList.size() + " cloudlets");
-
-            CloudSim.stopSimulation();
-
-            Helper.printResults(
-                    datacenter,
-                    vmList,
-                    lastClock,
-                    experimentName,
-                    Constants.OUTPUT_CSV,
-                    outputFolder);
+            outputFolder,Constants.DISCRETE_PSO,weight1,weight2,weight3,weight4,swarm.getBestFitness(),lastIterGlobalUpdate,countGlobalUpdates);
 
             Helper.printCloudletList(cloudletList);
 
