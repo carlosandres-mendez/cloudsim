@@ -40,7 +40,7 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 		James Kennedy && Daniel Bratton, 2007. Defining a Standard for Particle Swarm Optimization 
 		
 		In this discrete PSO, inertia weight should be from 0 to D (dimension size), indicating the % number of the current velocity is going to remain in the next velocity */
-    public final static double INERTIA_WEIGHT = 0.95; //by now I keep the defualt value in Lib jswarm_pso
+    public final static double INERTIA_WEIGHT = 1; //by now I keep the defualt value in Lib jswarm_pso
 
     //The cognitive acceleration coefficient c1.
     public final static double COGNIT_COEFFICIENT = 0.9d; //by now I keep the defualt value in Lib jswarm_pso
