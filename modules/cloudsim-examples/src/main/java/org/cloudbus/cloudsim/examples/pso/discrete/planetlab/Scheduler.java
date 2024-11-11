@@ -152,8 +152,23 @@ public class Scheduler extends PlanetLabRunner {
 
         // initialize particles
         ArrayList<Discrete_Particle> particles = new ArrayList<>();
-        List<List<Allocation>> initPoblation = Helper.createInitPoblation(cloudletList,
-                (List<PowerVm>) (Object) (PlanetLabRunner.vmList), PlanetLabRunner.hostList);
+        List<List<Allocation>> initPoblation = null;
+
+        switch(Constants.POPULATION_INIT_FUNCTION){
+            case Constants.LINEAL_DISTRIBUTION_POPULATION:
+                initPoblation = Helper.createInitPoblationLinealDistribution(cloudletList,
+                    (List<PowerVm>) (Object) (PlanetLabRunner.vmList), PlanetLabRunner.hostList);
+                break;
+            case Constants.BIG_POPULATION:
+                initPoblation = Helper.createInitBigPoblation(cloudletList,
+                    (List<PowerVm>) (Object) (PlanetLabRunner.vmList), PlanetLabRunner.hostList);
+                break;
+            case Constants.RANDOM_POPULATION:
+                initPoblation = Helper.createInitPoblationRandom(cloudletList,
+                    (List<PowerVm>) (Object) (PlanetLabRunner.vmList), PlanetLabRunner.hostList);
+                break;
+            default:
+        }
 
         for (List<Allocation> particle_position : initPoblation) {
 

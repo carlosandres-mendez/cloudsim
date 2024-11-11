@@ -42,10 +42,10 @@ public class ThrMmt {
 		String vmSelectionPolicy = "mmt"; // Minimum Migration Time (MMT) VM selection policy
 		String parameter = String.valueOf(Constants.UTILIZATION_THRESHOLD); // the static utilization threshold
 
-		double weight1 = 0.3;
-		double weight2 = 0.2;
-		double weight3 = 0.2;
-		double weight4 = 0.3;
+		double weight1 = 0.1;
+		double weight2 = 0;
+		double weight3 = 0;
+		double weight4 = 0.9;
 		boolean allObjetiveCombinations = false;
 
 		if(allObjetiveCombinations){

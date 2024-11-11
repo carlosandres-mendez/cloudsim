@@ -67,6 +67,11 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 
 	//******* Init poblation related *******
 
-	public final static String POPULATION_INIT_FUNCTION = UTILIZATION; //change here
+	//Options are Random, BigPopulation, LinealDistributionPopulation
+
+	public final static String LINEAL_DISTRIBUTION_POPULATION = "LinealPopulation"; 
+	public final static String BIG_POPULATION = "BigPopulation"; //Requiere Min Num Particles Equal o Bigger than Number Of Cloulets
+	public final static String RANDOM_POPULATION = "RandomPopulation"; 
+	public final static String POPULATION_INIT_FUNCTION = LINEAL_DISTRIBUTION_POPULATION; //change here
 
 }

@@ -16,6 +16,7 @@ import org.cloudbus.cloudsim.examples.power.random.RandomConstants;
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
 import org.cloudbus.cloudsim.examples.pso.Helper;
+import org.cloudbus.cloudsim.examples.pso.PlanetLabRunner;
 import org.cloudbus.cloudsim.examples.pso.RandomRunner;
 import org.cloudbus.cloudsim.examples.pso.discrete.Discrete_FitnessFunction;
 import org.cloudbus.cloudsim.examples.pso.discrete.Discrete_PSO_Swarm;
@@ -142,8 +143,23 @@ public class Scheduler extends RandomRunner {
 
         // initialize particles
         ArrayList<Discrete_Particle> particles = new ArrayList<>();
-        List<List<Allocation>> initPoblation = Helper.createInitPoblation(cloudletList,
-                (List<PowerVm>) (Object) (RandomRunner.vmList), RandomRunner.hostList);
+        List<List<Allocation>> initPoblation = null;
+
+        switch(Constants.POPULATION_INIT_FUNCTION){
+            case Constants.LINEAL_DISTRIBUTION_POPULATION:
+                initPoblation = Helper.createInitPoblationLinealDistribution(cloudletList,
+                    (List<PowerVm>) (Object) (PlanetLabRunner.vmList), PlanetLabRunner.hostList);
+                break;
+            case Constants.BIG_POPULATION:
+                initPoblation = Helper.createInitBigPoblation(cloudletList,
+                    (List<PowerVm>) (Object) (PlanetLabRunner.vmList), PlanetLabRunner.hostList);
+                break;
+            case Constants.RANDOM_POPULATION:
+                initPoblation = Helper.createInitPoblationRandom(cloudletList,
+                    (List<PowerVm>) (Object) (PlanetLabRunner.vmList), PlanetLabRunner.hostList);
+                break;
+            default:
+        }
 
         for (List<Allocation> particle_position : initPoblation) {
 

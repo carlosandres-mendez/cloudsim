@@ -97,7 +97,8 @@ public class Helper extends org.cloudbus.cloudsim.examples.power.Helper {
 		return sum / array1.length;
 	}
 
-	public static List<List<Allocation>> createInitPoblationSizeEqualToNumberOfCloulets(List<Cloudlet> cloudletList, List<PowerVm> vmList,
+	//* Size Equal o Bigger To Number Of Cloulets */
+	public static List<List<Allocation>> createInitBigPoblation(List<Cloudlet> cloudletList, List<PowerVm> vmList,
 			List<PowerHost> hostList) {
 
 		// Number of subsets of particles, ej. {idX}, {idY,idZ}, ..., {idX..N}
@@ -135,7 +136,7 @@ public class Helper extends org.cloudbus.cloudsim.examples.power.Helper {
 		return poblation;
 	}
 
-	public static List<List<Allocation>> createInitPoblationBalanced(List<Cloudlet> cloudletList, List<PowerVm> vmList, List<PowerHost> hostList) {
+	public static List<List<Allocation>> createInitPoblationRandom(List<Cloudlet> cloudletList, List<PowerVm> vmList, List<PowerHost> hostList) {
 
 		List<List<Allocation>> poblation = new ArrayList<>();
 
@@ -158,7 +159,7 @@ public class Helper extends org.cloudbus.cloudsim.examples.power.Helper {
 		return poblation;
 	}	
 
-	public static List<List<Allocation>> createInitPoblation(List<Cloudlet> cloudletList, List<PowerVm> vmList, List<PowerHost> hostList) {
+	public static List<List<Allocation>> createInitPoblationLinealDistribution(List<Cloudlet> cloudletList, List<PowerVm> vmList, List<PowerHost> hostList) {
 
 		List<List<Allocation>> poblation = new ArrayList<>();
 
