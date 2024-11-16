@@ -138,6 +138,9 @@ public class Scheduler extends PlanetLabRunner {
             cloudlet.setUtilizationOfCpuEstimation(avg);
         }
 
+        // List<Cloudlet> cloudletsOrderedByUtilizationCPU = new ArrayList<>(cloudletList);
+        // cloudletsOrderedByUtilizationCPU.sort(Comparator.comparingDouble((Cloudlet c) -> c.getUtilizationOfCpuEstimation()).reversed());
+
 
         for (PowerHost host : powerHostsOrderByPowerConsumption) {
             System.out.println(host.getId() + " " + host.getPowerEstimation());
@@ -202,13 +205,14 @@ public class Scheduler extends PlanetLabRunner {
         swarm = new Discrete_PSO_Swarm(
                 fitnessFunction,
                 PlanetLabRunner.hostList, (List<PowerVm>) (Object) (PlanetLabRunner.vmList), cloudletList);
-        swarm.setParticleUpdate(
-                new Discrete_ParticleUpdate(powerHostsOrderByPowerConsumption, powerVmsOrderByPowerConsumption, cloudletList));
+        Discrete_ParticleUpdate updateFunction = new Discrete_ParticleUpdate(swarm, null);
+        swarm.setUpdateFunction(updateFunction);
         swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
         swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
         swarm.setInertia(Constants.INERTIA_WEIGHT);
         swarm.setNumberOfParticles(Constants.NUM_PARTICLES);
         swarm.setParticles(particles);
+        swarm.setPowerVmsOrderByPowerConsumption(powerVmsOrderByPowerConsumption);
 
         double[] fitValues = new double[Constants.NUM_ITERATIONS];
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {

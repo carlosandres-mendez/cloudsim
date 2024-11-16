@@ -1,12 +1,15 @@
 package org.cloudbus.cloudsim.examples.pso.discrete;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVm;
 
-import net.sourceforge.jswarm_pso.Particle;
 
 import org.cloudbus.cloudsim.examples.pso.Allocation;
 import org.cloudbus.cloudsim.examples.pso.Constants;
@@ -40,8 +43,8 @@ public class Discrete_PSO_Swarm {
     List<Allocation> bestPosition;
     /** Fitness function for this swarm */
 	Discrete_FitnessFunction fitnessFunction;
-    /** Particle update strategy */
-	Discrete_ParticleUpdate particleUpdate;
+
+    Discrete_ParticleUpdate updateFunction;
 
     private ArrayList<Discrete_Particle> particles;
 
@@ -49,6 +52,10 @@ public class Discrete_PSO_Swarm {
     List<PowerVm> powerVms;
     List<Cloudlet> cloudlets;
     int iteration; 
+
+    List<PowerVm> powerVmsOrderByPowerConsumption;
+
+    ExecutorService executorService;
 
     /**
 	 * Create a Swarm and set default values
@@ -71,8 +78,9 @@ public class Discrete_PSO_Swarm {
         this.cloudlets = cloudlets;
 
         // Set up particle update strategy (default: ParticleUpdateSimple) 
-		particleUpdate = new Discrete_ParticleUpdate(); //default update dehaviour
         bestParticleIndex = -1;
+
+        executorService = Executors.newCachedThreadPool();
     }
 
 	/**
@@ -173,12 +181,21 @@ public class Discrete_PSO_Swarm {
 	public void update() {
 
         // For each particle...
+        List<Callable<Void>> tasks = new ArrayList<>();
         for (Discrete_Particle particle : particles) {
             // Update particle's position and speed
             // Apply position and velocity constraints
-            particleUpdate.update(this, particle);
+            //particleUpdate.update(this, particle);
+            updateFunction.setParticle(particle);
+            tasks.add(updateFunction);
+            //break;
         }
-
+        try {
+            //execute all task and wait until are finished
+            executorService.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } 
 	}
 
     public int getNumberOfParticles() {
@@ -227,14 +244,6 @@ public class Discrete_PSO_Swarm {
 
     public void setFitnessFunction(Discrete_FitnessFunction fitnessFunction) {
         this.fitnessFunction = fitnessFunction;
-    }
-
-    public Discrete_ParticleUpdate getParticleUpdate() {
-        return particleUpdate;
-    }
-
-    public void setParticleUpdate(Discrete_ParticleUpdate particleUpdate) {
-        this.particleUpdate = particleUpdate;
     }
 
     public ArrayList<Discrete_Particle> getParticles() {
@@ -292,4 +301,21 @@ public class Discrete_PSO_Swarm {
     public void setIteration(int iteration) {
         this.iteration = iteration;
     }
+
+    public Discrete_ParticleUpdate getUpdateFunction() {
+        return updateFunction;
+    }
+
+    public void setUpdateFunction(Discrete_ParticleUpdate updateFunction) {
+        this.updateFunction = updateFunction;
+    }
+
+    public List<PowerVm> getPowerVmsOrderByPowerConsumption() {
+        return powerVmsOrderByPowerConsumption;
+    }
+
+    public void setPowerVmsOrderByPowerConsumption(List<PowerVm> powerVmsOrderByPowerConsumption) {
+        this.powerVmsOrderByPowerConsumption = powerVmsOrderByPowerConsumption;
+    }
+
 }
