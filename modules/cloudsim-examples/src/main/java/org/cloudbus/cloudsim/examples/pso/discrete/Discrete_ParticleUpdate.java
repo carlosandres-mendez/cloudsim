@@ -92,115 +92,6 @@ public class Discrete_ParticleUpdate {
             default:        
         }  
 
-        //Inertia allocations
-        List<Allocation> currentVelocity = new ArrayList<>(particle.getVelocity()); //copy from particle velocity
-        Collections.shuffle(currentVelocity);
-        currentVelocity = new ArrayList<>(currentVelocity.subList(0, (int)(((double)currentVelocity.size()) * (1.0d-Constants.INERTIA_WEIGHT)))); //according to inertia, create a subset 
-        for(Allocation all : currentVelocity){
-            for(int b = this.powerVmsOrderByPowerConsumption.size()-1; b >= 0 ; b--){
-                if(this.powerVmsOrderByPowerConsumption.get(b).getId()==all.getVm().getId()){
-                    for(int u = b-1; u >= 0 ; u--){
-                        if(((PowerHost)this.powerVmsOrderByPowerConsumption.get(u).getHost()).getPowerEstimation() < ((PowerHost)all.getVm().getHost()).getPowerEstimation()){
-                            double vmUtilization = particle.getVmUtilization()[this.powerVmsOrderByPowerConsumption.get(u).getId()];
-                            double cloudletUtilizationCPU = all.getCloudlet().getUtilizationOfCpuEstimation();
-                            if( vmUtilization + cloudletUtilizationCPU < Constants.VM_UTILIZATION_THRESHOLD){ 
-                                all.setVm(this.powerVmsOrderByPowerConsumption.get(u));
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-
-        List<Allocation> nextVelocity = new ArrayList<>(particle.getVelocity());
-
-        //***** Next Velocity V(t+1) ******/
-
-        // *** Weight
-        Map<Integer, Allocation> velocityInertiaMap = new HashMap<Integer, Allocation>();
-        // *** Personal
-        Map<Integer, Allocation> velocityBestPersonalMap = new HashMap<Integer, Allocation>();
-        // *** Global
-        Map<Integer, Allocation> velocityBestGlobalMap = new HashMap<Integer, Allocation>();
-
-        for(Allocation allocation : currentVelocity)
-            velocityInertiaMap.put(allocation.getCloudlet().getCloudletId(), allocation);
-        
-        for(Allocation allocation : personalPossibleCombinations)
-            velocityBestPersonalMap.put(allocation.getCloudlet().getCloudletId(), allocation);
-        
-        for(Allocation allocation : globalPossibleCombinations)
-            velocityBestGlobalMap.put(allocation.getCloudlet().getCloudletId(), allocation);
-        
-        for(Cloudlet cloudlet : cloudlets){
-            int numberList = 0;
-            // if(velocityInertiaMap.containsKey(cloudlet.getCloudletId()) && velocityBestPersonalMap.containsKey(cloudlet.getCloudletId()) 
-            //     && velocityBestGlobalMap.containsKey(cloudlet.getCloudletId())){
-            //         numberList = (int)(Math.random() * 3) + 1; 
-            //     }
-            // else if(velocityInertiaMap.containsKey(cloudlet.getCloudletId()) && velocityBestPersonalMap.containsKey(cloudlet.getCloudletId())){
-            //     numberList = (int)(Math.random() * 2) + 1; 
-            // }
-            // else if(velocityBestPersonalMap.containsKey(cloudlet.getCloudletId()) && velocityBestGlobalMap.containsKey(cloudlet.getCloudletId())){
-            //     numberList = (int)(Math.random() * 2) + 1; 
-            //     numberList++;
-            // }
-            if(velocityInertiaMap.containsKey(cloudlet.getCloudletId()))
-                numberList=1;
-
-            // else if(velocityBestPersonalMap.containsKey(cloudlet.getCloudletId()))
-            //     numberList=2;
-
-            // else if(velocityBestGlobalMap.containsKey(cloudlet.getCloudletId()))
-            //     numberList=3;
-
-            switch(numberList){
-                case 1:
-                    nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityInertiaMap.get(cloudlet.getCloudletId()).getVm());
-                    break;
-                case 2:
-                     /**
-                     * R1 independent random number uniquely
-                     * generated from 0-1 at every update for each individual dimension d = 1 to D
-                     */
-                    if(Math.random()<0.5)
-                        nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityBestPersonalMap.get(cloudlet.getCloudletId()).getVm());
-                    // else
-                    //     nextVelocity.get(cloudlet.getCloudletId()).setVm(swarm.getPowerVms().get((int)(Math.random() * (double)(swarm.getPowerVms().size()-1)) + 1)); 
-                    break;
-                case 3:
-                    /**
-                     * R2 independent random number uniquely
-                     * generated from 0-1 at every update for each individual dimension d = 1 to D
-                     */
-                    if(Math.random()<0.5)
-                        nextVelocity.get(cloudlet.getCloudletId()).setVm(velocityBestGlobalMap.get(cloudlet.getCloudletId()).getVm());
-                    // else
-                    //     nextVelocity.get(cloudlet.getCloudletId()).setVm(swarm.getPowerVms().get((int)(Math.random() * (double)(swarm.getPowerVms().size()-1)) + 1)); 
-                    // break;
-                default:
-                    
-            }
-        }
-
-        particle.setVelocity(nextVelocity);
-
-        //***** Update position  ******/
-        //Update position by replacing the current position with the velocity values  
-        for (Allocation positionAllocation : particle.getPosition()) {
-            for (Allocation velocityAllocation : nextVelocity){
-                if(positionAllocation.getCloudlet().equals(velocityAllocation.getCloudlet())){
-
-                    //replace the vm and host
-                    positionAllocation.setVm(velocityAllocation.getVm());
-                    positionAllocation.setHost(velocityAllocation.getHost());
-                }
-            }
-        }
-
-
         //*** For analysis and stats  ***/
         double[] newPositionCopy = new double[particle.getPosition().size()];
 		int j=0;
@@ -414,68 +305,79 @@ public class Discrete_ParticleUpdate {
 
         //Find a limited number of differences between the actual position and the best position
         //We are going to generate numPossibleCombinations new combinations acording with the w coefficient
-        int numPossibleCombinations =  (int) Math.floor(((double)particle.getPosition().size()) * incrementCoefficient ); 
+        int numPossibleCombinations =  (int) Math.floor(((double)difAllocPositiontions.size()) * incrementCoefficient ); 
         
 
         //select random allocations but now lets make a selection process.
         Collections.shuffle(difAllocPositiontions);
 
+        List<Allocation> randomPosition = new ArrayList<>(particle.getPosition());
+        Collections.shuffle(randomPosition);
+
+        List<Allocation> randomBestPosition = new ArrayList<>(bestParticle.getBestPosition());
+        Collections.shuffle(randomBestPosition);
+
+        int cont = 0;
         //Apply any heuristic or intelligent process to change allocations that can be considered better options
         for(Allocation allocation : difAllocPositiontions){
-            if(changedCloulets.size() < numPossibleCombinations){
+            if(cont < numPossibleCombinations){
                 if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
                     if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD){ //if we need to take off the cloudlet from the vm 
-
-                        List<Allocation> prueba = new ArrayList<>(particle.getPosition());
-                        Collections.shuffle(prueba);
                         
                         //if there is a vm in the same particle that fits (consolidation)
-                        PowerVm vm = null;
-                        double minPower = Double.MAX_VALUE;
-                        for(Allocation all : prueba){
-                            double vmUtilization = particle.getVmUtilization()[all.getVm().getId()];
-                            double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
-                            if( vmUtilization + cloudletUtilizationCPU < Constants.VM_UTILIZATION_THRESHOLD){ 
-                                // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
-                                // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
-                                // if(power<minPower){
-                                //     minPower = power;
-                                //     vm = all.getVm();
-                                // }
-                                vm = all.getVm();
-                                break;
-                            }
-                        }
-
-                        //if there is no vm that fits, lets try vms in the best position
-                        if(vm==null){ 
-                            double vmUtilizationBest = particle.getVmUtilization()[(difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getId())];
-                            double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
-                            if(((cloudletUtilizationCPU + vmUtilizationBest < Constants.VM_UTILIZATION_THRESHOLD))){
-
-                                    //The vm to change the cloudlet is going to be the same used in the best position
-                                    vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
-
-                                }
-                        }
-
-                        if(vm==null){
-                            List<Allocation> prueba2 = new ArrayList<>(bestParticle.getBestPosition());
-                            Collections.shuffle(prueba2);
-
-                            for(Allocation all : prueba2){
-                                if(particle.getVmUtilization()[all.vm.getId()] + allocation.getCloudlet().getUtilizationOfCpuEstimation() < Constants.VM_UTILIZATION_THRESHOLD){
-                                    // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
-                                    // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
-                                    // if(power<minPower){
-                                    //     minPower = power;
-                                    //     vm = all.getVm();
-                                    // }
-                                    vm = all.getVm();
-                                    break;
+                        PowerVm vm = null; 
+                        if(Math.random()> Constants.INERTIA_WEIGHT){
+                        //if(swarm.getIteration()>5){
+                            double minPower = Double.MAX_VALUE;
+                            for(Allocation all : randomPosition){
+                                if( allocation.getVm().getId()!=all.getVm().getId()){
+                                    double vmUtilization = particle.getVmUtilization()[all.getVm().getId()];
+                                    double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
+                                    if( vmUtilization + cloudletUtilizationCPU < Constants.VM_UTILIZATION_THRESHOLD){ 
+                                        // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
+                                        // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
+                                        // if(power<minPower){
+                                        //     minPower = power;
+                                        //     vm = all.getVm();
+                                        // }
+                                        vm = all.getVm();
+                                        break;
+                                    }
                                 }
                             }
                         }
+
+                        if(Math.random()<0.5){
+
+                            //if there is no vm that fits, lets try vms in the best position
+                            if(vm==null){ 
+                                double vmUtilizationBest = particle.getVmUtilization()[(difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getId())];
+                                double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
+                                if(((cloudletUtilizationCPU + vmUtilizationBest < Constants.VM_UTILIZATION_THRESHOLD))){
+
+                                        //The vm to change the cloudlet is going to be the same used in the best position
+                                        vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
+
+                                    }
+                            }
+
+                            if(vm==null){
+
+                                for(Allocation all : randomBestPosition){
+                                    if(particle.getVmUtilization()[all.vm.getId()] + allocation.getCloudlet().getUtilizationOfCpuEstimation() < Constants.VM_UTILIZATION_THRESHOLD){
+                                        // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
+                                        // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
+                                        // if(power<minPower){
+                                        //     minPower = power;
+                                        //     vm = all.getVm();
+                                        // }
+                                        vm = all.getVm();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        else cont++;
 
                         if(vm!=null){
                                 allocation.setVm(vm);
@@ -488,6 +390,7 @@ public class Discrete_ParticleUpdate {
                                                 (PowerHost)vm.getHost())
                                 );
                                 changedCloulets.add(allocation.getCloudlet().getCloudletId());
+                                cont++;
                         }
 
                         
@@ -499,151 +402,37 @@ public class Discrete_ParticleUpdate {
         }
 
 
-        //Apply any heuristic or intelligent process to change allocations that can be considered better options
-        // for(Allocation allocation : difAllocPositiontions){
-        //     if(changedCloulets.size() < numPossibleCombinations){
-        //         if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
-        //             if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD){ //if we need to take off the cloudlet from the vm 
-        //                  //System.out.println("ALERTA");
-        //              }
-        //              else if((((PowerHost)allocation.getVm().getHost()).getPowerEstimation() //or vm is not overutilized but energy can improve
-        //                           > ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getPowerEstimation())
-        //                           && particle.getVmUtilization()[difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getId()] + allocation.getCloudlet().getUtilizationOfCpuEstimation() < Constants.VM_UTILIZATION_THRESHOLD){
-                        
-        //                  //The vm to change the cloudlet is going to be the same used in the best position
-        //                 PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
-
-
-
-        //                 if(vm!=null){
-        //                         allocation.setVm(vm);
-        //                         particle.getVmUtilization()[vm.getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
-        //                         particle.getHostUtilization()[vm.getHost().getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
-        //                         possibleCombinations.add(
-        //                                 new Allocation(
-        //                                         allocation.getCloudlet(),
-        //                                         vm, 
-        //                                         (PowerHost)vm.getHost())
-        //                         );
-        //                         changedCloulets.add(allocation.getCloudlet().getCloudletId());
-        //                 }
-
-                        
-        //             }
-        //         }
-        //     }
-        //     else 
-        //         break;
-        // }
-
-        // for(Allocation allocation : difAllocPositiontions){
-        //     if(changedCloulets.size() < numPossibleCombinations){
-        //         if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
-        //             if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD){ //if we need to take off the cloudlet from the vm 
-        //                 //System.out.println("ALERTA");
-        //              }
-        //               //or vm is not overutilized but energy can improve
-        //              else{
-        //                 PowerHost hostAllocated = (PowerHost)allocation.getVm().getHost();
-        //                 double hostUtilization = particle.getHostUtilization()[hostAllocated.getId()];
-        //                 double energyHostAllocated = hostAllocated.getPower(hostUtilization>1?1:hostUtilization);
-
-        //                 PowerHost hostAllocatedBest = (PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost();
-        //                 double hostUtilizationBest = particle.getHostUtilization()[hostAllocatedBest.getId()];
-        //                 double energyHostAllocatedBest =  hostAllocatedBest.getPower(hostUtilizationBest>1?1:hostUtilizationBest);
-
-        //                 if(energyHostAllocated > energyHostAllocatedBest){
-                        
-        //                     PowerVm vm = null;
-
-
-        //                     for(PowerVm vmOrdered :  powerVmsOrderByPowerConsumption){
-        //                         if(particle.getVmUtilization()[difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getId()] + allocation.getCloudlet().getUtilizationOfCpuEstimation() < Constants.VM_UTILIZATION_THRESHOLD){
-        //                             vm = vmOrdered;
-        //                             break;
-        //                         }
-        //                     }
-
-
-        //                     if(vm!=null){
-        //                             allocation.setVm(vm);
-        //                             particle.getVmUtilization()[vm.getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
-        //                             particle.getHostUtilization()[vm.getHost().getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
-        //                             possibleCombinations.add(
-        //                                     new Allocation(
-        //                                             allocation.getCloudlet(),
-        //                                             vm, 
-        //                                             (PowerHost)vm.getHost())
-        //                             );
-        //                             changedCloulets.add(allocation.getCloudlet().getCloudletId());
-        //                     }
-
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     else 
-        //         break;
-        // }
-
-
 
         //Apply any heuristic or intelligent process to change allocations that can be considered better options
         for(Allocation allocation : difAllocPositiontions){
-            if(changedCloulets.size() < numPossibleCombinations){
+            if(cont < numPossibleCombinations){
                 if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
                     //if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD){ //if we need to take off the cloudlet from the vm 
-                        
-                    // List<Allocation> prueba = new ArrayList<>(particle.getPosition());
-                    // Collections.shuffle(prueba);
 
                         //if there is a vm in the same particle that fits (consolidation)
                         PowerVm vm = null;
                         double minPower = Double.MAX_VALUE;
-                        for(Allocation all : particle.getPosition()){
-                            double vmUtilization = particle.getVmUtilization()[all.getVm().getId()];
-                            double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
-                            if( vmUtilization + cloudletUtilizationCPU < Constants.VM_UTILIZATION_THRESHOLD){ 
-                                // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
-                                // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
-                                // if(power<minPower){
-                                //     minPower = power;
-                                //     vm = all.getVm();
-                                // }
-                                vm = all.getVm();
-                                break;
+                        if(Math.random()> Constants.INERTIA_WEIGHT){
+                        //if(swarm.getIteration()>30){
+                            for(Allocation all : randomPosition){
+                                if(allocation.getVm().getId()!=all.getVm().getId()){
+                                    double vmUtilization = particle.getVmUtilization()[all.getVm().getId()];
+                                    double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
+                                    if(vmUtilization + cloudletUtilizationCPU < Constants.VM_UTILIZATION_THRESHOLD){ 
+                                        // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
+                                        // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
+                                        // if(power<minPower){
+                                        //     minPower = power;
+                                        //     vm = all.getVm();
+                                        // }
+                                        vm = all.getVm();
+                                        break;
+                                    }
+                                }
                             }
                         }
 
-                        //if there is no vm that fits, lets try vms in the global best position
-                        // if(vm==null){ 
-                        //     double vmUtilizationBest = particle.getVmUtilization()[(difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getId())];
-                        //     double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
-                        //     if(((cloudletUtilizationCPU + vmUtilizationBest < Constants.VM_UTILIZATION_THRESHOLD))){
 
-                        //             //The vm to change the cloudlet is going to be the same used in the best position
-                        //             vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
-
-                        //         }
-                        // }
-
-                        // if(vm==null){
-                        //     // List<Allocation> prueba2 = new ArrayList<>(bestParticle.getBestPosition());
-                        //     // Collections.shuffle(prueba2);
-
-                        //     for(Allocation all : bestParticle.getBestPosition()){
-                        //         if(particle.getVmUtilization()[all.vm.getId()] + allocation.getCloudlet().getUtilizationOfCpuEstimation() < Constants.VM_UTILIZATION_THRESHOLD){
-                        //             // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
-                        //             // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
-                        //             // if(power<minPower){
-                        //             //     minPower = power;
-                        //             //     vm = all.getVm();
-                        //             // }
-                        //             vm = all.getVm();
-                        //             break;
-                        //         }
-                        //     }
-                        // }
 
                         if(vm!=null){
                                 allocation.setVm(vm);
@@ -656,6 +445,7 @@ public class Discrete_ParticleUpdate {
                                                 (PowerHost)vm.getHost())
                                 );
                                 changedCloulets.add(allocation.getCloudlet().getCloudletId());
+                                cont++;
                         }
 
                         
@@ -665,147 +455,6 @@ public class Discrete_ParticleUpdate {
             else 
                 break;
         }
-
-
-
-        // System.out.print("\nBEst> ");
-        // for(int i=0;i<bestParticle.getBestPosition().size();i++) {
-        //     System.out.print(bestParticle.getBestPosition().get(i).getVm().getId()+" ");
-        // }
-        // System.out.println();
-        // System.out.print("New P>");
-        // for(int i=0;i<particle.getPosition().size();i++) {
-        //     System.out.print(particle.getPosition().get(i).getVm().getId()+" ");
-        // }
-        // System.out.println(" diffs> "+difAllocPositiontions.size() + "  " +changedCloulets.size());
-
-
-        //Apply any heuristic or intelligent process to change allocations that can be considered better options
-        // for(Allocation allocation : difAllocPositiontions){
-        //     if(changedCloulets.size() < numPossibleCombinations){
-        //         if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
-        //             if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD &&
-        //                 ((allocation.getCloudlet().getUtilizationOfCpuEstimation()
-        //                 + particle.getVmUtilization()[(difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getId())] < Constants.VM_UTILIZATION_THRESHOLD))
-        //                 && (((PowerHost)allocation.getVm().getHost()).getPowerEstimation() 
-        //                 >= ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getPowerEstimation()) ){
-
-        //                     //The vm to change the cloudlet is going to be the same used in the best position
-        //                     PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
-        //                     allocation.setVm(vm);
-        //                     // possibleCombinations.add(
-        //                     //         new Allocation(
-        //                     //                 allocation.getCloudlet(),
-        //                     //                 vm, 
-        //                     //                 (PowerHost)vm.getHost())
-        //                     // );
-        //                     changedCloulets.add(allocation.getCloudlet().getCloudletId());
-                        
-        //             }
-        //         }
-        //     }
-        //     else 
-        //         break;
-        // }
-
-        //Apply any heuristic or intelligent process to change allocations that can be considered better options
-        // for(Allocation allocation : difAllocPositiontions){
-        //     if(changedCloulets.size() < numPossibleCombinations){
-        //         if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
-        //             if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD &&
-        //             (allocation.getCloudlet().getUtilizationOfCpuEstimation()
-        //                 + particle.getVmUtilization()[(difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getId())] < Constants.VM_UTILIZATION_THRESHOLD)){
-
-        //                     //The vm to change the cloudlet is going to be the same used in the best position
-        //                     PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
-        //                     allocation.setVm(vm);
-        //                     // possibleCombinations.add(
-        //                     //         new Allocation(
-        //                     //                 allocation.getCloudlet(),
-        //                     //                 vm, 
-        //                     //                 (PowerHost)vm.getHost())
-        //                     // );
-        //                     changedCloulets.add(allocation.getCloudlet().getCloudletId());
-                        
-        //             }
-        //         }
-        //     }
-        //     else 
-        //         break;
-        // }
-
-        //Apply any heuristic or intelligent process to change allocations that can be considered better options
-        // for(Allocation allocation : difAllocPositiontions){
-        //     if(changedCloulets.size() < numPossibleCombinations){
-        //         if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
-        //             if( particle.getVmUtilization()[allocation.getVm().getId()] > Constants.VM_UTILIZATION_THRESHOLD &&
-        //             (((PowerHost)allocation.getVm().getHost()).getPowerEstimation() 
-        //             > ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getPowerEstimation())){
-
-        //                     //The vm to change the cloudlet is going to be the same used in the best position
-        //                     PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
-        //                     allocation.setVm(vm);
-        //                     // possibleCombinations.add(
-        //                     //         new Allocation(
-        //                     //                 allocation.getCloudlet(),
-        //                     //                 vm, 
-        //                     //                 (PowerHost)vm.getHost())
-        //                     // );
-        //                     changedCloulets.add(allocation.getCloudlet().getCloudletId());
-                        
-        //             }
-        //         }
-        //     }
-        //     else 
-        //         break;
-        // }
-
-        //Apply a second or all necesary heuristics or intelligent processes if necessary
-        //and complete changes in the different allocations
-        // for(Allocation allocation : difAllocPositiontions){
-        //     if(changedCloulets.size() < numPossibleCombinations){
-        //         if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
-        //             //if the utilization of the host in the best position is not lower than the utilization threshold then it is not going to be changed
-        //             if(((PowerHost)allocation.getVm().getHost()).getUtilizationEstimation() > Constants.UTILIZATION_THRESHOLD
-        //                 && ((PowerHost)difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm().getHost()).getUtilizationEstimation() < Constants.UTILIZATION_THRESHOLD){
-
-        //                     //The vm to change the cloudlet is going to be the same used in the best position
-        //                     PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
-
-        //                     possibleCombinations.add(
-        //                             new Allocation(
-        //                                     allocation.getCloudlet(),
-        //                                     vm, 
-        //                                     (PowerHost)vm.getHost())
-        //                     );
-        //                     changedCloulets.add(allocation.getCloudlet().getCloudletId());
-        //             }
-        //         }
-        //     }
-        //     else 
-        //         break;
-        // }
-
-        //Apply any heuristic or intelligent process to change allocations that can be considered better options
-        // for(Allocation allocation : difAllocPositiontions){
-        //     if(changedCloulets.size() < numPossibleCombinations){
-        //         if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
-
-        //                 //The vm to change the cloudlet is going to be the same used in the best position
-        //                 PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
-
-        //                 possibleCombinations.add(
-        //                         new Allocation(
-        //                                 allocation.getCloudlet(),
-        //                                 vm, 
-        //                                 (PowerHost)vm.getHost())
-        //                 );
-        //                 changedCloulets.add(allocation.getCloudlet().getCloudletId());    
-        //         }
-        //     }
-        //     else 
-        //         break;
-        // }
 
         return possibleCombinations;
     }    

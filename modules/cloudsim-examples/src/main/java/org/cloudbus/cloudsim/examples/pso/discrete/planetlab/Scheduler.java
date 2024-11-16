@@ -212,6 +212,7 @@ public class Scheduler extends PlanetLabRunner {
 
         double[] fitValues = new double[Constants.NUM_ITERATIONS];
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
+            swarm.setIteration(i);
             swarm.evolve();
             //if (i % 10 == 0) {
                 System.out.println("Global best at iteration " + i + " :" + swarm.getBestFitness());

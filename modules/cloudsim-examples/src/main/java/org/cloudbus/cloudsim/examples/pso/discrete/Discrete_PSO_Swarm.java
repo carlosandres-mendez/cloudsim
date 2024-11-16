@@ -48,6 +48,7 @@ public class Discrete_PSO_Swarm {
     List<PowerHost> powerHosts;
     List<PowerVm> powerVms;
     List<Cloudlet> cloudlets;
+    int iteration; 
 
     /**
 	 * Create a Swarm and set default values
@@ -283,5 +284,12 @@ public class Discrete_PSO_Swarm {
     public Discrete_Particle getBestParticle() {
 		return particles.get(bestParticleIndex);
 	}
-    
+
+    public int getIteration() {
+        return iteration;
+    }
+
+    public void setIteration(int iteration) {
+        this.iteration = iteration;
+    }
 }
