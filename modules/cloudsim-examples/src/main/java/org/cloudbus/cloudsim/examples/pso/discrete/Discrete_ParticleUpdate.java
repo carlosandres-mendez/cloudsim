@@ -50,7 +50,75 @@ public class Discrete_ParticleUpdate implements Callable<Void>{
         }
 
 
+        //***** Update velocity  ******/
+        List<Runnable> functions = new ArrayList<>();
 
+        switch(Constants.INTELLIGENT_FUNCTION){
+            case Constants.RANDOM:
+
+                functions.add(()-> generatePossibleCombinationsRandom(particle.getBestPosition(), particle.getPosition(), swarm.getParticleIncrement()));
+                functions.add(()-> generatePossibleCombinationsRandom(swarm.getBestParticle().getBestPosition(), particle.getPosition(), swarm.getGlobalIncrement()));
+
+                Collections.shuffle(functions);
+
+                for (Runnable function : functions){
+                    function.run();
+                    createVelocity();
+                    generatePossibleCombinationsRandom(particle.getVelocity(), particle.getPosition(), 1-Constants.INERTIA_WEIGHT);
+                }
+
+                break;
+            case Constants.UTILIZATION:
+
+                // functions.add(()-> generatePossibleCombinationsUtilization(particle.getBestPosition(), particle.getPosition(), swarm.getParticleIncrement(), false));
+                // functions.add(()-> generatePossibleCombinationsUtilization(swarm.getBestParticle().getBestPosition(), particle.getPosition(), swarm.getGlobalIncrement(), false));
+
+                // Collections.shuffle(functions);
+                
+                // for (Runnable function : functions){
+                //     function.run();
+                //     createVelocity();
+                //     generatePossibleCombinationsUtilization(particle.getVelocity(), particle.getPosition(), 1-Constants.INERTIA_WEIGHT, true);
+                // }
+
+                generatePossibleCombinationsUtilization(particle.getBestPosition(), particle.getPosition(), swarm.getParticleIncrement(), false);
+
+                createVelocity();
+                generatePossibleCombinationsUtilization(particle.getVelocity(), particle.getPosition(), 1-Constants.INERTIA_WEIGHT, true);
+
+                generatePossibleCombinationsUtilization(swarm.getBestParticle().getBestPosition(), particle.getPosition(), swarm.getGlobalIncrement(), false);
+                
+                createVelocity();
+                generatePossibleCombinationsUtilization(particle.getVelocity(), particle.getPosition(), 1-Constants.INERTIA_WEIGHT, true);
+                
+                break;
+            case Constants.MAKESPAN:
+
+                functions.add(()-> generatePossibleCombinationsMakeSpan(particle.getBestPosition(), particle.getPosition(), swarm.getParticleIncrement()));
+                functions.add(()-> generatePossibleCombinationsMakeSpan(swarm.getBestParticle().getBestPosition(), particle.getPosition(), swarm.getGlobalIncrement()));
+
+                Collections.shuffle(functions);
+
+                for (Runnable function : functions){ 
+                    function.run();
+                    createVelocity();
+                    generatePossibleCombinationsMakeSpan(particle.getVelocity(), particle.getPosition(), 1-Constants.INERTIA_WEIGHT);
+                }
+
+                break; 
+            default:        
+        }  
+
+        //*** For analysis and stats  ***/
+        double[] newPositionCopy = new double[particle.getPosition().size()];
+		int j=0;
+        for(Allocation allocation : particle.getPosition()){
+            newPositionCopy[j++] = allocation.getVm().getId();
+        }
+        particle.mae = Helper.calculateMAE(positionCopy, newPositionCopy);
+    }
+
+    private void createVelocity(){
         // Vms Ordered By VM mips and Host Power Consumption 
         List<Allocation> velocity = new ArrayList<>(particle.getPosition());
         Set<PowerVm> vmsInPosition = new HashSet<>();
@@ -130,59 +198,6 @@ public class Discrete_ParticleUpdate implements Callable<Void>{
             } 
         }
         particle.setVelocity(velocity);
-
-
-
-        //***** Update velocity  ******/
-        List<Runnable> functions = new ArrayList<>();
-
-        switch(Constants.INTELLIGENT_FUNCTION){
-            case Constants.RANDOM:
-
-                functions.add(()-> generatePossibleCombinationsRandom(particle.getVelocity(), particle.getPosition(), 1-Constants.INERTIA_WEIGHT));
-                functions.add(()-> generatePossibleCombinationsRandom(particle.getBestPosition(), particle.getPosition(), swarm.getParticleIncrement()));
-                functions.add(()-> generatePossibleCombinationsRandom(swarm.getBestParticle().getBestPosition(), particle.getPosition(), swarm.getGlobalIncrement()));
-
-                Collections.shuffle(functions);
-
-                for (Runnable function : functions) 
-                    function.run();
-
-                break;
-            case Constants.UTILIZATION:
-
-                functions.add(()-> generatePossibleCombinationsUtilization(particle.getVelocity(), particle.getPosition(), 1-Constants.INERTIA_WEIGHT, true));
-                functions.add(()-> generatePossibleCombinationsUtilization(particle.getBestPosition(), particle.getPosition(), swarm.getParticleIncrement(), false));
-                functions.add(()-> generatePossibleCombinationsUtilization(swarm.getBestParticle().getBestPosition(), particle.getPosition(), swarm.getGlobalIncrement(), false));
-
-                Collections.shuffle(functions);
-
-                for (Runnable function : functions) 
-                     function.run();
-                
-                break;
-            case Constants.MAKESPAN:
-
-                functions.add(()-> generatePossibleCombinationsMakeSpan(particle.getVelocity(), particle.getPosition(), 1-Constants.INERTIA_WEIGHT));
-                functions.add(()-> generatePossibleCombinationsMakeSpan(particle.getBestPosition(), particle.getPosition(), swarm.getParticleIncrement()));
-                functions.add(()-> generatePossibleCombinationsMakeSpan(swarm.getBestParticle().getBestPosition(), particle.getPosition(), swarm.getGlobalIncrement()));
-
-                Collections.shuffle(functions);
-
-                for (Runnable function : functions) 
-                    function.run();
-
-                break; 
-            default:        
-        }  
-
-        //*** For analysis and stats  ***/
-        double[] newPositionCopy = new double[particle.getPosition().size()];
-		int j=0;
-        for(Allocation allocation : particle.getPosition()){
-            newPositionCopy[j++] = allocation.getVm().getId();
-        }
-        particle.mae = Helper.calculateMAE(positionCopy, newPositionCopy);
     }
 
     /**
