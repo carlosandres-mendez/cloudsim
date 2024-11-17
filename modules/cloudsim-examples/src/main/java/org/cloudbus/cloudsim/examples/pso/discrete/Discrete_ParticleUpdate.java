@@ -68,13 +68,13 @@ public class Discrete_ParticleUpdate implements Callable<Void>{
         double[] partVmUtilization = particle.getVmUtilization().clone();
         for(PowerVm vm : vmsInPositionList){
             double vmUtilization = partVmUtilization[vm.getId()];
-            break_vm:
+            break_tarea:
             if(vmUtilization > Constants.VM_UTILIZATION_THRESHOLD){ //si la vm esta sobre utilizada
                 for(Allocation allocation : velocity){ //para todas las tareas de la vm
                     if(allocation.getVm().getId()==vm.getId()){
 
                         boolean foundVm=false;
-                        for (PowerVm vm2 : vmsInPositionList) {
+                        for (PowerVm vm2 : vmsInPositionList) { //buscarle una vm a la tarea dentro de la posicion
                             if(vm.getId()!=vm2.getId()){
                                 vmUtilization = partVmUtilization[vm2.getId()];
                                 double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
@@ -83,18 +83,27 @@ public class Discrete_ParticleUpdate implements Callable<Void>{
                                     partVmUtilization[vm2.getId()] += cloudletUtilizationCPU;
                                     allocation.setVm(vm2);
                                     foundVm = true;
-                                    break break_vm;
+                                    vmUtilization = partVmUtilization[vm.getId()]; //aqui vm del primer ciclo de afuera
+                                    if(vmUtilization <= Constants.VM_UTILIZATION_THRESHOLD) //si la vm sobreutilizada ya no esta sobreutilizada
+                                        break break_tarea;
+                                    else 
+                                        break; //seguimos moviendo tareas a otra vm
                                 }
                             }
                         }
-                        if(!foundVm){
+                        if(!foundVm){ //sino buscar en otras vms que no estan en posicion
                             for(PowerVm vm3 : swarm.getPowerVms() ){
                                 if(!vmsInPosition.contains(vm3)){
+                                    vmsInPosition.add(vm3);
+                                    vmsInPositionList.add(vm3);
                                     allocation.setVm(vm3);
                                     double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
                                     partVmUtilization[vm3.getId()] += cloudletUtilizationCPU;
-                                    foundVm = true;
-                                    break break_vm;
+                                    vmUtilization = partVmUtilization[vm.getId()]; //aqui vm del primer ciclo de afuera
+                                    if(vmUtilization <= Constants.VM_UTILIZATION_THRESHOLD) //si la vm sobreutilizada ya no esta sobreutilizada
+                                        break break_tarea;
+                                    else 
+                                        break; //seguimos moviendo tareas a otra vm
                                 } 
                             }
                         }
