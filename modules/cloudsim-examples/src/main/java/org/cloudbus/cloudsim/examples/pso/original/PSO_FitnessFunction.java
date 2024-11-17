@@ -98,6 +98,25 @@ public class PSO_FitnessFunction extends FitnessFunction{
         numberOfHosts = hostIds.size();
         numberOfVms = vmIds.size();
 
+/**
+ *      VM TURNAROUND TIME (total execution time of a vm in the simulation considering the cloudlets it has to process)
+ *      Estimated by mips: total cloudlets Length or size in Millions Instructions (MI) / total vm MIPS
+ *           [mips refers to The total mips capacity of the PE of the VMs
+ *              Pe (Processing Element) class represents a CPU core of a physical machine (PM), 
+ *              defined in terms of Millions Instructions Per Second (MIPS) rating]
+ *              see org.cloudbus.cloudsim.provisioners.PeProvisioner.Pe.java
+**/
+        //(*** equation 2.5 ***)
+        //For each vm we are going to calculate the execution time using the cloudlets mips it has to process
+        for(PowerVm vm : vmList){
+            //FOR EACH CLOUDLET the vm has to process
+            for(int i=0; i< position.length; i++){
+                if((int)position[i]==vm.getId())
+                    vmTurnAroundTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
+            }
+            //consider the vm capacity (*** equation 2.6 ***)
+            vmTurnAroundTime[vm.getId()] = vmTurnAroundTime[vm.getId()] / vm.getMips() * (double)vm.getNumberOfPes();
+        } 
 
 /**
  *      HOST TURNAROUND TIME (total execution time of a host in the simulation considering the cloudlets it has to process if no SLA occurs)
@@ -109,41 +128,21 @@ public class PSO_FitnessFunction extends FitnessFunction{
 **/
 
         //For each host we are going to calculate the execution time using the cloudlets mips it has to process
-        for(PowerVm vm : vmList){
-            //FOR EACH CLOUDLET the host has to process
-            for(int i=0; i< position.length; i++){
-                if((int)position[i]==vm.getId())
-                    hostTurnAroundTime[vm.getHost().getId()]+= clouletList.get(i).getCloudletLength();
-            }
-        } 
+        // for(PowerVm vm : vmList){
+        //     //FOR EACH CLOUDLET the host has to process
+        //     for(int i=0; i< position.length; i++){
+        //         if((int)position[i]==vm.getId())
+        //             hostTurnAroundTime[vm.getHost().getId()]+= clouletList.get(i).getCloudletLength();
+        //     }
+        // } 
 
-        //consider the host capacity
-        for(PowerHost host : hostList)
-            hostTurnAroundTime[host.getId()] = hostTurnAroundTime[host.getId()] / host.getTotalMips();
+        // //consider the host capacity
+        // for(PowerHost host : hostList)
+        //     hostTurnAroundTime[host.getId()] = hostTurnAroundTime[host.getId()] / host.getTotalMips();
 
-        //MAX HOST TURNAROUND TIME 
-        double sumAllCloudlets = ((double)Constants.CLOUDLET_LENGTH*(double)clouletList.size());
-        double maxHostTurnAroundTime = sumAllCloudlets /((double)Constants.HOST_MIPS[0]*2.0d); 
-
-/**
- *      VM TURNAROUND TIME (total execution time of a vm in the simulation considering the cloudlets it has to process)
- *      Estimated by mips: total cloudlets Length or size in Millions Instructions (MI) / total vm MIPS
- *           [mips refers to The total mips capacity of the PE of the VMs
- *              Pe (Processing Element) class represents a CPU core of a physical machine (PM), 
- *              defined in terms of Millions Instructions Per Second (MIPS) rating]
- *              see org.cloudbus.cloudsim.provisioners.PeProvisioner.Pe.java
-**/
-
-        //For each vm we are going to calculate the execution time using the cloudlets mips it has to process
-        for(PowerVm vm : vmList){
-            //FOR EACH CLOUDLET the vm has to process
-            for(int i=0; i< position.length; i++){
-                if((int)position[i]==vm.getId())
-                    vmTurnAroundTime[vm.getId()]+= clouletList.get(i).getCloudletLength();
-            }
-            //consider the vm capacity
-            vmTurnAroundTime[vm.getId()] = vmTurnAroundTime[vm.getId()] / vm.getMips() * (double)vm.getNumberOfPes();
-        } 
+        // //MAX HOST TURNAROUND TIME 
+        // double sumAllCloudlets = ((double)Constants.CLOUDLET_LENGTH*(double)clouletList.size());
+        // double maxHostTurnAroundTime = sumAllCloudlets /((double)Constants.HOST_MIPS[0]*2.0d); 
 
 
 /**
@@ -160,6 +159,10 @@ public class PSO_FitnessFunction extends FitnessFunction{
                 
             }
         }
+
+        double maxVmUtilization = 0.0d;
+        for(Cloudlet cloudlet : clouletList)
+            maxVmUtilization += cloudlet.getUtilizationOfCpuEstimation();
 
 /**
  *      HOSTS UTILIZATION In this Particle position (in this solution)
@@ -247,13 +250,13 @@ public class PSO_FitnessFunction extends FitnessFunction{
             }
 
             //normalize: make the value comparable by changing the value from 0 to 1
-            double worstDatacenterPowerConsumption = 0.0d;
+            // double worstDatacenterPowerConsumption = 0.0d;
 
-            //worstDatacenterPowerConsumption is an estimation. what is higher? one host processing all tasks or all hosts processing all the tasks?
-            worstDatacenterPowerConsumption = 
-                Math.max(maxHostPower*maxHostTurnAroundTime,
-                    maxHostPower*(double)hostList.size()*((double)Constants.CLOUDLET_LENGTH)/((double)Constants.HOST_MIPS[0])*2.0d);
-            totalDatacenterPowerConsumption = totalDatacenterPowerConsumption / worstDatacenterPowerConsumption;
+            // //worstDatacenterPowerConsumption is an estimation. what is higher? one host processing all tasks or all hosts processing all the tasks?
+            // worstDatacenterPowerConsumption = 
+            //     Math.max(maxHostPower*maxHostTurnAroundTime,
+            //         maxHostPower*(double)hostList.size()*((double)Constants.CLOUDLET_LENGTH)/((double)Constants.HOST_MIPS[0])*2.0d);
+            // totalDatacenterPowerConsumption = totalDatacenterPowerConsumption / worstDatacenterPowerConsumption;
         }
         else{
 
@@ -312,8 +315,10 @@ public class PSO_FitnessFunction extends FitnessFunction{
 **/ 
 
         //desbalancing degree calculated as the variance of vmTurnAroundTime
-        double desbalancing = calcularDesviacionEstandar(normalizarDatos(hostTurnAroundTime,0,maxHostTurnAroundTime)); //vmExecutionTime
+        //double hostDesbalancing = calcularDesviacionEstandar(normalizarDatos(hostTurnAroundTime,0,maxHostTurnAroundTime)); //vmExecutionTime
+        double desbalancing = calcularDesviacionEstandar(normalizarDatos(vmUtilization,0,maxVmUtilization)); //vmExecutionTime
         desbalancing *= 2; //desviacion estandar goes from 0 to 0.5
+
 
         // double hostBalancingDegree = (double)numberOfHosts / (double)hostList.size();
         // double vmsBalancingDegree = (double)numberOfVms / (double)vmList.size();

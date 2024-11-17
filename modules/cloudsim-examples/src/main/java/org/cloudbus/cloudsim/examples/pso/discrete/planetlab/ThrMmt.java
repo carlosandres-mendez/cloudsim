@@ -47,28 +47,31 @@ public class ThrMmt {
 		double weight3 = 0;
 		double weight4 = 0.9;
 		boolean allObjetiveCombinations = true;
+		int repeat = 20; 
 
 		if(allObjetiveCombinations){
-			//double[] valores ={0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1}; // Generamos los valores individuales
-			double[] valores ={0.2,0.3,0.4}; // Generamos los valores individuales
-			List<double[]> todasLasCombinaciones = generarCombinaciones(valores);
-	
-			// Imprimir las combinaciones (opcional)
-			for (double[] combinacion : todasLasCombinaciones) {
-				for (double valor : combinacion) {
-					System.out.print(valor + " ");
+			for(int i=0;i<repeat; i++){
+				double[] valores ={0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1}; // Generamos los valores individuales
+				//double[] valores ={0.2,0.3,0.4}; // Generamos los valores individuales
+				List<double[]> todasLasCombinaciones = generarCombinaciones(valores);
+		
+				// Imprimir las combinaciones (opcional)
+				for (double[] combinacion : todasLasCombinaciones) {
+					for (double valor : combinacion) {
+						System.out.print(valor + " ");
+					}
+		
+					new Scheduler(
+							enableOutput,
+							outputToFile,
+							inputFolder,
+							outputFolder,
+							workload,
+							vmAllocationPolicy,
+							vmSelectionPolicy,
+							parameter,combinacion[0],combinacion[1],combinacion[2],combinacion[3]);
+					System.out.println();
 				}
-	
-				new Scheduler(
-						enableOutput,
-						outputToFile,
-						inputFolder,
-						outputFolder,
-						workload,
-						vmAllocationPolicy,
-						vmSelectionPolicy,
-						parameter,combinacion[0],combinacion[1],combinacion[2],combinacion[3]);
-				System.out.println();
 			}
 		}
 		else{
