@@ -1,6 +1,9 @@
 package org.cloudbus.cloudsim.examples.pso.discrete;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.power.PowerHost;
@@ -50,6 +53,10 @@ public class Discrete_PSO_Swarm {
     List<Cloudlet> cloudlets;
     int iteration; 
 
+    Discrete_ParticleUpdate updateFunction;
+
+    ExecutorService executorService;
+
     /**
 	 * Create a Swarm and set default values
 	 * @param numberOfParticles : Number of particles in this swarm (should be greater than 0). 
@@ -71,8 +78,9 @@ public class Discrete_PSO_Swarm {
         this.cloudlets = cloudlets;
 
         // Set up particle update strategy (default: ParticleUpdateSimple) 
-		particleUpdate = new Discrete_ParticleUpdate(); //default update dehaviour
         bestParticleIndex = -1;
+
+        executorService = Executors.newCachedThreadPool();
     }
 
 	/**
@@ -173,12 +181,21 @@ public class Discrete_PSO_Swarm {
 	public void update() {
 
         // For each particle...
+        List<Callable<Void>> tasks = new ArrayList<>();
         for (Discrete_Particle particle : particles) {
             // Update particle's position and speed
             // Apply position and velocity constraints
-            particleUpdate.update(this, particle);
+            //particleUpdate.update(this, particle);
+            updateFunction.setParticle(particle);
+            tasks.add(updateFunction);
+            //break;
         }
-
+        try {
+            //execute all task and wait until are finished
+            executorService.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } 
 	}
 
     public int getNumberOfParticles() {
@@ -291,5 +308,13 @@ public class Discrete_PSO_Swarm {
 
     public void setIteration(int iteration) {
         this.iteration = iteration;
+    }
+
+    public Discrete_ParticleUpdate getUpdateFunction() {
+        return updateFunction;
+    }
+
+    public void setUpdateFunction(Discrete_ParticleUpdate updateFunction) {
+        this.updateFunction = updateFunction;
     }
 }

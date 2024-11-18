@@ -49,8 +49,8 @@ public class ThrMmt {
 		boolean allObjetiveCombinations = true;
 
 		if(allObjetiveCombinations){
-			//double[] valores ={0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1}; // Generamos los valores individuales
-			double[] valores ={0.2,0.3,0.4}; // Generamos los valores individuales
+			double[] valores ={0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1}; // Generamos los valores individuales
+			//double[] valores ={0.2,0.3,0.4}; // Generamos los valores individuales
 			List<double[]> todasLasCombinaciones = generarCombinaciones(valores);
 	
 			// Imprimir las combinaciones (opcional)

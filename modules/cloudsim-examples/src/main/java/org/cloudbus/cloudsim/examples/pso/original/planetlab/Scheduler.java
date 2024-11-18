@@ -130,7 +130,7 @@ public class Scheduler extends PlanetLabRunner {
         List<List<Allocation>> initPoblation = null;
 
         switch(Constants.POPULATION_INIT_FUNCTION){
-            case Constants.LINEAL_DISTRIBUTION_POPULATION:
+            case Constants.LINEAL_RANDOM_POPULATION:
                 initPoblation = Helper.createInitPoblationLinealDistribution(cloudletList,
                     (List<PowerVm>) (Object) (PlanetLabRunner.vmList), PlanetLabRunner.hostList);
                 break;

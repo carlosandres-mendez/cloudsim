@@ -146,7 +146,7 @@ public class Scheduler extends RandomRunner {
         List<List<Allocation>> initPoblation = null;
 
         switch(Constants.POPULATION_INIT_FUNCTION){
-            case Constants.LINEAL_DISTRIBUTION_POPULATION:
+            case Constants.LINEAL_RANDOM_POPULATION:
                 initPoblation = Helper.createInitPoblationLinealDistribution(cloudletList,
                     (List<PowerVm>) (Object) (PlanetLabRunner.vmList), PlanetLabRunner.hostList);
                 break;
@@ -195,8 +195,8 @@ public class Scheduler extends RandomRunner {
                 fitnessFunction,
                 RandomRunner.hostList, (List<PowerVm>) (Object) (RandomRunner.vmList), cloudletList);
 
-        swarm.setParticleUpdate(
-                new Discrete_ParticleUpdate(powerHostsOrderByPowerConsumption, powerVmsOrderByPowerConsumption, cloudletList));
+        Discrete_ParticleUpdate updateFunction = new Discrete_ParticleUpdate(swarm, null);
+        swarm.setUpdateFunction(updateFunction);
         swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
         swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
         swarm.setInertia(Constants.INERTIA_WEIGHT);
