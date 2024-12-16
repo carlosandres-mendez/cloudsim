@@ -289,8 +289,8 @@ public class Helper extends org.cloudbus.cloudsim.examples.power.Helper {
 			data.append(weight1+delimeter+weight2+delimeter+weight3+delimeter+weight4+delimeter+bestFitness+delimeter+lastIterGlobalChange+ delimeter+ countGlobalChange+delimeter);
 			data.append(parseExperimentName(experimentName+ delimeter
 				+(psoAlgorithm==Constants.ORIGINAL_PSO?"ORIGINAL":"DISCRETE") 
-				+ delimeter + (psoAlgorithm==Constants.ORIGINAL_PSO?"":Constants.POPULATION_INIT_FUNCTION) 
-				+ delimeter + Constants.INTELLIGENT_FUNCTION
+				+ delimeter + Constants.POPULATION_INIT_FUNCTION
+				+ delimeter + (psoAlgorithm==Constants.ORIGINAL_PSO?"":Constants.INTELLIGENT_FUNCTION)
 				+ delimeter + Constants.COGNIT_COEFFICIENT
 				+ delimeter + Constants.SOCIAL_COEFFICIENT
 				+ delimeter + Constants.INERTIA_WEIGHT

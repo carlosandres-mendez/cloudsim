@@ -53,9 +53,9 @@ public class Discrete_PSO_Swarm {
     List<Cloudlet> cloudlets;
     int iteration; 
 
-    Discrete_ParticleUpdate updateFunction;
-
     ExecutorService executorService;
+
+    public int[] cont; //for stats
 
     /**
 	 * Create a Swarm and set default values
@@ -81,6 +81,8 @@ public class Discrete_PSO_Swarm {
         bestParticleIndex = -1;
 
         executorService = Executors.newCachedThreadPool();
+
+        cont = new int[10];
     }
 
 	/**
@@ -186,6 +188,7 @@ public class Discrete_PSO_Swarm {
             // Update particle's position and speed
             // Apply position and velocity constraints
             //particleUpdate.update(this, particle);
+            Discrete_ParticleUpdate updateFunction = new Discrete_ParticleUpdate(this,particle);
             updateFunction.setParticle(particle);
             tasks.add(updateFunction);
             //break;
@@ -310,11 +313,4 @@ public class Discrete_PSO_Swarm {
         this.iteration = iteration;
     }
 
-    public Discrete_ParticleUpdate getUpdateFunction() {
-        return updateFunction;
-    }
-
-    public void setUpdateFunction(Discrete_ParticleUpdate updateFunction) {
-        this.updateFunction = updateFunction;
-    }
 }

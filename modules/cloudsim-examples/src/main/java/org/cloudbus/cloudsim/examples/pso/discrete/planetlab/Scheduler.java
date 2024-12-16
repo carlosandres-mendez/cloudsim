@@ -202,8 +202,6 @@ public class Scheduler extends PlanetLabRunner {
         swarm = new Discrete_PSO_Swarm(
                 fitnessFunction,
                 PlanetLabRunner.hostList, (List<PowerVm>) (Object) (PlanetLabRunner.vmList), cloudletList);
-        Discrete_ParticleUpdate updateFunction = new Discrete_ParticleUpdate(swarm, null);
-        swarm.setUpdateFunction(updateFunction);
         swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
         swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
         swarm.setInertia(Constants.INERTIA_WEIGHT);
@@ -259,6 +257,12 @@ public class Scheduler extends PlanetLabRunner {
         }
         System.out.println("\nTotal global changes: " + countGlobalUpdates);
         System.out.println("********* END Discrete PSO **************");
+
+        System.out.println("Stats: ");
+        for (int i = 0; i < swarm.cont.length; i++) {
+            System.out.print(swarm.cont[i]+" ");
+        }
+        System.out.println();
     }
 
     /**

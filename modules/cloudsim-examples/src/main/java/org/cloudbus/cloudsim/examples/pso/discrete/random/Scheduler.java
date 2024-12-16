@@ -195,8 +195,6 @@ public class Scheduler extends RandomRunner {
                 fitnessFunction,
                 RandomRunner.hostList, (List<PowerVm>) (Object) (RandomRunner.vmList), cloudletList);
 
-        Discrete_ParticleUpdate updateFunction = new Discrete_ParticleUpdate(swarm, null);
-        swarm.setUpdateFunction(updateFunction);
         swarm.setGlobalIncrement(Constants.SOCIAL_COEFFICIENT);
         swarm.setParticleIncrement(Constants.COGNIT_COEFFICIENT);
         swarm.setInertia(Constants.INERTIA_WEIGHT);

@@ -113,7 +113,7 @@ public class Discrete_ParticleUpdate implements Callable<Void>{
 
         //Find a limited number of differences between the actual position and the best position
         //We are going to generate numPossibleCombinations new combinations acording with the w coefficient
-        int numPossibleCombinations =  (int) Math.floor(((double)particle.getPosition().size()) * incrementCoefficient ); 
+        int numPossibleCombinations =  (int) Math.floor(((double)difAllocPositiontions.size()) * incrementCoefficient ); 
         
 
         //select random allocations
@@ -226,27 +226,68 @@ public class Discrete_ParticleUpdate implements Callable<Void>{
 
         //Find a limited number of differences between the actual position and the best position
         //We are going to generate numPossibleCombinations new combinations acording with the w coefficient
-        int numPossibleCombinations =  (int) Math.floor(((double)particle.getPosition().size()) * incrementCoefficient ); 
+        int numPossibleCombinations =  (int) Math.floor(((double)difAllocPositiontions.size()) * incrementCoefficient ); 
         
 
         //select random allocations
         Collections.shuffle(difAllocPositiontions);
 
+        List<Allocation> randomPosition = new ArrayList<>(particle.getPosition());
+        Collections.shuffle(randomPosition);
+
+        int cont = 0;
         //Apply any heuristic or intelligent process to change allocations that can be considered better options
         for(Allocation allocation : difAllocPositiontions){
-            if(changedCloulets.size() < numPossibleCombinations){
+            if(cont < numPossibleCombinations){
                 if(!changedCloulets.contains(allocation.getCloudlet().getCloudletId())){
 
-                        //The vm to change the cloudlet is going to be the same used in the best position
-                        PowerVm vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
+                    //if there is a vm in the same particle that fits (consolidation)
+                    PowerVm vm = null; 
+                    if(Math.random()> Constants.INERTIA_WEIGHT){
+                    //if(swarm.getIteration()>5){
+                        double minPower = Double.MAX_VALUE;
+                        for(Allocation all : randomPosition){
+                            if( allocation.getVm().getId()!=all.getVm().getId()){
+                                double vmUtilization = particle.getVmUtilization()[all.getVm().getId()];
+                                double cloudletUtilizationCPU = allocation.getCloudlet().getUtilizationOfCpuEstimation();
+                                if( vmUtilization + cloudletUtilizationCPU < Constants.VM_UTILIZATION_THRESHOLD){ 
+                                    // double utilization  = particle.getHostUtilization()[all.vm.getHost().getId()];
+                                    // double power = ((PowerHost)all.vm.getHost()).getPower(utilization>1?1:utilization);
+                                    // if(power<minPower){
+                                    //     minPower = power;
+                                    //     vm = all.getVm();
+                                    // }
+                                    vm = all.getVm();
+                                    break;
+                                }
+                            }
+                        }
+                    }
 
+                    if(Math.random()<0.5){
+
+                        if(vm==null){ 
+
+                            //The vm to change the cloudlet is going to be the same used in the best position
+                            vm = difAllocBestPositionsMap.get(allocation.getCloudlet().getCloudletId()).getVm();
+                        }
+                    }
+                    else cont++;
+
+                    if(vm!=null){
+
+                        allocation.setVm(vm);
+                        particle.getVmUtilization()[vm.getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
+                        particle.getHostUtilization()[vm.getHost().getId()] += allocation.getCloudlet().getUtilizationOfCpuEstimation();
                         possibleCombinations.add(
                                 new Allocation(
                                         allocation.getCloudlet(),
                                         vm, 
                                         (PowerHost)vm.getHost())
                         );
-                        changedCloulets.add(allocation.getCloudlet().getCloudletId());    
+                        changedCloulets.add(allocation.getCloudlet().getCloudletId());
+                        cont++; 
+                    } 
                 }
             }
             else 
