@@ -136,6 +136,26 @@ public class Helper extends org.cloudbus.cloudsim.examples.power.Helper {
 		return poblation;
 	}
 
+	public static List<List<Allocation>> createInitPoblationRandomNotShuffling(List<Cloudlet> cloudletList, List<PowerVm> vmList, List<PowerHost> hostList) {
+
+		List<List<Allocation>> poblation = new ArrayList<>();
+
+		for (int i = 1; i <= Constants.NUM_PARTICLES; i++) {
+
+			List<Allocation> particle = new ArrayList<>();
+			for (Cloudlet cloudlet : cloudletList) {
+				Allocation positionAllocation = new Allocation(
+						cloudlet,
+						vmList.get((int) (Math.random() * (double) vmList.size())),
+						hostList.get((int) (Math.random() * (double) hostList.size())));
+				particle.add(positionAllocation);
+			}
+			poblation.add(particle);
+		}		
+
+		return poblation;
+	}
+
 	public static List<List<Allocation>> createInitPoblationRandom(List<Cloudlet> cloudletList, List<PowerVm> vmList, List<PowerHost> hostList) {
 
 		List<List<Allocation>> poblation = new ArrayList<>();

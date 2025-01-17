@@ -10,6 +10,7 @@ import java.util.Set;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.examples.pso.Constants;
+import org.cloudbus.cloudsim.examples.pso.Helper;
 import org.cloudbus.cloudsim.power.PowerVm;
 import org.cloudbus.cloudsim.power.PowerHost;
 
@@ -353,6 +354,20 @@ public class PSO_FitnessFunction extends FitnessFunction{
             + (weight2 * makespanObjetive) 
             + (weight3 * desbalancingObjetive) 
             + (weight4 * slaObjetive));
+
+        // String tmp = "";
+        // for(int i=0; i<position.length; i++)
+        //     tmp += position[i]+"\t"; 
+        // tmp += functOutput+"\t";
+        // tmp += powerConsumptionObjetive+"\t";
+        // tmp += makespanObjetive+"\t";
+        // tmp += desbalancingObjetive+"\t";
+        // tmp += slaObjetive+"\t";
+        // tmp += totalDatacenterPowerConsumption+"\t";
+        // tmp += migrationCost+"\t";
+        // tmp += consolidation+"\t\n";
+
+        // Helper.writeDataRow(tmp, "obj.txt");
 
 /**
  *      This is when we need to validate, for example in containers

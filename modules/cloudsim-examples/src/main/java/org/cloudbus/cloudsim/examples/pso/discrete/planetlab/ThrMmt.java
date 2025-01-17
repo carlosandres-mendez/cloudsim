@@ -43,9 +43,9 @@ public class ThrMmt {
 		String parameter = String.valueOf(Constants.UTILIZATION_THRESHOLD); // the static utilization threshold
 
 		double weight1 = 0.1;
-		double weight2 = 0;
+		double weight2 = 0.9;
 		double weight3 = 0;
-		double weight4 = 0.9;
+		double weight4 = 0;
 		boolean allObjetiveCombinations = true;
 
 		if(allObjetiveCombinations){

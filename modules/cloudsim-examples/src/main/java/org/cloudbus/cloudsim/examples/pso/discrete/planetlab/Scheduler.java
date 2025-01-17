@@ -238,7 +238,7 @@ public class Scheduler extends PlanetLabRunner {
             }
         }
         fitValuesString+="\n";
-        Helper.writeDataRow(fitValuesString, "fit.txt");
+        //Helper.writeDataRow(fitValuesString, "fit.txt");
         
         Discrete_Particle bestparticle = (Discrete_Particle) swarm.getBestParticle();
         System.out.println(bestparticle.toString());
@@ -259,10 +259,14 @@ public class Scheduler extends PlanetLabRunner {
         System.out.println("********* END Discrete PSO **************");
 
         System.out.println("Stats: ");
+        String stats = swarm.getFitnessFunction().getWeight1()+"-"+swarm.getFitnessFunction().getWeight2()+"-"+swarm.getFitnessFunction().getWeight3()+"-"+swarm.getFitnessFunction().getWeight4()+": ";
         for (int i = 0; i < swarm.cont.length; i++) {
             System.out.print(swarm.cont[i]+" ");
+            stats += swarm.cont[i]+" ";
         }
         System.out.println();
+        stats += "\n";
+        Helper.writeDataRow(stats, "stats.txt");
     }
 
     /**

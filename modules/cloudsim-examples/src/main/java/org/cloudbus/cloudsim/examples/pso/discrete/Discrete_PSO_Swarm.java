@@ -82,7 +82,7 @@ public class Discrete_PSO_Swarm {
 
         executorService = Executors.newCachedThreadPool();
 
-        cont = new int[10];
+        cont = new int[15];
     }
 
 	/**
