@@ -42,33 +42,49 @@ public class ThrMmt {
 		String vmSelectionPolicy = "mmt"; // Minimum Migration Time (MMT) VM selection policy
 		String parameter = String.valueOf(Constants.UTILIZATION_THRESHOLD); // the static utilization threshold
 
-		double weight1 = 0.1;
+		double weight1 = 1;
 		double weight2 = 0;
 		double weight3 = 0;
-		double weight4 = 0.9;
+		double weight4 = 0;
 		boolean allObjetiveCombinations = true;
+		int repeat = 1; //if this option is used, then allObjetiveCombinations need to be false
 
 		if(allObjetiveCombinations){
-			//double[] valores ={0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1}; // Generamos los valores individuales
-			double[] valores ={0.2,0.3,0.4}; // Generamos los valores individuales
+			double[] valores ={0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1}; // Generamos los valores individuales
+			//double[] valores ={0.2,0.3,0.4}; // Generamos los valores individuales
 			List<double[]> todasLasCombinaciones = generarCombinaciones(valores);
 	
 			// Imprimir las combinaciones (opcional)
 			for (double[] combinacion : todasLasCombinaciones) {
-				for (double valor : combinacion) {
-					System.out.print(valor + " ");
+				if(combinacion[0]!=0.0d){
+					for (double valor : combinacion) {
+						System.out.print(valor + " ");
+					}
+		
+					new Scheduler(
+							enableOutput,
+							outputToFile,
+							inputFolder,
+							outputFolder,
+							workload,
+							vmAllocationPolicy,
+							vmSelectionPolicy,
+							parameter,combinacion[0],combinacion[1],combinacion[2],combinacion[3]);
+					System.out.println();
 				}
-	
+			}
+		}
+		else if(repeat > 0){
+			for(int i=0;i<repeat; i++){
 				new Scheduler(
-						enableOutput,
-						outputToFile,
-						inputFolder,
-						outputFolder,
-						workload,
-						vmAllocationPolicy,
-						vmSelectionPolicy,
-						parameter,combinacion[0],combinacion[1],combinacion[2],combinacion[3]);
-				System.out.println();
+					enableOutput,
+					outputToFile,
+					inputFolder,
+					outputFolder,
+					workload,
+					vmAllocationPolicy,
+					vmSelectionPolicy,
+					parameter,weight1,weight2,weight3,weight4);
 			}
 		}
 		else{

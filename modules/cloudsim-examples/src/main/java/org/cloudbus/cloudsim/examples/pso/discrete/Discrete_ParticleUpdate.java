@@ -55,39 +55,19 @@ public class Discrete_ParticleUpdate {
         }
 
         //***** Update velocity  ******/
-        List<Allocation> personalPossibleCombinations = new ArrayList<>();
-        List<Allocation> globalPossibleCombinations =  new ArrayList<>();
 
         switch(Constants.INTELLIGENT_FUNCTION){
             case Constants.RANDOM:
-                if(Math.random()<0.5){
-                    personalPossibleCombinations = generatePossibleCombinationsRandom(particle, particle, swarm.getParticleIncrement());
-                    globalPossibleCombinations = generatePossibleCombinationsRandom(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
-                }
-                else{
-                    globalPossibleCombinations = generatePossibleCombinationsRandom(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());  
-                    personalPossibleCombinations = generatePossibleCombinationsRandom(particle, particle, swarm.getParticleIncrement());
-                }
+                    generatePossibleCombinationsRandom(particle, particle, swarm.getParticleIncrement());
+                    generatePossibleCombinationsRandom(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
                 break;
             case Constants.UTILIZATION:
-                if(Math.random()<0.5){
-                    personalPossibleCombinations = generatePossibleCombinationsUtilization(particle, particle, swarm.getParticleIncrement());
-                    globalPossibleCombinations = generatePossibleCombinationsUtilization(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
-                }
-                else{
-                    globalPossibleCombinations = generatePossibleCombinationsUtilization(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());  
-                    personalPossibleCombinations = generatePossibleCombinationsUtilization(particle, particle, swarm.getParticleIncrement()); 
-                }
+                    generatePossibleCombinationsUtilization(particle, particle, swarm.getParticleIncrement());
+                    generatePossibleCombinationsUtilization(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
                 break;
             case Constants.MAKESPAN:
-                if(Math.random()<0.5){
-                    personalPossibleCombinations = generatePossibleCombinationsMakeSpan(particle, particle, swarm.getParticleIncrement());
-                    globalPossibleCombinations = generatePossibleCombinationsMakeSpan(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
-                }
-                else{
-                    globalPossibleCombinations = generatePossibleCombinationsMakeSpan(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
-                    personalPossibleCombinations = generatePossibleCombinationsMakeSpan(particle, particle, swarm.getParticleIncrement());
-                }
+                    generatePossibleCombinationsMakeSpan(particle, particle, swarm.getParticleIncrement());
+                    generatePossibleCombinationsMakeSpan(swarm.getBestParticle(), particle, swarm.getGlobalIncrement());
                 break; 
             default:        
         }  

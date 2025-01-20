@@ -233,12 +233,16 @@ public class Scheduler extends PlanetLabRunner {
         }
         System.out.println("********* MAE stat Global update **************");
         countGlobalUpdates = 0;
+        StringBuffer sb = new StringBuffer();
         for (int i = 0; i < Constants.NUM_ITERATIONS; i++) {
             if (maeIteracionGobalUpdate[i] != 0)
                 countGlobalUpdates++;
             System.out.print(String.format("%.5f", maeIteracionGobalUpdate[i]) + " ");
+            sb.append(String.format("%.5f", maeIteracionGobalUpdate[i]) + "\t");
         }
         System.out.println("\nTotal global changes: " + countGlobalUpdates);
+        sb.append("Total global changes:\t" + countGlobalUpdates + "\n");
+        Helper.writeDataRow(sb.toString(), "global_mae.txt");
         System.out.println("***** END Original PSO **********");
     }
 

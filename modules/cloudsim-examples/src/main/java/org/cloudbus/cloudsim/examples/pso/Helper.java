@@ -166,7 +166,7 @@ public class Helper extends org.cloudbus.cloudsim.examples.power.Helper {
 		for (int i = 1; i <= Constants.NUM_PARTICLES; i++) {
 
 			List<PowerVm> vmRandomList = new ArrayList<>(vmList);
-			//Collections.shuffle(vmRandomList);
+			Collections.shuffle(vmRandomList);
 			
 			List<Allocation> particle = new ArrayList<>();
 			for (Cloudlet cloudlet : cloudletList) {

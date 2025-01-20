@@ -27,7 +27,7 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 	public final static int NUM_PARTICLES	= 105; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
 	//public final static int NUM_PARTICLES	= 10; //min equal to number of vms, because of the init poblation generation, see pso.Helper.java 
 
-	public final static int NUM_ITERATIONS	= 50;
+	public final static int NUM_ITERATIONS	= 70;
     
 	//The inertia Weight 
 	/**
@@ -72,6 +72,6 @@ public class Constants extends org.cloudbus.cloudsim.examples.power.Constants{
 	public final static String LINEAL_DISTRIBUTION_POPULATION = "LinealPopulation"; 
 	public final static String BIG_POPULATION = "BigPopulation"; //Requiere Min Num Particles Equal o Bigger than Number Of Cloulets
 	public final static String RANDOM_POPULATION = "RandomPopulation"; 
-	public final static String POPULATION_INIT_FUNCTION = LINEAL_DISTRIBUTION_POPULATION; //change here
+	public final static String POPULATION_INIT_FUNCTION = RANDOM_POPULATION; //change here
 
 }
